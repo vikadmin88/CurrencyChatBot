@@ -1,4 +1,5 @@
 .idea
+app.properties
 release
 .gradle
 build/

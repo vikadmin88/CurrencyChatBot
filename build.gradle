@@ -5,15 +5,59 @@ plugins {
 group = 'org.javacrafters'
 version = '1.0'
 
+ext{
+    newAppName = 'CurrencyChatBot'
+    appProperties = 'app.properties'
+}
+
 repositories {
     mavenCentral()
 }
 
 dependencies {
+    // https://mvnrepository.com/artifact/com.google.code.gson/gson
+    implementation 'com.google.code.gson:gson:2.10.1'
+    // https://mvnrepository.com/artifact/org.telegram/telegrambots
+    implementation 'org.telegram:telegrambots:6.8.0'
+    implementation 'com.github.pengrad:java-telegram-bot-api:6.9.1'
+
     testImplementation platform('org.junit:junit-bom:5.9.1')
     testImplementation 'org.junit.jupiter:junit-jupiter'
+}
+jar {
+    manifest {
+        attributes "Main-Class": "org.javacrafters.AppLauncher"
+    }
+
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
 
 test {
     useJUnitPlatform()
 }
+
+tasks.register("createRelease") {
+    doLast {
+        mkdir('./build/release')
+        println "Creating release jar file: ./build/release/${newAppName}.jar"
+        println "To run: java -jar ./build/release/${newAppName}.jar"
+    }
+}
+
+tasks.register('releaseJar', Copy) {
+    dependsOn(createRelease)
+
+    // copy fatJar to release folder
+    from "./build/libs/${rootProject.name}-${version}.jar"
+    into "./build/release"
+    rename "${rootProject.name}-${version}.jar", "${newAppName}.jar"
+
+    // copy config to release folder
+    from "./${appProperties}"
+    into "./build/release"
+}
+
+jar.finalizedBy releaseJar
