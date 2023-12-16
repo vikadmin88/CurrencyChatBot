@@ -49,6 +49,7 @@ import java.util.Map;
         }
 
         void addCurrencies(String currencyName){
+            currencies.add(currencyName);
 
         }
 
