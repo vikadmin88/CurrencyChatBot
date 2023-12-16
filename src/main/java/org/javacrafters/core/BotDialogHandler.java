@@ -1,4 +1,4 @@
-package org.javacrafters;
+package org.javacrafters.core;
 
 import org.javacrafters.banking.NormalizeCurrencyPair;
 import org.javacrafters.user.User;
