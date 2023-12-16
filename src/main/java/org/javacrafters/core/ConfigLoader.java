@@ -21,7 +21,7 @@ public class ConfigLoader {
 
     private static Properties load() {
         Properties prop = new Properties();
-        try (FileInputStream input = new FileInputStream("./app.properties")) {
+        try (FileInputStream input = new FileInputStream("src/app.properties")) {
             prop.load(input);
         } catch (IOException ex) {
             System.out.println(""" 
