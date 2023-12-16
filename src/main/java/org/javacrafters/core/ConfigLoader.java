@@ -8,18 +8,22 @@ public class ConfigLoader {
 
     private static Properties conf = null;
 
+
     public static Properties getConf(){
+        if (conf == null) {
+            conf = loadConfig();
+        }
         return conf;
     }
     public static String get(String key){
         if (conf != null && !conf.isEmpty()) {
             return (String) conf.get(key);
         }
-        conf = load();
+        conf = loadConfig();
         return (String) conf.get(key);
     }
 
-    private static Properties load() {
+    private static Properties loadConfig() {
         Properties prop = new Properties();
         try (FileInputStream input = new FileInputStream("./app.properties")) {
             prop.load(input);

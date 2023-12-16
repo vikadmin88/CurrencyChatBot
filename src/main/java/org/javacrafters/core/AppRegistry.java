@@ -1,12 +1,11 @@
 package org.javacrafters.core;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+
 import org.javacrafters.banking.Bank;
 import org.javacrafters.networkclient.NetworkClient;
 import org.javacrafters.user.User;
+
 
 public class AppRegistry {
     private static final Map<Long, User> users = new HashMap<>();
@@ -18,7 +17,9 @@ public class AppRegistry {
 
     private static NetworkClient netClient ;
 
+    public static void init() {
 
+    }
     public static void addUser(Long userId, User user){
         users.put(userId, user);
     }
