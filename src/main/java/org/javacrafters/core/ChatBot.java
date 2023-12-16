@@ -27,16 +27,16 @@ import java.util.*;
         private Map<Long, User> users;
         private final Map<Integer, String> messages = new HashMap<>();
         private final Map<Integer, Map<String, String>> buttonMessages = new HashMap<>();
+        private final BotDialogHandler dialogHandler = new BotDialogHandler();
 
         public ChatBot() {
 
         }
 
         public ChatBot(Map<Long, User> users, String appName, String botName, String botToken) {
-            this.appName = appName;
+            this.users = users;
             this.botName = botName;
             this.botToken = botToken;
-            this.users = users;
         }
 
         @Override
@@ -78,7 +78,7 @@ import java.util.*;
             SendMessage sendMessage = new SendMessage();
             sendMessage.setChatId(String.valueOf(user.getId()));
 
-            String message = createNotifyMessage(user);
+            String message = dialogHandler.createNotifyMessage(user);
             if (message != null) {
                 sendMessage.setText(message);
             }
@@ -90,24 +90,7 @@ import java.util.*;
 
         }
 
-        private String createNotifyMessage(User user) {
-            StringBuilder sb = new StringBuilder("Поточні курси валют:\n");
-            sb.append(user.getBank().getName()).append("\n");
 
-            Map<String, NormalizeCurrencyPair> currencyRates = user.getBank().getRates();
-
-            for (String currency : user.getCurrencies()) {
-                NormalizeCurrencyPair curCurrency = currencyRates.get(currency);
-                if (currency.equals(curCurrency.getName())) {
-                    sb.append(curCurrency.getName()).append("\n");
-                    sb.append("Покупка: ");
-                    sb.append(curCurrency.getBuy()).append("\n");
-                    sb.append("Продаж: ");
-                    sb.append(curCurrency.getSale()).append("\n\n");
-                }
-            }
-            return !sb.toString().isEmpty() ? sb.toString() : null;
-        }
 
         @Override
         public void onUpdateReceived(Update update) {
@@ -151,12 +134,7 @@ import java.util.*;
             return null;
         }
 
-        public SendMessage createMessage(String text) {
-            SendMessage message = new SendMessage();
-            message.setText(new String(text.getBytes(), StandardCharsets.UTF_8));
-            message.setParseMode("markdown");
-            return message;
-        }
+
 
         public void attachButtons(SendMessage message, Map<String, String> buttons) {
             InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
@@ -194,7 +172,7 @@ import java.util.*;
 //        }
 
         public void sendMessage(Long chatId) {
-            SendMessage message = createMessage(messages.get(chatId));
+            SendMessage message = dialogHandler.createMessage(messages.get(chatId));
             message.setChatId(chatId);
 
             Map<String, String> messageCommand = new HashMap<>();
