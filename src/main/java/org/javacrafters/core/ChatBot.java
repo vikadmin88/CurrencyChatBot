@@ -75,10 +75,9 @@ import java.util.*;
         public void userNotify(User user) {
             System.out.println("userNotify() = " + user.getId() + " " + user.getName());
 
-            String message = dialogHandler.createNotifyMessage(user);
+            String message = dialogHandler.getCurrencyRate(user);
             if (message != null) {
-                SendMessage message1 = dialogHandler.createMessage(message);
-                message1.setChatId(String.valueOf(user.getId()));
+                SendMessage message1 = dialogHandler.createMessage(message, user.getId());
                 sendApiMethodAsync(message1);
             }
 
