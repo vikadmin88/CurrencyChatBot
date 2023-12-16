@@ -75,17 +75,11 @@ import java.util.*;
         public void userNotify(User user) {
             System.out.println("userNotify() = " + user.getId() + " " + user.getName());
 
-            SendMessage sendMessage = new SendMessage();
-            sendMessage.setChatId(String.valueOf(user.getId()));
-
             String message = dialogHandler.createNotifyMessage(user);
             if (message != null) {
-                sendMessage.setText(message);
-            }
-            try {
-                execute(sendMessage);
-            } catch (TelegramApiException e) {
-
+                SendMessage message1 = dialogHandler.createMessage(message);
+                message1.setChatId(String.valueOf(user.getId()));
+                sendApiMethodAsync(message1);
             }
 
         }
@@ -100,6 +94,7 @@ import java.util.*;
             if (update.hasMessage()) {
                 if (update.getMessage().getText().equals("/start")) {
 //                    sendMessage(chatId);
+                    sendApiMethodAsync(dialogHandler.createWelcomeMessage(chatId));
 
                     if (getUser(chatId) == null) {
                         User user = new User(chatId, update.getMessage().getFrom().getFirstName(), update.getMessage().getFrom().getUserName());
@@ -116,12 +111,12 @@ import java.util.*;
             }
 
             // Callbacks processing
-            if (update.hasCallbackQuery()) {
-
-                if (update.getCallbackQuery().getData().equals("level_1_task")) {
-                    sendMessage(chatId);
-                }
-            }
+//            if (update.hasCallbackQuery()) {
+//
+//                if (update.getCallbackQuery().getData().equals("level_1_task")) {
+//                    sendMessage(chatId);
+//                }
+//            }
         }
 
         public Long getChatId(Update update) {
@@ -171,17 +166,17 @@ import java.util.*;
 //            ));
 //        }
 
-        public void sendMessage(Long chatId) {
-            SendMessage message = dialogHandler.createMessage(messages.get(chatId));
-            message.setChatId(chatId);
-
-            Map<String, String> messageCommand = new HashMap<>();
-            messageCommand.put("Налаштування", "get_conf");
-            messageCommand.put("Отримати інформацію", "get_info");
-            attachButtons(message, messageCommand);
-
-            sendApiMethodAsync(message);
-        }
+//        public void sendMessage(Long chatId) {
+//            SendMessage message = dialogHandler.createMessage(messages.get(chatId));
+//            message.setChatId(chatId);
+//
+//            Map<String, String> messageCommand = new HashMap<>();
+//            messageCommand.put("Налаштування", "get_conf");
+//            messageCommand.put("Отримати інформацію", "get_info");
+//            attachButtons(message, messageCommand);
+//
+//            sendApiMethodAsync(message);
+//        }
 
 
 //    private final Map<Integer, Map<String, String>> buttonMessages = new HashMap<>();

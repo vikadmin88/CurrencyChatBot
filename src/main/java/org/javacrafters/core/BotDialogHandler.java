@@ -15,9 +15,10 @@ public class BotDialogHandler{
 
     // Стартовое сообщение
     public SendMessage createWelcomeMessage(Long chatId) {
+        String text = "Ласкаво просимо. Цей бот допоможе відслідковувати актуальні курси валют";
         SendMessage message = new SendMessage();
         message.setChatId(String.valueOf(chatId));
-        message.setText("Ласкаво просимо. Цей бот допоможе відслідковувати актуальні курси валют");
+        message.setText(new String(text.getBytes(), StandardCharsets.UTF_8));
         message.setReplyMarkup(getMainMenuKeyboard());
         return message;
     }
@@ -30,12 +31,12 @@ public class BotDialogHandler{
         List<InlineKeyboardButton> row = new ArrayList<>();
 
         InlineKeyboardButton button = new InlineKeyboardButton();
-        button.setText("Отримати інфо");
+        button.setText(new String("Отримати інфо".getBytes(), StandardCharsets.UTF_8));
         button.setCallbackData("get_info");
         row.add(button);
 
         InlineKeyboardButton button2 = new InlineKeyboardButton();
-        button2.setText("Налаштування");
+        button2.setText(new String("Налаштування".getBytes(), StandardCharsets.UTF_8));
         button2.setCallbackData("settings");
         row.add(button2);
 
