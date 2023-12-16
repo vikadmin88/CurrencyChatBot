@@ -64,7 +64,7 @@ public class AppRegistry {
         return countDigits;
     }
 
-    public static Integer getCountDigitsById(int id){
+    public static Integer getCountDigits(int id){
         return countDigits.get(id);
     }
 
