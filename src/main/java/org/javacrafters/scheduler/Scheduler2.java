@@ -1,6 +1,6 @@
 package org.javacrafters.scheduler;
 
-import org.javacrafters.ChatBot;
+import org.javacrafters.core.ChatBot;
 import org.javacrafters.user.User;
 
 import java.util.Calendar;

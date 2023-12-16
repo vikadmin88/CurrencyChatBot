@@ -1,21 +1,19 @@
-package org.javacrafters;
+package org.javacrafters.core;
 
 import org.javacrafters.banking.NormalizeCurrencyPair;
 import org.javacrafters.banking.PrivatBank;
 import org.javacrafters.networkclient.NetworkStreamReader;
+import org.javacrafters.scheduler.Scheduler;
 import org.javacrafters.user.User;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
-import org.telegram.telegrambots.meta.api.methods.send.SendAnimation;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
-import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
@@ -27,7 +25,6 @@ import java.util.*;
         private String botName;
         private String botToken;
         private Map<Long, User> users;
-        private Map<Long, Integer> levels = new HashMap<>();
         private final Map<Integer, String> messages = new HashMap<>();
         private final Map<Integer, Map<String, String>> buttonMessages = new HashMap<>();
 
@@ -64,7 +61,6 @@ import java.util.*;
         }
 
         public void addUser(User user) {
-            System.out.println("test addUser" + user);
             users.put(user.getId(), user);
         }
 
@@ -117,57 +113,22 @@ import java.util.*;
         public void onUpdateReceived(Update update) {
             Long chatId = getChatId(update);
 
-        /*
-        System.out.println(update);
-        Update(updateId=11446157,
-        message=Message(messageId=21, messageThreadId=null,
-
-        from=User(id=501447751, firstName=Viktor, isBot=false, lastName=k, userName=Viktork8888,
-        languageCode=ru, canJoinGroups=null, canReadAllGroupMessages=null, supportInlineQueries=null,
-        isPremium=null, addedToAttachmentMenu=null),
-        date=1691445694,
-
-        chat=Chat(id=501447751, type=private, title=null, firstName=Viktor, lastName=k, userName=Viktork8888,
-        photo=null, description=null, inviteLink=null, pinnedMessage=null, stickerSetName=null, canSetStickerSet=null,
-        permissions=null, slowModeDelay=null, bio=null, linkedChatId=null, location=null, messageAutoDeleteTime=null,
-        hasPrivateForwards=null, HasProtectedContent=null, joinToSendMessages=null, joinByRequest=null,
-        hasRestrictedVoiceAndVideoMessages=null, isForum=null, activeUsernames=null, emojiStatusCustomEmojiId=null),
-
-        forwardFrom=null, forwardFromChat=null, forwardDate=null, text=ц, entities=null, captionEntities=null,
-        audio=null, document=null, photo=null, sticker=null, video=null, contact=null, location=null, venue=null,
-        animation=null, pinnedMessage=null, newChatMembers=[], leftChatMember=null, newChatTitle=null,
-        newChatPhoto=null, deleteChatPhoto=null, groupchatCreated=null, replyToMessage=null, voice=null,
-        caption=null, superGroupCreated=null, channelChatCreated=null, migrateToChatId=null, migrateFromChatId=null,
-        editDate=null, game=null, forwardFromMessageId=null, invoice=null, successfulPayment=null, videoNote=null,
-        authorSignature=null, forwardSignature=null, mediaGroupId=null, connectedWebsite=null, passportData=null,
-        forwardSenderName=null, poll=null, replyMarkup=null, dice=null, viaBot=null, senderChat=null,
-        proximityAlertTriggered=null, messageAutoDeleteTimerChanged=null, isAutomaticForward=null,
-        hasProtectedContent=null, webAppData=null, videoChatStarted=null, videoChatEnded=null,
-        videoChatParticipantsInvited=null, videoChatScheduled=null, isTopicMessage=null, forumTopicCreated=null,
-        forumTopicClosed=null, forumTopicReopened=null),
-        inlineQuery=null, chosenInlineQuery=null, callbackQuery=null, editedMessage=null, channelPost=null,
-        editedChannelPost=null, shippingQuery=null, preCheckoutQuery=null, poll=null, pollAnswer=null,
-        myChatMember=null, chatMember=null, chatJoinRequest=null)
-         */
-
             // Messages processing
             if (update.hasMessage()) {
                 if (update.getMessage().getText().equals("/start")) {
 //                    sendMessage(chatId);
-                    System.out.println("update.getMessage() = " + update.getMessage());
-                    System.out.println("getUser(chatId) = " + getUser(chatId));
+
                     if (getUser(chatId) == null) {
-                        System.out.println("before user");
                         User user = new User(chatId, update.getMessage().getFrom().getFirstName(), update.getMessage().getFrom().getUserName());
                         user.setBank(new PrivatBank(new NetworkStreamReader()));
                         user.addCurrency("USD");
                         user.addCurrency("EUR");
-                        System.out.println("after user");
+                        user.setScheduledTask(new Scheduler().schedule(this, user, 15));
                         addUser(user);
-                        System.out.println("getUser(chatId) = " + getUser(chatId));
-                        System.out.println("user" + user);
-                        System.out.println("getUser(chatId).toString() = " + getUser(chatId));
                     }
+                    // while testing
+                    userNotify(getUser(chatId));
+                    System.out.printf("Next notify will be sent in %d minutes...", (60 - Calendar.getInstance().get(Calendar.MINUTE)));
                 }
             }
 
@@ -222,15 +183,15 @@ import java.util.*;
 //            executeAsync(animation);
 //        }
 
-        {
-            messages.put(1, "*Джавелін твій. Повний вперед!*");
-        }
-
-        {
-            buttonMessages.put(1, Map.of(
-                    "Купити Джавелін (50 монет)", "level_4_task"
-            ));
-        }
+//        {
+//            messages.put(1, "*Джавелін твій. Повний вперед!*");
+//        }
+//
+//        {
+//            buttonMessages.put(1, Map.of(
+//                    "Купити Джавелін (50 монет)", "level_4_task"
+//            ));
+//        }
 
         public void sendMessage(Long chatId) {
             SendMessage message = createMessage(messages.get(chatId));

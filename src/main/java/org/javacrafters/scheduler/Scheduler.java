@@ -1,11 +1,10 @@
 
 package org.javacrafters.scheduler;
 
-import org.javacrafters.ChatBot;
+import org.javacrafters.core.ChatBot;
 import org.javacrafters.user.User;
 
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -19,14 +18,12 @@ public class Scheduler {
         private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(2);
 //    protected final ExecutorService service = Executors.newFixedThreadPool(2);
 
-        public ScheduledFuture<?> schedule(ChatBot bot, User user, int hourToNotify) {
+        public ScheduledFuture<?> schedule(ChatBot bot, User user, int toHour) {
 
-//            hourToNotify = 9;
-            int initDelay = 1;
             int curHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
-            int mins = Calendar.getInstance().get(Calendar.MINUTE);
-//            initDelay = curHour > hourToNotify ? ((24 - curHour + hourToNotify) * 60 + mins) : ((hourToNotify - curHour) * 60 - mins);
-
+            int curMinutes = Calendar.getInstance().get(Calendar.MINUTE);
+//            int initDelay = 1;
+            int initDelay = curHour > toHour ? ((24 - curHour + toHour) * 60 + curMinutes) : ((toHour - curHour) * 60 - curMinutes);
 
             final Runnable threadTask = new Runnable() {
 
@@ -34,14 +31,17 @@ public class Scheduler {
                     System.out.println(".");
                     if (user.isNotifyOn()) {
                         System.out.println("Notified user: " + user.getId() +" "+ user.getName());
-//                        bot.userNotify(user);
+                        // while testing don't
+                        bot.userNotify(user);
                     }
                 }
             };
 
-//            ScheduledFuture<?> notifyTask = scheduler.scheduleAtFixedRate(threadTask, initDelay, 24, MINUTES);
-            // test
-            ScheduledFuture<?> notifyTask = scheduler.scheduleAtFixedRate(threadTask, initDelay, 3, SECONDS);
+//            ScheduledFuture<?> notifyTask = scheduler.scheduleAtFixedRate(threadTask, initDelay, 24*60, MINUTES);
+            // test !!! period, 1 MINUTES
+            ScheduledFuture<?> notifyTask = scheduler.scheduleAtFixedRate(threadTask, initDelay, 1, MINUTES);
+            // test !!! period, SECONDS
+//            ScheduledFuture<?> notifyTask = scheduler.scheduleAtFixedRate(threadTask, initDelay, 3, SECONDS);
             System.out.println("Starting notifyTask");
 
             return notifyTask;

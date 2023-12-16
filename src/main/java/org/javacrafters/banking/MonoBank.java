@@ -3,10 +3,9 @@ package org.javacrafters.banking;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import org.javacrafters.networkclient.NetworkClient;
-import org.javacrafters.utils.ConfigLoader;
+import org.javacrafters.core.ConfigLoader;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class MonoBank extends Bank {
@@ -41,11 +40,11 @@ private final static String API_URL = ConfigLoader.get("MB_API_URL");
         for (JsonObject jsonObjItem : jsonObjArr) {
             JsonObject jsonObj = gson.fromJson(jsonObjItem, JsonObject.class);
             if (jsonObj.get("rateBuy") != null
-                    && jsonObj.get("rateSell") != null
+                    && jsonObj.get("rateSale") != null
                     && getNameById(jsonObj.get("currencyCodeB").getAsInt()).equals("UAH")) {
                 String currencyName = getNameById(jsonObj.get("currencyCodeA").getAsInt());
                 String currencyBuy = jsonObj.get("rateBuy").getAsString();
-                String currencySale = jsonObj.get("rateSell").getAsString();
+                String currencySale = jsonObj.get("rateSale").getAsString();
                 rateMap.put(currencyName, new NormalizeCurrencyPair(currencyName, currencyBuy, currencySale));
             }
         }

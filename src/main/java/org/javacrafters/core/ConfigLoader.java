@@ -1,4 +1,4 @@
-package org.javacrafters.utils;
+package org.javacrafters.core;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -7,6 +7,10 @@ import java.util.Properties;
 public class ConfigLoader {
 
     private static Properties conf = null;
+
+    public static Properties getConf(){
+        return conf;
+    }
     public static String get(String key){
         if (conf != null && !conf.isEmpty()) {
             return (String) conf.get(key);

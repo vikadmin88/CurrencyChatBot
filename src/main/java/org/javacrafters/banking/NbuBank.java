@@ -3,7 +3,7 @@ package org.javacrafters.banking;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import org.javacrafters.networkclient.NetworkClient;
-import org.javacrafters.utils.ConfigLoader;
+import org.javacrafters.core.ConfigLoader;
 
 import java.util.HashMap;
 import java.util.Map;

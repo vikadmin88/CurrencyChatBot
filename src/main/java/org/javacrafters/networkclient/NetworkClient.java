@@ -2,5 +2,5 @@ package org.javacrafters.networkclient;
 
 public abstract class NetworkClient {
 
-    public abstract String get(String json);
+    public abstract String get(String apiUrl);
 }
