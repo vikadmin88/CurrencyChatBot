@@ -27,7 +27,7 @@ public class AppRegistry {
         return users;
     }
 
-    public static User getUserById(Long userId){
+    public static User getUser(Long userId){
         return users.get(userId);
     }
 
@@ -37,7 +37,7 @@ public class AppRegistry {
         return banks;
     }
 
-    public static Bank getBankByLocalName(String bankLocalName){
+    public static Bank getBank(String bankLocalName){
         return banks.get(bankLocalName);
     }
 
@@ -50,7 +50,7 @@ public class AppRegistry {
         return currency;
     }
 
-    public static String getCurrenciesById(int currencyId){
+    public static String getCurrency(int currencyId){
         return currency.get(currencyId);
     }
 
@@ -68,16 +68,13 @@ public class AppRegistry {
         return countDigits.get(id);
     }
 
-    public void addNetClient(NetworkClient netClient){
-        this.netClient = netClient;
+    public static void addNetClient(NetworkClient netClient){
+
+        AppRegistry.netClient = netClient;
     }
 
     public static NetworkClient getNetClient(){
         return netClient;
     }
-
-
-
-
 
 }
