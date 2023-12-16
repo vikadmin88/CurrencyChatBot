@@ -22,8 +22,14 @@ public class Scheduler {
 
             int curHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
             int curMinutes = Calendar.getInstance().get(Calendar.MINUTE);
-//            int initDelay = 1;
-            int initDelay = curHour > toHour ? ((24 - curHour + toHour) * 60 + curMinutes) : ((toHour - curHour) * 60 - curMinutes);
+            int initDelay = 1;
+            if (curHour > toHour) {
+                initDelay = (24 - curHour + toHour) * 60 + curMinutes;
+            } else if (curHour < toHour) {
+                initDelay = (toHour - curHour) * 60 - curMinutes;
+            } else {
+                initDelay = (24 - curHour + toHour) * 60 - curMinutes;
+            }
 
             final Runnable threadTask = new Runnable() {
 
@@ -37,6 +43,7 @@ public class Scheduler {
                 }
             };
 
+            // production
 //            ScheduledFuture<?> notifyTask = scheduler.scheduleAtFixedRate(threadTask, initDelay, 24*60, MINUTES);
             // test !!! period, 1 MINUTES
             ScheduledFuture<?> notifyTask = scheduler.scheduleAtFixedRate(threadTask, initDelay, 1, MINUTES);
