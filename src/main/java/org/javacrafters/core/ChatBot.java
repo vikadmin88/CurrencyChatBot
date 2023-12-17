@@ -143,7 +143,7 @@ import java.util.*;
             if (update.hasCallbackQuery()) {
 
                 if (update.getCallbackQuery().getData().equals("level_1_task")) {
-                    sendMessage(chatId);
+//                    sendMessage(chatId);
                 }
             }
         }
@@ -156,41 +156,6 @@ import java.util.*;
                 return update.getCallbackQuery().getFrom().getId();
             }
             return null;
-        }
-
-        public SendMessage createMessage(String text) {
-            SendMessage message = new SendMessage();
-            message.setText(new String(text.getBytes(), StandardCharsets.UTF_8));
-            message.setParseMode("markdown");
-            return message;
-        }
-
-        public void attachButtons(SendMessage message, Map<String, String> buttons) {
-            InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
-            List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
-
-            for (String buttonName : buttons.keySet()) {
-                String buttonValue = buttons.get(buttonName);
-                InlineKeyboardButton button = new InlineKeyboardButton();
-                button.setText(new String(buttonName.getBytes(), StandardCharsets.UTF_8));
-                button.setCallbackData(buttonValue);
-                keyboard.add(Arrays.asList(button));
-            }
-
-            markup.setKeyboard(keyboard);
-            message.setReplyMarkup(markup);
-        }
-
-        public void sendMessage(Long chatId) {
-            SendMessage message = createMessage(messages.get(chatId));
-            message.setChatId(chatId);
-
-            Map<String, String> messageCommand = new HashMap<>();
-            messageCommand.put("Налаштування", "get_conf");
-            messageCommand.put("Отримати інформацію", "get_info");
-            attachButtons(message, messageCommand);
-
-            sendApiMethodAsync(message);
         }
 
     }
