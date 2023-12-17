@@ -23,7 +23,7 @@ public class NetworkStreamReader extends NetworkClient {
             return sb.toString();
 
         } catch (IOException e) {
-            e.printStackTrace();
+//            e.printStackTrace();
             return "[]";
         }
     }

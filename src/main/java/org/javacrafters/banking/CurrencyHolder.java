@@ -1,31 +1,25 @@
 package org.javacrafters.banking;
 
+import org.javacrafters.core.AppRegistry;
+
 import java.util.Map;
 import java.util.HashMap;
 
 public class CurrencyHolder {
 
-
-    private static Map<String, Map<String, NormalizeCurrencyPair>> currency = new HashMap<>();
-
+    // {"PB" => {"USD" => {"USD", "36.95000", "37.45000"}}}
+    private final static Map<String, Map<String, NormalizeCurrencyPair>> currency = new HashMap<>();
 
     public static void refreshRates() {
-        /*TODO
-       Заглушка для методу оновлення курсів валют логіка оновлення курсів валют тут refreshRates() пока оставить
-       как заглушку в цикле запрашивает каждый банк на получение валют, делает запрос вида: на объекте банка bankObj.getRates()
-       от банка получает коллекцию Map<String, NormalizeCurrencyPair> и добавляет add() ее в свою коллекцию с ключем имени банка
-       который получит из bankObj.getLocalName()
-         */
-        /* можливо так?
-        for (Bank bankObj : getAllBanks()) {
-            Map<String, NormalizeCurrencyPair> rates = bankObj.getRates();
-            currency.put(bankObj.getLocalName());
+
+        for (Map.Entry<String, Bank> bankObj : AppRegistry.getBanks().entrySet()) {
+            Bank bank = bankObj.getValue();
+            Map<String, NormalizeCurrencyPair> rates = bank.getRates();
+            add(bank.getLocalName(), rates);
         }
-        TODO bankObj
-        */
     }
 
-private static void add(String bankLocalName, Map<String, NormalizeCurrencyPair> rates) {
+    private static void add(String bankLocalName, Map<String, NormalizeCurrencyPair> rates) {
         currency.put(bankLocalName, rates);
     }
 

@@ -13,19 +13,11 @@ public class AppRegistry {
 
     private static final List<String> currency = new ArrayList<>();
 
-    private static final List<Integer> countDigits = new ArrayList<>();
+    private static int countDigits = 2;
 
     private static NetworkClient netClient ;
-//    private static Properties config ;
 
-    public AppRegistry() {
-
-    }
-
-    public static void init() {
-//        config = ConfigLoader.getConf();
-    }
-    public String getVal(String key) {
+    public static String getConfVal(String key) {
         return ConfigLoader.get(key);
     }
 
@@ -41,7 +33,7 @@ public class AppRegistry {
         return users.get(userId);
     }
 
-    public static void addBank(String bankLocalName, Bank bank){banks.put(bankLocalName ,bank);}
+    public static void addBank(String bankLocalName, Bank bank){ banks.put(bankLocalName, bank);}
 
     public static Map <String, Bank> getBanks(){
         return banks;
@@ -64,22 +56,15 @@ public class AppRegistry {
         return currency.get(currencyId);
     }
 
-    public static List<Integer> addCountDigits(Integer num ){
-        countDigits.add(num);
-        return countDigits;
-
+    public static void setCountDigits(int num) {
+        countDigits = num;
     }
 
-    public static List <Integer> getCountDigits(){
+    public static int getCountDigits() {
         return countDigits;
     }
 
-    public static Integer getCountDigits(int id){
-        return countDigits.get(id);
-    }
-
-    public static void addNetClient(NetworkClient netClt){
-
+    public static void setNetClient(NetworkClient netClt) {
         netClient = netClt;
     }
 
