@@ -17,6 +17,12 @@ public class AppLauncher {
 
         Map<Long, User> users = new HashMap<>();
 
+        System.out.println("AppRegistry.getCountDigits() = " + AppRegistry.getCountDigits());
+//        System.out.println("AppRegistry.getVal(\"APP_NAME\") = " + AppRegistry.getVal("APP_NAME"));
+        System.out.println("ConfigLoader.get(\"APP_NAME\") = " + ConfigLoader.get("APP_NAME"));
+
+        AppRegistry ar = new AppRegistry();
+        System.out.println("ar.getVal(\"APP_BOT_TOKEN\") = " + ar.getVal("APP_BOT_TOKEN"));
 
         String appName = ConfigLoader.get("APP_NAME");
         String botName = ConfigLoader.get("APP_BOT_NAME");
