@@ -1,6 +1,13 @@
-appName=CurrencyChatBot
-botName=
-botToken=
+APP_NAME=CurrencyChatBot
+APP_BOT_NAME=
+APP_BOT_TOKEN=
+
+USER_DEF_BANK=PB
+USER_DEF_CURRENCY=USD
+USER_DEF_COUNT_DIGITS=2
+USER_DEF_NOTIFY_TIME=9
+USER_DEF_NOTIFY_ENABLED=1
+
 PB_API_URL=https://api.privatbank.ua/p24api/pubinfo?json&exchange&coursid=5
 MB_API_URL=https://api.monobank.ua/bank/currency
 NBU_API_URL=https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange?json

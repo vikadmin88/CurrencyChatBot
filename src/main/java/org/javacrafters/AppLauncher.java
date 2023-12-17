@@ -16,9 +16,11 @@ public class AppLauncher {
         System.out.println("Program starting in Thread: " + Thread.currentThread().getName());
 
         Map<Long, User> users = new HashMap<>();
-        String appName = ConfigLoader.get("appName");
-        String botName = ConfigLoader.get("botName");
-        String botToken = ConfigLoader.get("botToken");
+
+
+        String appName = ConfigLoader.get("APP_NAME");
+        String botName = ConfigLoader.get("APP_BOT_NAME");
+        String botToken = ConfigLoader.get("APP_BOT_TOKEN");
 
         ChatBot bot = new ChatBot(users, appName, botName, botToken);
         bot.botRun();

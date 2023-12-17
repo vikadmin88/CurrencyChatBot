@@ -16,10 +16,19 @@ public class AppRegistry {
     private static final List<Integer> countDigits = new ArrayList<>();
 
     private static NetworkClient netClient ;
+//    private static Properties config ;
 
-    public static void init() {
+    public AppRegistry() {
 
     }
+
+    public static void init() {
+//        config = ConfigLoader.getConf();
+    }
+    public String getVal(String key) {
+        return ConfigLoader.get(key);
+    }
+
     public static void addUser(Long userId, User user){
         users.put(userId, user);
     }
@@ -69,9 +78,9 @@ public class AppRegistry {
         return countDigits.get(id);
     }
 
-    public static void addNetClient(NetworkClient netClient){
+    public static void addNetClient(NetworkClient netClt){
 
-        AppRegistry.netClient = netClient;
+        netClient = netClt;
     }
 
     public static NetworkClient getNetClient(){
