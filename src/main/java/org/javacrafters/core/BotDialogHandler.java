@@ -18,10 +18,10 @@ public class BotDialogHandler{
     public SendMessage createWelcomeMessage(Long chatId) {
         String text = "Ласкаво просимо. Цей бот допоможе відслідковувати актуальні курси валют";
         SendMessage message = createMessage(text, chatId);
-        message.setReplyMarkup(getButtons(Arrays.asList("get_info", "settings")));
+        message.setReplyMarkup(getButtons(Arrays.asList(BT.GET_INFO, BT.SETTINGS)));
         return message;
     }
-    //Текст уведомления
+    //Текст уведомления, а также текст курса валют
     public String getCurrencyRate(User user) {
         StringBuilder sb = new StringBuilder("Поточні курси валют:\n");
         sb.append(user.getBank().getName()).append("\n");
@@ -40,103 +40,134 @@ public class BotDialogHandler{
         }
         return !sb.toString().isEmpty() ? sb.toString() : null;
     }
-//    public SendMessage getInfo(Long chatId){
-//        String text = "Ласкаво просимо. Цей бот допоможе відслідковувати актуальні курси валют";
-//        SendMessage message = new SendMessage();
-//        message.setChatId(String.valueOf(chatId));
-//        message.setText(new String(text.getBytes(), StandardCharsets.UTF_8));
-//        message.setReplyMarkup();
-//        return message;
-//    }
-    public SendMessage getSettingMessage(Long chatId){
+    //Сообщение информации
+    public SendMessage createInfoMessage(User user, Long chatId){
+        String text = getCurrencyRate(user);
+        SendMessage message = createMessage(text, chatId);
+        message.setReplyMarkup(getButtons(Arrays.asList(BT.TO_MAIN)));
+        return message;
+    }
+    //Сообщение настроек
+    public SendMessage createSettingMessage(Long chatId){
         String text = "Ваші налаштування";
         SendMessage message = createMessage(text, chatId);
-        message.setReplyMarkup(getButtons(Arrays.asList("bank", "currencies", "decimal_places", "notification_time")));
+        message.setReplyMarkup(getButtons(Arrays.asList(BT.BANK, BT.CURRENCIES, BT.DECIMAL_PLACES, BT.NOTIFICATION_TIME, BT.TO_MAIN)));
         return message;
     }
 
+
+    //Сообщение банк
+    public SendMessage createBankMessage(Long chatId){
+        String text = "Виберіть банк";
+        SendMessage message = createMessage(text, chatId);
+        message.setReplyMarkup(getButtons(Arrays.asList(BT.NBU, BT.MONO, BT.PRIVAT, BT.TO_MAIN)));
+        return message;
+    }
+    //Сообщение знаки после запятой
+    public SendMessage createDecimalMessage(Long chatId){
+        String text = "Виберіть кількість знаків після коми";
+        SendMessage message = createMessage(text, chatId);
+        message.setReplyMarkup(getButtons(Arrays.asList(BT.TWO_DIGITS, BT.THREE_DIGITS, BT.FOUR_DIGITS, BT.TO_MAIN)));
+        return message;
+    }
+    //Сообщение вылюты
+    public SendMessage createCurrencyMessage(Long chatId){
+        String text = "Виберіть валюту";
+        SendMessage message = createMessage(text, chatId);
+        message.setReplyMarkup(getButtons(Arrays.asList(BT.USD, BT.EUR, BT.TO_MAIN)));
+        return message;
+    }
+    //Сообщение время уведомления
+//    public SendMessage createNotifyMessage(Long chatId){
+//        String text = "Виберіть кількість знаків після коми";
+//        SendMessage message = createMessage(text, chatId);
+//        message.setReplyMarkup(getButtons(Arrays.asList(BT.TWO_DIGITS, BT.THREE_DIGITS, BT.FOUR_DIGITS, BT.TO_MAIN)));
+//        return message;
+//    }
+
     //Метод для выбора нужных кнопок под сообщение
-    private InlineKeyboardMarkup getButtons(List<String> buttonsNames){
+    private InlineKeyboardMarkup getButtons(List<BT> buttonsTypes) {
         InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
-
         List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
-        List<InlineKeyboardButton> row = new ArrayList<>();
 
-        for (String buttonName : buttonsNames) {
+        for (BT bt : buttonsTypes) {
             InlineKeyboardButton button = new InlineKeyboardButton();
-            switch (buttonName) {
+            switch (bt) {
                 //MAIN BUTTONS
-                case "get_info":
+                case GET_INFO -> {
                     button.setText(new String("Отримати інфо".getBytes(), StandardCharsets.UTF_8));
                     button.setCallbackData("get_info");
-                    break;
-                case "settings":
+                }
+                case SETTINGS -> {
                     button.setText(new String("Налаштування".getBytes(), StandardCharsets.UTF_8));
                     button.setCallbackData("settings");
-                    break;
-                case "to_main":
+                }
+                case TO_MAIN -> {
                     button.setText(new String("На головну".getBytes(), StandardCharsets.UTF_8));
                     button.setCallbackData("to_main");
-                    break;
-                //SETTINGS BUTTONS
-                case "decimal_places":
+                }
+                //SETTING BUTTONS
+                case DECIMAL_PLACES -> {
                     button.setText(new String("Кількість знаків після коми".getBytes(), StandardCharsets.UTF_8));
                     button.setCallbackData("decimal_places");
-                    break;
-                case "bank":
+                }
+                case BANK -> {
                     button.setText(new String("Банк".getBytes(), StandardCharsets.UTF_8));
                     button.setCallbackData("bank");
-                    break;
-                case "currencies":
+                }
+                case CURRENCIES -> {
                     button.setText(new String("Валюти".getBytes(), StandardCharsets.UTF_8));
                     button.setCallbackData("currencies");
-                    break;
-                case "notification_time":
+                }
+                case NOTIFICATION_TIME -> {
                     button.setText(new String("Час сповіщення".getBytes(), StandardCharsets.UTF_8));
                     button.setCallbackData("notification_time");
-                    break;
-                //DECIMAL PLACES BUTTONS
-                case "2":
+                }
+                //DECIMAL BUTTONS
+                case TWO_DIGITS -> {
                     button.setText(new String("2".getBytes(), StandardCharsets.UTF_8));
-                    button.setCallbackData("2");
-                    break;
-                case "3":
+                    button.setCallbackData("two_digits");
+                }
+                case THREE_DIGITS -> {
                     button.setText(new String("3".getBytes(), StandardCharsets.UTF_8));
-                    button.setCallbackData("3");
-                    break;
-                case "4":
+                    button.setCallbackData("three_digits");
+                }
+                case FOUR_DIGITS -> {
                     button.setText(new String("4".getBytes(), StandardCharsets.UTF_8));
-                    button.setCallbackData("4");
-                    break;
+                    button.setCallbackData("four_digits");
+                }
                 //CURRENCIES BUTTONS
-                case "usd":
+                case USD -> {
                     button.setText(new String("USD".getBytes(), StandardCharsets.UTF_8));
                     button.setCallbackData("usd");
-                    break;
-                case "eur":
+                }
+                case EUR -> {
                     button.setText(new String("EUR".getBytes(), StandardCharsets.UTF_8));
                     button.setCallbackData("eur");
-                    break;
-                //BANKS BUTTONS
-                case "nbu":
+                }
+                //BANK BUTTONS
+                case NBU -> {
                     button.setText(new String("Національний банк України".getBytes(), StandardCharsets.UTF_8));
                     button.setCallbackData("nbu");
-                    break;
-                case "mono":
+                }
+                case MONO -> {
                     button.setText(new String("МоноБанк".getBytes(), StandardCharsets.UTF_8));
                     button.setCallbackData("mono");
-                    break;
-                case "privat":
+                }
+                case PRIVAT -> {
                     button.setText(new String("ПриватБанк".getBytes(), StandardCharsets.UTF_8));
-                    button.setCallbackData("currencies");
-                    break;
+                    button.setCallbackData("privat");
+                }
             }
-            row.add(button);
+            List<InlineKeyboardButton> row = new ArrayList<>(); // Создает новый ряд для каждой кнопки
+            row.add(button); // Добавляет кнопку в ряд
+            keyboard.add(row); // Добавляет ряд в клавиатуру
         }
-        keyboard.add(row);
+
         inlineKeyboardMarkup.setKeyboard(keyboard);
         return inlineKeyboardMarkup;
     }
+
     //Создание сообщения
     public SendMessage createMessage(String text, Long chatId) {
         SendMessage message = new SendMessage();

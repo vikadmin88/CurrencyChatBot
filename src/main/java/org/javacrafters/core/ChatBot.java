@@ -1,6 +1,5 @@
 package org.javacrafters.core;
 
-import org.javacrafters.banking.NormalizeCurrencyPair;
 import org.javacrafters.banking.PrivatBank;
 import org.javacrafters.networkclient.NetworkStreamReader;
 import org.javacrafters.scheduler.Scheduler;
@@ -83,8 +82,6 @@ import java.util.*;
 
         }
 
-
-
         @Override
         public void onUpdateReceived(Update update) {
             Long chatId = getChatId(update);
@@ -92,7 +89,6 @@ import java.util.*;
             // Messages processing
             if (update.hasMessage()) {
                 if (update.getMessage().getText().equals("/start")) {
-//                    sendMessage(chatId);
                     sendApiMethodAsync(dialogHandler.createWelcomeMessage(chatId));
 
                     if (getUser(chatId) == null) {
@@ -104,18 +100,35 @@ import java.util.*;
                         addUser(user);
                     }
                     // while testing
-                    userNotify(getUser(chatId));
+                    //userNotify(getUser(chatId));
                     System.out.printf("Next notify will be sent in %d minutes...", (60 - Calendar.getInstance().get(Calendar.MINUTE)));
                 }
             }
 
-            // Callbacks processing
-//            if (update.hasCallbackQuery()) {
-//
-//                if (update.getCallbackQuery().getData().equals("level_1_task")) {
-//                    sendMessage(chatId);
+             //Callbacks processing
+            if (update.hasCallbackQuery()) {
+                String data = update.getCallbackQuery().getData();
+                //Main callbacks
+                if (data.equals("settings")) {
+                    sendApiMethodAsync(dialogHandler.createSettingMessage(chatId));
+
+                }else if (data.equals("get_info")) {
+                    sendApiMethodAsync(dialogHandler.createInfoMessage(getUser(chatId), chatId));
+
+                }else if(data.equals("to_main")){
+                    sendApiMethodAsync(dialogHandler.createWelcomeMessage(chatId));
+                }
+                //Setting callbacks
+                else if (data.equals("bank")) {
+                    sendApiMethodAsync(dialogHandler.createBankMessage(chatId));
+                }else if (data.equals("currencies")) {
+                    sendApiMethodAsync(dialogHandler.createCurrencyMessage(chatId));
+                }else if (data.equals("decimal_places")){
+                    sendApiMethodAsync(dialogHandler.createDecimalMessage(chatId));
+                }//else if (data.equals("currencies")){
+//                    sendApiMethodAsync(dialogHandler.createBankMessage(chatId));
 //                }
-//            }
+            }
         }
 
         public Long getChatId(Update update) {
@@ -127,65 +140,4 @@ import java.util.*;
             }
             return null;
         }
-
-
-
-        public void attachButtons(SendMessage message, Map<String, String> buttons) {
-            InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
-            List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
-
-            for (String buttonName : buttons.keySet()) {
-                String buttonValue = buttons.get(buttonName);
-                InlineKeyboardButton button = new InlineKeyboardButton();
-                button.setText(new String(buttonName.getBytes(), StandardCharsets.UTF_8));
-                button.setCallbackData(buttonValue);
-                keyboard.add(Arrays.asList(button));
-            }
-
-            markup.setKeyboard(keyboard);
-            message.setReplyMarkup(markup);
-        }
-
-//        public void sendImage(String name, Long chatId) {
-//            SendAnimation animation = new SendAnimation();
-//            InputFile inputFile = new InputFile();
-//            inputFile.setMedia(new File("images/" + name + ".gif"));
-//            animation.setAnimation(inputFile);
-//            animation.setChatId(chatId);
-//            executeAsync(animation);
-//        }
-
-//        {
-//            messages.put(1, "*Джавелін твій. Повний вперед!*");
-//        }
-//
-//        {
-//            buttonMessages.put(1, Map.of(
-//                    "Купити Джавелін (50 монет)", "level_4_task"
-//            ));
-//        }
-
-//        public void sendMessage(Long chatId) {
-//            SendMessage message = dialogHandler.createMessage(messages.get(chatId));
-//            message.setChatId(chatId);
-//
-//            Map<String, String> messageCommand = new HashMap<>();
-//            messageCommand.put("Налаштування", "get_conf");
-//            messageCommand.put("Отримати інформацію", "get_info");
-//            attachButtons(message, messageCommand);
-//
-//            sendApiMethodAsync(message);
-//        }
-
-
-//    private final Map<Integer, Map<String, String>> buttonMessages = new HashMap<>();
-//    {
-//            buttonMessages.put(1, Map.of(
-//            "Сплести маскувальну сітку (+15 монет)", "level_1_task",
-//            "Зібрати кошти патріотичними піснями (+15 монет)", "level_1_task",
-//            "Вступити в Міністерство Мемів України (+15 монет)", "level_1_task",
-//            "Запустити волонтерську акцію (+15 монет)","level_1_task",
-//            "Вступити до лав тероборони (+15 монет)","level_1_task"
-//            ));
-
     }
