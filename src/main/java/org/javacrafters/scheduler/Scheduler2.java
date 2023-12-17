@@ -1,12 +1,13 @@
 package org.javacrafters.scheduler;
 
+import org.javacrafters.core.AppRegistry;
 import org.javacrafters.core.ChatBot;
 import org.javacrafters.user.User;
 
 import java.util.Calendar;
 import java.util.Collection;
 
-
+// TODO Deprecated. will be removed before release
 public class Scheduler2 {
 
         public Runnable schedule(ChatBot bot) {
@@ -16,8 +17,8 @@ public class Scheduler2 {
                     while (true) {
                         int hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
 
-                        if (bot.getUsers() != null && !bot.getUsers().isEmpty()) {
-                            Collection<User> users = bot.getUsers().values();
+                        if (AppRegistry.getUsers() != null && !AppRegistry.getUsers().isEmpty()) {
+                            Collection<User> users = AppRegistry.getUsers().values();
                             for (User user : users) {
                                   // checks for notify only once per hour
 //                                if (user.isNotifyOn() && user.getNotifyTime() == hour && hour != user.getLastNotifyTime()) {

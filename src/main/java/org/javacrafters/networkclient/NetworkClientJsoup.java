@@ -14,7 +14,7 @@ public class NetworkClientJsoup extends NetworkClient{
         return responseBody;
     }catch (IOException e){
         e.printStackTrace();
-        return null;
+        return "[]";
     }
 }
 

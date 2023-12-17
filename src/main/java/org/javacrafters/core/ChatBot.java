@@ -1,8 +1,8 @@
 package org.javacrafters.core;
 
+import org.javacrafters.banking.Bank;
+import org.javacrafters.banking.CurrencyHolder;
 import org.javacrafters.banking.NormalizeCurrencyPair;
-import org.javacrafters.banking.PrivatBank;
-import org.javacrafters.networkclient.NetworkStreamReader;
 import org.javacrafters.scheduler.Scheduler;
 import org.javacrafters.user.User;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -21,22 +21,16 @@ import java.util.*;
 
     public class ChatBot extends TelegramLongPollingBot {
 
-        private String appName;
-        private String botName;
-        private String botToken;
-        private Map<Long, User> users;
+        private final String appName;
+        private final String botName;
+        private final String botToken;
         private final Map<Integer, String> messages = new HashMap<>();
         private final Map<Integer, Map<String, String>> buttonMessages = new HashMap<>();
 
-        public ChatBot() {
-
-        }
-
-        public ChatBot(Map<Long, User> users, String appName, String botName, String botToken) {
+        public ChatBot(String appName, String botName, String botToken) {
             this.appName = appName;
             this.botName = botName;
             this.botToken = botToken;
-            this.users = users;
         }
 
         @Override
@@ -54,22 +48,14 @@ import java.util.*;
             TelegramBotsApi api = null;
             try {
                 api = new TelegramBotsApi(DefaultBotSession.class);
-                api.registerBot(new ChatBot(users, appName, botName, botToken));
+                api.registerBot(new ChatBot(appName, botName, botToken));
             } catch (TelegramApiException e) {
                 throw new RuntimeException(e);
             }
         }
 
         public void addUser(User user) {
-            users.put(user.getId(), user);
-        }
-
-        public User getUser(Long id) {
-            return users.get(id);
-        }
-
-        public Map<Long, User> getUsers() {
-            return users;
+            AppRegistry.addUser(user.getId(), user);
         }
 
         public void userNotify(User user) {
@@ -92,18 +78,32 @@ import java.util.*;
 
         private String createNotifyMessage(User user) {
             StringBuilder sb = new StringBuilder("Поточні курси валют:\n");
-            sb.append(user.getBank().getName()).append("\n");
 
-            Map<String, NormalizeCurrencyPair> currencyRates = user.getBank().getRates();
+            // {"PB" => {"USD" => {"USD", "36.95000", "37.45000"}}}
+            Map<String, Map<String, NormalizeCurrencyPair>> currencyRates = CurrencyHolder.getRates();
+            if (currencyRates == null || currencyRates.isEmpty()) {
+                return null;
+            }
 
-            for (String currency : user.getCurrencies()) {
-                NormalizeCurrencyPair curCurrency = currencyRates.get(currency);
-                if (currency.equals(curCurrency.getName())) {
-                    sb.append(curCurrency.getName()).append("\n");
-                    sb.append("Покупка: ");
-                    sb.append(curCurrency.getBuy()).append("\n");
-                    sb.append("Продаж: ");
-                    sb.append(curCurrency.getSale()).append("\n\n");
+            for (String bankLocalName : user.getBanks()) {
+                sb.append(AppRegistry.getBank(bankLocalName).getName()).append("\n");
+
+                // {"USD" => {"USD", "36.95000", "37.45000"}}
+                Map<String, NormalizeCurrencyPair> currencySet = currencyRates.get(bankLocalName);
+
+                for (String currency : user.getCurrency()) {
+
+                    // {"USD", "36.95000", "37.45000"}
+                    NormalizeCurrencyPair curCurrency = currencySet.get(currency);
+
+                    if (currency.equals(curCurrency.getName())) {
+                        sb.append(curCurrency.getName()).append("\n");
+                        sb.append("Покупка: ");
+                        String format = "%." + user.getNumOfDigits() + "f";
+                        sb.append(String.format(format, Float.valueOf(curCurrency.getBuy()))).append("\n");
+                        sb.append("Продаж: ");
+                        sb.append(String.format(format, Float.valueOf(curCurrency.getSale()))).append("\n\n");
+                    }
                 }
             }
             return !sb.toString().isEmpty() ? sb.toString() : null;
@@ -118,17 +118,24 @@ import java.util.*;
                 if (update.getMessage().getText().equals("/start")) {
 //                    sendMessage(chatId);
 
-                    if (getUser(chatId) == null) {
+                    if (AppRegistry.getUser(chatId) == null) {
                         User user = new User(chatId, update.getMessage().getFrom().getFirstName(), update.getMessage().getFrom().getUserName());
-                        user.setBank(new PrivatBank(new NetworkStreamReader()));
-                        user.addCurrency("USD");
+                        user.addBank(AppRegistry.getConfVal("USER_DEF_BANK"));
+                        user.addBank("NBU");
+                        user.addBank("MB");
+                        user.addCurrency(AppRegistry.getConfVal("USER_DEF_CURRENCY"));
                         user.addCurrency("EUR");
-                        user.setScheduledTask(new Scheduler().schedule(this, user, 15));
+                        user.setNumOfDigits(Integer.parseInt(AppRegistry.getConfVal("USER_DEF_COUNT_DIGITS")));
+                        user.setNotifyTime(Integer.parseInt(AppRegistry.getConfVal("USER_DEF_NOTIFY_TIME")));
+                        user.setNotifyOn();
+                        // for prod
+//                        user.setScheduledTask(new Scheduler().schedule(this, user, Integer.parseInt(AppRegistry.getConfVal("USER_DEF_NOTIFY_TIME"))));
+                        // for test
+                        user.setScheduledTask(new Scheduler().userSchedule(this, user,15));
                         addUser(user);
                     }
                     // while testing
-                    userNotify(getUser(chatId));
-                    System.out.printf("Next notify will be sent in %d minutes...", (60 - Calendar.getInstance().get(Calendar.MINUTE)));
+                    userNotify(AppRegistry.getUser(chatId));
                 }
             }
 
@@ -174,25 +181,6 @@ import java.util.*;
             message.setReplyMarkup(markup);
         }
 
-//        public void sendImage(String name, Long chatId) {
-//            SendAnimation animation = new SendAnimation();
-//            InputFile inputFile = new InputFile();
-//            inputFile.setMedia(new File("images/" + name + ".gif"));
-//            animation.setAnimation(inputFile);
-//            animation.setChatId(chatId);
-//            executeAsync(animation);
-//        }
-
-//        {
-//            messages.put(1, "*Джавелін твій. Повний вперед!*");
-//        }
-//
-//        {
-//            buttonMessages.put(1, Map.of(
-//                    "Купити Джавелін (50 монет)", "level_4_task"
-//            ));
-//        }
-
         public void sendMessage(Long chatId) {
             SendMessage message = createMessage(messages.get(chatId));
             message.setChatId(chatId);
@@ -204,16 +192,5 @@ import java.util.*;
 
             sendApiMethodAsync(message);
         }
-
-
-//    private final Map<Integer, Map<String, String>> buttonMessages = new HashMap<>();
-//    {
-//            buttonMessages.put(1, Map.of(
-//            "Сплести маскувальну сітку (+15 монет)", "level_1_task",
-//            "Зібрати кошти патріотичними піснями (+15 монет)", "level_1_task",
-//            "Вступити в Міністерство Мемів України (+15 монет)", "level_1_task",
-//            "Запустити волонтерську акцію (+15 монет)","level_1_task",
-//            "Вступити до лав тероборони (+15 монет)","level_1_task"
-//            ));
 
     }

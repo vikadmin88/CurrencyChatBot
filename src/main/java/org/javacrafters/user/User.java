@@ -1,9 +1,5 @@
 package org.javacrafters.user;
 
-import org.javacrafters.banking.Bank;
-import org.javacrafters.banking.PrivatBank;
-import org.javacrafters.networkclient.NetworkStreamReader;
-
 import java.util.*;
 import java.util.concurrent.ScheduledFuture;
 
@@ -12,16 +8,16 @@ public class User {
     private Long id;
     private String name;
     private String username;
-    private Bank bank;
-    private final List<String> currencies = new ArrayList<>();
+    private final List<String> banks = new ArrayList<>();
+    private final List<String> currency = new ArrayList<>();
     private int numOfDigits = 2;
     private int notifyTime = 21;
     private ScheduledFuture<?> scheduledTask;
     private boolean isNotifyOn = true;
 
     {
-        currencies.add("USD");
-        bank = new PrivatBank(new NetworkStreamReader());
+        currency.add("USD");
+        banks.add("PB");
     }
     public User() {
     }
@@ -52,26 +48,34 @@ public class User {
         this.username = username;
     }
 
-    public Bank getBank() {
-        return bank;
+    public List<String> getBanks() {
+        return banks;
     }
 
-    public void setBank(Bank bank) {
-        this.bank = bank;
+    public void removeBank(String bankLocalName) {
+        banks.remove(bankLocalName);
     }
 
-    public List<String> getCurrencies() {
-        return currencies;
+    public void addBank(String bankLocalName) {
+        if (banks.contains(bankLocalName)) {
+            return;
+        }
+        banks.add(bankLocalName);
+
+    }
+
+    public List<String> getCurrency() {
+        return currency;
     }
 
     public void addCurrency(String name) {
-        if (currencies.contains(name)) {
+        if (currency.contains(name)) {
             return;
         }
-        this.currencies.add(name);
+        currency.add(name);
     }
     public void removeCurrency(String name) {
-        this.currencies.remove(name);
+        this.currency.remove(name);
     }
 
     public int getNumOfDigits() {
@@ -127,8 +131,8 @@ public class User {
                 "id=" + id +
                 ", name='" + name + '\'' +
                 ", username='" + username + '\'' +
-                ", banks=" + bank.toString() +
-                ", currencies=" + currencies.toString() +
+                ", banks=" + banks.toString() +
+                ", currencies=" + currency.toString() +
                 ", numOfDigits=" + numOfDigits +
                 ", notifyTime=" + notifyTime +
                 ", isNotifyEnabled=" + isNotifyOn +
