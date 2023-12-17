@@ -25,15 +25,15 @@ public class CurrencyHolder {
         */
     }
 
-//    private static void add(String bankName, Map<String, NormalizeCurrencyPair> rates) {
-//        currency.put(bankName, rates);
-//    } not use??? 16/12
+private static void add(String bankLocalName, Map<String, NormalizeCurrencyPair> rates) {
+        currency.put(bankLocalName, rates);
+    }
 
     public static Map<String, Map<String, NormalizeCurrencyPair>> getRates() {
         return currency;
     }
 
-    public static Map<String, NormalizeCurrencyPair> getRates(String bankName) {
-        return currency.get(bankName);
+    public static Map<String, NormalizeCurrencyPair> getRates(String bankLocalName) {
+        return currency.get(bankLocalName);
     }
 }
