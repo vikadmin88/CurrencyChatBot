@@ -42,12 +42,11 @@ public class Scheduler {
             };
 
             // production
-//            ScheduledFuture<?> notifyTask = scheduler.scheduleAtFixedRate(threadUserScheduledTask, initDelay, 24*60, MINUTES);
+//            return scheduler.scheduleAtFixedRate(threadUserScheduledTask, initDelay, 24*60, MINUTES);
             // test !!! period, 1 MINUTES
-            ScheduledFuture<?> notifyTask = scheduler.scheduleAtFixedRate(threadUserScheduledTask, initDelay, 1, MINUTES);
+            return scheduler.scheduleAtFixedRate(threadUserScheduledTask, initDelay, 1, MINUTES);
             // test !!! period, SECONDS
-//            ScheduledFuture<?> notifyTask = scheduler.scheduleAtFixedRate(threadUserScheduledTask, initDelay, 3, SECONDS);
-            return notifyTask;
+//            return scheduler.scheduleAtFixedRate(threadUserScheduledTask, initDelay, 3, SECONDS);
         }
 
         public void currencySchedule(int period) {
@@ -60,6 +59,6 @@ public class Scheduler {
             };
 
             // production
-            ScheduledFuture<?> currencyTask = scheduler.scheduleAtFixedRate(threadCurrencyScheduledTask, initDelay, 1, MINUTES);
+            scheduler.scheduleAtFixedRate(threadCurrencyScheduledTask, initDelay, 1, MINUTES);
         }
 }
