@@ -125,14 +125,15 @@ import java.util.*;
                 }
                 //Setting callbacks
                 else if (data.equals("bank")) {
-                    sendApiMethodAsync(dialogHandler.createBankMessage(chatId));
+                    sendApiMethodAsync(dialogHandler.createBankMessage(getUser(chatId), chatId));
                 }else if (data.equals("currencies")) {
-                    sendApiMethodAsync(dialogHandler.createCurrencyMessage(chatId));
+                    sendApiMethodAsync(dialogHandler.createCurrencyMessage(getUser(chatId), chatId));
                 }else if (data.equals("decimal_places")){
-                    sendApiMethodAsync(dialogHandler.createDecimalMessage(chatId));
+                    sendApiMethodAsync(dialogHandler.createDecimalMessage(getUser(chatId), chatId));
                 } else if (data.equals("notification_time")) {
                     sendApiMethodAsync(dialogHandler.createSetNotifyMessage(chatId));
                 }
+                //
             }
         }
         // Метод для проверки, является ли текст сообщения выбором времени

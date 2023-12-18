@@ -20,7 +20,7 @@ public class BotDialogHandler{
     public SendMessage createWelcomeMessage(Long chatId) {
         String text = "Ласкаво просимо. Цей бот допоможе відслідковувати актуальні курси валют";
         SendMessage message = createMessage(text, chatId);
-        message.setReplyMarkup(getButtons(Arrays.asList(BT.GET_INFO, BT.SETTINGS)));
+        message.setReplyMarkup(getSectionButtons(Arrays.asList(BT.GET_INFO, BT.SETTINGS)));
         return message;
     }
     //Текст уведомления, а также текст курса валют
@@ -46,37 +46,37 @@ public class BotDialogHandler{
     public SendMessage createInfoMessage(User user, Long chatId){
         String text = getCurrencyRate(user);
         SendMessage message = createMessage(text, chatId);
-        message.setReplyMarkup(getButtons(Arrays.asList(BT.TO_MAIN)));
+        message.setReplyMarkup(getSectionButtons(Arrays.asList(BT.TO_MAIN)));
         return message;
     }
     //Сообщение настроек
     public SendMessage createSettingMessage(Long chatId){
         String text = "Ваші налаштування";
         SendMessage message = createMessage(text, chatId);
-        message.setReplyMarkup(getButtons(Arrays.asList(BT.BANK, BT.CURRENCIES, BT.DECIMAL_PLACES, BT.NOTIFICATION_TIME, BT.TO_MAIN)));
+        message.setReplyMarkup(getSectionButtons(Arrays.asList(BT.BANK, BT.CURRENCIES, BT.DECIMAL_PLACES, BT.NOTIFICATION_TIME, BT.TO_MAIN)));
         return message;
     }
 
 
     //Сообщение банк
-    public SendMessage createBankMessage(Long chatId){
+    public SendMessage createBankMessage(User user, Long chatId){
         String text = "Виберіть банк";
         SendMessage message = createMessage(text, chatId);
-        message.setReplyMarkup(getButtons(Arrays.asList(BT.NBU, BT.MONO, BT.PRIVAT, BT.TO_SETTINGS)));
+        message.setReplyMarkup(getAdditionalButtons(user, Arrays.asList(BT.NBU, BT.MONO, BT.PRIVAT, BT.TO_SETTINGS)));
         return message;
     }
     //Сообщение знаки после запятой
-    public SendMessage createDecimalMessage(Long chatId){
+    public SendMessage createDecimalMessage(User user, Long chatId){
         String text = "Виберіть кількість знаків після коми";
         SendMessage message = createMessage(text, chatId);
-        message.setReplyMarkup(getButtons(Arrays.asList(BT.TWO_DIGITS, BT.THREE_DIGITS, BT.FOUR_DIGITS, BT.TO_SETTINGS)));
+        message.setReplyMarkup(getAdditionalButtons(user, Arrays.asList(BT.TWO_DIGITS, BT.THREE_DIGITS, BT.FOUR_DIGITS, BT.TO_SETTINGS)));
         return message;
     }
     //Сообщение вылюты
-    public SendMessage createCurrencyMessage(Long chatId){
+    public SendMessage createCurrencyMessage(User user, Long chatId){
         String text = "Виберіть валюту";
         SendMessage message = createMessage(text, chatId);
-        message.setReplyMarkup(getButtons(Arrays.asList(BT.USD, BT.EUR, BT.TO_SETTINGS)));
+        message.setReplyMarkup(getAdditionalButtons(user, Arrays.asList(BT.USD, BT.EUR, BT.TO_SETTINGS)));
         return message;
     }
     //Сообщение время уведомления
@@ -110,88 +110,65 @@ public class BotDialogHandler{
         replyKeyboardMarkup.setKeyboard(keyboard);
         return replyKeyboardMarkup;
     }
-    //Метод для выбора нужных кнопок под сообщение
-    private InlineKeyboardMarkup getButtons(List<BT> buttonsTypes) {
+    //Метод для выбора доп кнопок под сообщение
+    private InlineKeyboardMarkup getAdditionalButtons(User user, List<BT> buttonsTypes) {
+        InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
+
+        int currentNumOfDigits = user.getNumOfDigits(); // Текущее количество знаков после запятой
+        List<String> curr = user.getCurrencies();
+        String bank = user.getBank().getLocalName();
+
+        for (BT bt : buttonsTypes) {
+            InlineKeyboardButton button = new InlineKeyboardButton();
+            String buttonText = "";
+            switch (bt) {
+                case TO_SETTINGS -> buttonText = "До налаштувань";
+                case TWO_DIGITS -> buttonText = "2" + (currentNumOfDigits == 2 ? " ✅" : "");
+                case THREE_DIGITS -> buttonText = "3" + (currentNumOfDigits == 3 ? " ✅" : "");
+                case FOUR_DIGITS -> buttonText = "4" + (currentNumOfDigits == 4 ? " ✅" : "");
+                case USD -> buttonText = "USD" + (curr.contains("USD") ? " ✅" : "");
+                case EUR -> buttonText = "EUR" + (curr.contains("EUR") ? " ✅" : "");
+                case NBU -> buttonText = "Національний банк України" + (bank.equals("NBU") ? " ✅" : "");
+                case MONO -> buttonText = "МоноБанк" + (bank.equals("MB") ? " ✅" : "");
+                case PRIVAT -> buttonText = "ПриватБанк" + (bank.equals("PB") ? " ✅" : "");
+
+            }
+            button.setText(new String(buttonText.getBytes(), StandardCharsets.UTF_8));
+            button.setCallbackData(bt.name().toLowerCase());
+            List<InlineKeyboardButton> row = new ArrayList<>();
+            row.add(button);
+            keyboard.add(row);
+        }
+
+        inlineKeyboardMarkup.setKeyboard(keyboard);
+        return inlineKeyboardMarkup;
+    }
+    //метод для выбора кнопок разделов
+    private InlineKeyboardMarkup getSectionButtons(List<BT> buttonsTypes) {
         InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
 
         for (BT bt : buttonsTypes) {
             InlineKeyboardButton button = new InlineKeyboardButton();
+            String buttonText = "";
             switch (bt) {
                 //MAIN BUTTONS
-                case GET_INFO -> {
-                    button.setText(new String("Отримати інфо".getBytes(), StandardCharsets.UTF_8));
-                    button.setCallbackData("get_info");
-                }
-                case SETTINGS -> {
-                    button.setText(new String("Налаштування".getBytes(), StandardCharsets.UTF_8));
-                    button.setCallbackData("settings");
-                }
-                case TO_MAIN -> {
-                    button.setText(new String("На головну".getBytes(), StandardCharsets.UTF_8));
-                    button.setCallbackData("to_main");
-                }
-                case TO_SETTINGS -> {
-                    button.setText(new String("До налаштувань".getBytes(), StandardCharsets.UTF_8));
-                    button.setCallbackData("to_settings");
-                }
+                case GET_INFO -> buttonText = "Отримати інформацію";
+                case SETTINGS -> buttonText = "Налаштування";
+                case TO_MAIN -> buttonText = "На головну";
                 //SETTING BUTTONS
-                case DECIMAL_PLACES -> {
-                    button.setText(new String("Кількість знаків після коми".getBytes(), StandardCharsets.UTF_8));
-                    button.setCallbackData("decimal_places");
-                }
-                case BANK -> {
-                    button.setText(new String("Банк".getBytes(), StandardCharsets.UTF_8));
-                    button.setCallbackData("bank");
-                }
-                case CURRENCIES -> {
-                    button.setText(new String("Валюти".getBytes(), StandardCharsets.UTF_8));
-                    button.setCallbackData("currencies");
-                }
-                case NOTIFICATION_TIME -> {
-                    button.setText(new String("Час сповіщення".getBytes(), StandardCharsets.UTF_8));
-                    button.setCallbackData("notification_time");
-                }
-                //DECIMAL BUTTONS
-                case TWO_DIGITS -> {
-                    button.setText(new String("2".getBytes(), StandardCharsets.UTF_8));
-                    button.setCallbackData("two_digits");
-                }
-                case THREE_DIGITS -> {
-                    button.setText(new String("3".getBytes(), StandardCharsets.UTF_8));
-                    button.setCallbackData("three_digits");
-                }
-                case FOUR_DIGITS -> {
-                    button.setText(new String("4".getBytes(), StandardCharsets.UTF_8));
-                    button.setCallbackData("four_digits");
-                }
-                //CURRENCIES BUTTONS
-                case USD -> {
-                    button.setText(new String("USD".getBytes(), StandardCharsets.UTF_8));
-                    button.setCallbackData("usd");
-                }
-                case EUR -> {
-                    button.setText(new String("EUR".getBytes(), StandardCharsets.UTF_8));
-                    button.setCallbackData("eur");
-                }
-                //BANK BUTTONS
-                case NBU -> {
-                    button.setText(new String("Національний банк України".getBytes(), StandardCharsets.UTF_8));
-                    button.setCallbackData("nbu");
-                }
-                case MONO -> {
-                    button.setText(new String("МоноБанк".getBytes(), StandardCharsets.UTF_8));
-                    button.setCallbackData("mono");
-                }
-                case PRIVAT -> {
-                    button.setText(new String("ПриватБанк".getBytes(), StandardCharsets.UTF_8));
-                    button.setCallbackData("privat");
-                }
+                case DECIMAL_PLACES -> buttonText = "Кількість знаків після коми";
+                case BANK -> buttonText = "Банки";
+                case CURRENCIES -> buttonText = "Валюти";
+                case NOTIFICATION_TIME -> buttonText = "Час сповіщення";
 
             }
-            List<InlineKeyboardButton> row = new ArrayList<>(); // Создает новый ряд для каждой кнопки
-            row.add(button); // Добавляет кнопку в ряд
-            keyboard.add(row); // Добавляет ряд в клавиатуру
+            button.setText(new String(buttonText.getBytes(), StandardCharsets.UTF_8));
+            button.setCallbackData(bt.name().toLowerCase());
+            List<InlineKeyboardButton> row = new ArrayList<>();
+            row.add(button);
+            keyboard.add(row);
         }
 
         inlineKeyboardMarkup.setKeyboard(keyboard);
@@ -206,7 +183,5 @@ public class BotDialogHandler{
         message.setChatId(chatId);
         return message;
     }
-
-
 }
 
