@@ -18,12 +18,11 @@ public class AppLauncher {
     public static void main(String[] args) {
         System.out.println("Program starting in Thread: " + Thread.currentThread().getName());
 
+        AppRegistry.initDefault();
         AppRegistry.setNetClient(new NetworkStreamReader());
         AppRegistry.addBank("PB", new PrivatBank());
         AppRegistry.addBank("MB", new MonoBank());
         AppRegistry.addBank("NBU", new NbuBank());
-        Arrays.stream(ConfigLoader.get("BANK_CURRENCY").split(",")).forEach(AppRegistry::addCurrency);
-        AppRegistry.setCountDigits(2);
 
         // period in minutes
         new Scheduler().currencySchedule( 1);
