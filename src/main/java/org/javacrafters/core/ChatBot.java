@@ -7,6 +7,7 @@ import org.javacrafters.user.User;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
@@ -14,7 +15,6 @@ import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-
 
 
     public class ChatBot extends TelegramLongPollingBot {
@@ -111,12 +111,15 @@ import java.util.*;
              //Callbacks processing
             if (update.hasCallbackQuery()) {
                 String data = update.getCallbackQuery().getData();
+                User user = getUser(chatId);
+                Integer messageId = update.getCallbackQuery().getMessage().getMessageId();
+
                 //Main callbacks
                 if (data.equals("settings")) {
                     sendApiMethodAsync(dialogHandler.createSettingMessage(chatId));
 
                 }else if (data.equals("get_info")) {
-                    sendApiMethodAsync(dialogHandler.createInfoMessage(getUser(chatId), chatId));
+                    sendApiMethodAsync(dialogHandler.createInfoMessage(user, chatId));
 
                 }else if(data.equals("to_main")){
                     sendApiMethodAsync(dialogHandler.createWelcomeMessage(chatId));
@@ -125,15 +128,32 @@ import java.util.*;
                 }
                 //Setting callbacks
                 else if (data.equals("bank")) {
-                    sendApiMethodAsync(dialogHandler.createBankMessage(getUser(chatId), chatId));
+                    sendApiMethodAsync(dialogHandler.createBankMessage(user, chatId));
                 }else if (data.equals("currencies")) {
-                    sendApiMethodAsync(dialogHandler.createCurrencyMessage(getUser(chatId), chatId));
+                    sendApiMethodAsync(dialogHandler.createCurrencyMessage(user, chatId));
                 }else if (data.equals("decimal_places")){
-                    sendApiMethodAsync(dialogHandler.createDecimalMessage(getUser(chatId), chatId));
+                    sendApiMethodAsync(dialogHandler.createDecimalMessage(user, chatId));
                 } else if (data.equals("notification_time")) {
                     sendApiMethodAsync(dialogHandler.createSetNotifyMessage(chatId));
                 }
-                //
+                //Currency callback
+                else if (data.equals("usd") || data.equals("eur")) {
+                    toggleCurrency(user, data.toUpperCase());
+                    EditMessageText newMessage = dialogHandler.updateCurrencySelectionMessage(chatId, messageId, user);
+                    try {
+                        execute(newMessage);
+                    } catch (TelegramApiException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            }
+        }
+        // Mетод для переключения валюты
+        private void toggleCurrency(User user, String currency) {
+            if (user.getCurrencies().contains(currency)) {
+                user.getCurrencies().remove(currency);
+            } else {
+                user.getCurrencies().add(currency);
             }
         }
         // Метод для проверки, является ли текст сообщения выбором времени

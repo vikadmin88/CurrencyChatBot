@@ -3,6 +3,7 @@ package org.javacrafters.core;
 import org.javacrafters.banking.NormalizeCurrencyPair;
 import org.javacrafters.user.User;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
@@ -23,7 +24,7 @@ public class BotDialogHandler{
         message.setReplyMarkup(getSectionButtons(Arrays.asList(BT.GET_INFO, BT.SETTINGS)));
         return message;
     }
-    //Текст уведомления, а также текст курса валют
+    // Текст уведомления/текст курса валют
     public String getCurrencyRate(User user) {
         StringBuilder sb = new StringBuilder("Поточні курси валют:\n");
         sb.append(user.getBank().getName()).append("\n");
@@ -86,7 +87,7 @@ public class BotDialogHandler{
         message.setReplyMarkup(getTimeKeyboard());
         return message;
     }
-    // Метод для создания клавиатуры пользователя с выбором времени
+    // Метод для создания клавиатуры пользователя с выбором времени уведомлений
     private ReplyKeyboardMarkup getTimeKeyboard() {
         ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
         List<KeyboardRow> keyboard = new ArrayList<>();
@@ -94,8 +95,8 @@ public class BotDialogHandler{
 
         // Добавление кнопок с временем
         for (int hour = 9; hour <= 18; hour++) {
-            row.add(Integer.toString(hour) + ":00");
-            if ((hour - 8) % 3 == 0) { // Например, разбиваем на ряды по 3 кнопки
+            row.add(hour + ":00");
+            if ((hour - 8) % 3 == 0) { // Разбиваем на ряды по 3 кнопки
                 keyboard.add(row);
                 row = new KeyboardRow();
             }
@@ -112,15 +113,13 @@ public class BotDialogHandler{
     }
     //Метод для выбора доп кнопок под сообщение
     private InlineKeyboardMarkup getAdditionalButtons(User user, List<BT> buttonsTypes) {
-        InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
-        List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
+        List<InlineKeyboardButton> buttons = new ArrayList<>();
 
-        int currentNumOfDigits = user.getNumOfDigits(); // Текущее количество знаков после запятой
+        int currentNumOfDigits = user.getNumOfDigits();
         List<String> curr = user.getCurrencies();
         String bank = user.getBank().getLocalName();
 
         for (BT bt : buttonsTypes) {
-            InlineKeyboardButton button = new InlineKeyboardButton();
             String buttonText = "";
             switch (bt) {
                 case TO_SETTINGS -> buttonText = "До налаштувань";
@@ -134,23 +133,15 @@ public class BotDialogHandler{
                 case PRIVAT -> buttonText = "ПриватБанк" + (bank.equals("PB") ? " ✅" : "");
 
             }
-            button.setText(new String(buttonText.getBytes(), StandardCharsets.UTF_8));
-            button.setCallbackData(bt.name().toLowerCase());
-            List<InlineKeyboardButton> row = new ArrayList<>();
-            row.add(button);
-            keyboard.add(row);
+            buttons.add(createButton(buttonText, bt.name().toLowerCase()));
         }
-
-        inlineKeyboardMarkup.setKeyboard(keyboard);
-        return inlineKeyboardMarkup;
+        return buildInlineKeyboard(buttons);
     }
     //метод для выбора кнопок разделов
     private InlineKeyboardMarkup getSectionButtons(List<BT> buttonsTypes) {
-        InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
-        List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
+        List<InlineKeyboardButton> buttons = new ArrayList<>();
 
         for (BT bt : buttonsTypes) {
-            InlineKeyboardButton button = new InlineKeyboardButton();
             String buttonText = "";
             switch (bt) {
                 //MAIN BUTTONS
@@ -164,17 +155,36 @@ public class BotDialogHandler{
                 case NOTIFICATION_TIME -> buttonText = "Час сповіщення";
 
             }
-            button.setText(new String(buttonText.getBytes(), StandardCharsets.UTF_8));
-            button.setCallbackData(bt.name().toLowerCase());
+            buttons.add(createButton(buttonText, bt.name().toLowerCase()));
+        }
+        return buildInlineKeyboard(buttons);
+    }
+    public EditMessageText updateCurrencySelectionMessage(Long chatId, Integer messageId, User user) {
+        EditMessageText newMessage = new EditMessageText();
+        newMessage.setChatId(String.valueOf(chatId));
+        newMessage.setMessageId(messageId);
+        newMessage.setText(new String("Виберіть валюту".getBytes(), StandardCharsets.UTF_8));
+        newMessage.setReplyMarkup(getAdditionalButtons(user, Arrays.asList(BT.USD, BT.EUR, BT.TO_SETTINGS)));
+        return newMessage;
+    }
+    private InlineKeyboardButton createButton(String buttonText, String callbackData) {
+        InlineKeyboardButton button = new InlineKeyboardButton();
+        button.setText(new String(buttonText.getBytes(), StandardCharsets.UTF_8));
+        button.setCallbackData(callbackData);
+        return button;
+    }
+
+    private InlineKeyboardMarkup buildInlineKeyboard(List<InlineKeyboardButton> buttons) {
+        InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
+        for (InlineKeyboardButton button : buttons) {
             List<InlineKeyboardButton> row = new ArrayList<>();
             row.add(button);
             keyboard.add(row);
         }
-
         inlineKeyboardMarkup.setKeyboard(keyboard);
         return inlineKeyboardMarkup;
     }
-
     //Создание сообщения
     public SendMessage createMessage(String text, Long chatId) {
         SendMessage message = new SendMessage();
@@ -184,4 +194,3 @@ public class BotDialogHandler{
         return message;
     }
 }
-
