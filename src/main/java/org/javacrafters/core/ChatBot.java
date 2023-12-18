@@ -10,9 +10,7 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
-import java.util.*;
-
-
+import java.util.Map;
 
     public class ChatBot extends TelegramLongPollingBot {
 
@@ -123,6 +121,7 @@ import java.util.*;
 
             // {"PB" => {"USD" => {"USD", "36.95000", "37.45000"}}}
             Map<String, Map<String, NormalizeCurrencyPair>> currencyRates = CurrencyHolder.getRates();
+
             if (currencyRates == null || currencyRates.isEmpty()) {
                 return null;
             }
