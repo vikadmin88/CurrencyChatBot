@@ -57,16 +57,13 @@ import java.util.Map;
 
         public void addUser(Long chatId, Update update) {
             User user = new User(chatId, update.getMessage().getFrom().getFirstName(), update.getMessage().getFrom().getUserName());
-            user.addBank(AppRegistry.getConfVal("USER_DEF_BANK"));
-            user.addBank("NBU");
-            user.addBank("MB");
-            user.addCurrency(AppRegistry.getConfVal("USER_DEF_CURRENCY"));
-            user.addCurrency("EUR");
-            user.setNumOfDigits(Integer.parseInt(AppRegistry.getConfVal("USER_DEF_COUNT_DIGITS")));
-            user.setNotifyTime(Integer.parseInt(AppRegistry.getConfVal("USER_DEF_NOTIFY_TIME")));
-            user.setNotifyOn();
+            user.addBank(AppRegistry.getConfBank());
+            user.addCurrency(AppRegistry.getConfCurrency());
+            user.setCountLastDigits(AppRegistry.getConfCountLastDigits());
+            user.setNotifyTime(AppRegistry.getConfNotifyTime());
+            user.setNotifyStatus(AppRegistry.getConfNotifyStatus());
             // for prod
-//            user.setScheduledTask(new Scheduler().schedule(this, user, Integer.parseInt(AppRegistry.getConfVal("USER_DEF_NOTIFY_TIME"))));
+//            user.setScheduledTask(new Scheduler().userSchedule(this, user, AppRegistry.getConfNotifyTime()));
             // for test
             user.setScheduledTask(new Scheduler().userSchedule(this, user,15));
             AppRegistry.addUser(user);
@@ -140,7 +137,7 @@ import java.util.Map;
                     if (currency.equals(curCurrency.getName())) {
                         sb.append(curCurrency.getName()).append("\n");
                         sb.append("Покупка: ");
-                        String format = "%." + user.getNumOfDigits() + "f";
+                        String format = "%." + user.getCountLastDigits() + "f";
                         sb.append(String.format(format, Float.valueOf(curCurrency.getBuy()))).append("\n");
                         sb.append("Продаж: ");
                         sb.append(String.format(format, Float.valueOf(curCurrency.getSale()))).append("\n\n");

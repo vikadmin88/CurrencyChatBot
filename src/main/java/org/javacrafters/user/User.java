@@ -10,7 +10,7 @@ public class User {
     private String username;
     private final List<String> banks = new ArrayList<>();
     private final List<String> currency = new ArrayList<>();
-    private int numOfDigits = 2;
+    private int countLastDigits = 2;
     private int notifyTime = 21;
     private ScheduledFuture<?> scheduledTask;
     private boolean isNotifyOn = true;
@@ -78,12 +78,12 @@ public class User {
         this.currency.remove(name);
     }
 
-    public int getNumOfDigits() {
-        return numOfDigits;
+    public int getCountLastDigits() {
+        return countLastDigits;
     }
 
-    public void setNumOfDigits(int numOfDigits) {
-        this.numOfDigits = numOfDigits;
+    public void setCountLastDigits(int countLastDigits) {
+        this.countLastDigits = countLastDigits;
     }
 
     public int getNotifyTime() {
@@ -111,6 +111,9 @@ public class User {
     public void setNotifyOff() {
         this.isNotifyOn = false;
     }
+    public void setNotifyStatus(boolean status) {
+        this.isNotifyOn = status;
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -133,9 +136,9 @@ public class User {
                 ", username='" + username + '\'' +
                 ", banks=" + banks.toString() +
                 ", currencies=" + currency.toString() +
-                ", numOfDigits=" + numOfDigits +
+                ", numOfDigits=" + countLastDigits +
                 ", notifyTime=" + notifyTime +
-                ", isNotifyEnabled=" + isNotifyOn +
+                ", isNotifyOn=" + isNotifyOn +
 //                ", scheduledTask=" + scheduledTask.toString() +
                 '}';
     }
