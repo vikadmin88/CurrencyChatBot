@@ -5,6 +5,8 @@ import org.javacrafters.user.User;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -60,31 +62,54 @@ public class BotDialogHandler{
     public SendMessage createBankMessage(Long chatId){
         String text = "Виберіть банк";
         SendMessage message = createMessage(text, chatId);
-        message.setReplyMarkup(getButtons(Arrays.asList(BT.NBU, BT.MONO, BT.PRIVAT, BT.TO_MAIN)));
+        message.setReplyMarkup(getButtons(Arrays.asList(BT.NBU, BT.MONO, BT.PRIVAT, BT.TO_SETTINGS)));
         return message;
     }
     //Сообщение знаки после запятой
     public SendMessage createDecimalMessage(Long chatId){
         String text = "Виберіть кількість знаків після коми";
         SendMessage message = createMessage(text, chatId);
-        message.setReplyMarkup(getButtons(Arrays.asList(BT.TWO_DIGITS, BT.THREE_DIGITS, BT.FOUR_DIGITS, BT.TO_MAIN)));
+        message.setReplyMarkup(getButtons(Arrays.asList(BT.TWO_DIGITS, BT.THREE_DIGITS, BT.FOUR_DIGITS, BT.TO_SETTINGS)));
         return message;
     }
     //Сообщение вылюты
     public SendMessage createCurrencyMessage(Long chatId){
         String text = "Виберіть валюту";
         SendMessage message = createMessage(text, chatId);
-        message.setReplyMarkup(getButtons(Arrays.asList(BT.USD, BT.EUR, BT.TO_MAIN)));
+        message.setReplyMarkup(getButtons(Arrays.asList(BT.USD, BT.EUR, BT.TO_SETTINGS)));
         return message;
     }
     //Сообщение время уведомления
-//    public SendMessage createNotifyMessage(Long chatId){
-//        String text = "Виберіть кількість знаків після коми";
-//        SendMessage message = createMessage(text, chatId);
-//        message.setReplyMarkup(getButtons(Arrays.asList(BT.TWO_DIGITS, BT.THREE_DIGITS, BT.FOUR_DIGITS, BT.TO_MAIN)));
-//        return message;
-//    }
+    public SendMessage createSetNotifyMessage(Long chatId){
+        String text = "Виберіть час сповіщення";
+        SendMessage message = createMessage(text, chatId);
+        message.setReplyMarkup(getTimeKeyboard());
+        return message;
+    }
+    // Метод для создания клавиатуры пользователя с выбором времени
+    private ReplyKeyboardMarkup getTimeKeyboard() {
+        ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
+        List<KeyboardRow> keyboard = new ArrayList<>();
+        KeyboardRow row = new KeyboardRow();
 
+        // Добавление кнопок с временем
+        for (int hour = 9; hour <= 18; hour++) {
+            row.add(Integer.toString(hour) + ":00");
+            if ((hour - 8) % 3 == 0) { // Например, разбиваем на ряды по 3 кнопки
+                keyboard.add(row);
+                row = new KeyboardRow();
+            }
+        }
+        row.add(new String("Вимкнути сповіщення".getBytes(), StandardCharsets.UTF_8));
+        row.add(new String("До налаштувань".getBytes(), StandardCharsets.UTF_8));
+        // Добавляем последний ряд, если он не пустой
+        if (!row.isEmpty()) {
+            keyboard.add(row);
+        }
+
+        replyKeyboardMarkup.setKeyboard(keyboard);
+        return replyKeyboardMarkup;
+    }
     //Метод для выбора нужных кнопок под сообщение
     private InlineKeyboardMarkup getButtons(List<BT> buttonsTypes) {
         InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
@@ -105,6 +130,10 @@ public class BotDialogHandler{
                 case TO_MAIN -> {
                     button.setText(new String("На головну".getBytes(), StandardCharsets.UTF_8));
                     button.setCallbackData("to_main");
+                }
+                case TO_SETTINGS -> {
+                    button.setText(new String("До налаштувань".getBytes(), StandardCharsets.UTF_8));
+                    button.setCallbackData("to_settings");
                 }
                 //SETTING BUTTONS
                 case DECIMAL_PLACES -> {
@@ -158,6 +187,7 @@ public class BotDialogHandler{
                     button.setText(new String("ПриватБанк".getBytes(), StandardCharsets.UTF_8));
                     button.setCallbackData("privat");
                 }
+
             }
             List<InlineKeyboardButton> row = new ArrayList<>(); // Создает новый ряд для каждой кнопки
             row.add(button); // Добавляет кнопку в ряд

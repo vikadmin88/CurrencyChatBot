@@ -8,8 +8,7 @@ import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
@@ -88,7 +87,8 @@ import java.util.*;
 
             // Messages processing
             if (update.hasMessage()) {
-                if (update.getMessage().getText().equals("/start")) {
+                String messageText = update.getMessage().getText();
+                if (messageText.equals("/start")) {
                     sendApiMethodAsync(dialogHandler.createWelcomeMessage(chatId));
 
                     if (getUser(chatId) == null) {
@@ -102,6 +102,9 @@ import java.util.*;
                     // while testing
                     //userNotify(getUser(chatId));
                     System.out.printf("Next notify will be sent in %d minutes...", (60 - Calendar.getInstance().get(Calendar.MINUTE)));
+                }else if (isTimeSelection(messageText)) {
+                    // Обработка выбранного времени
+                    handleTimeSelection(chatId, messageText);
                 }
             }
 
@@ -117,6 +120,8 @@ import java.util.*;
 
                 }else if(data.equals("to_main")){
                     sendApiMethodAsync(dialogHandler.createWelcomeMessage(chatId));
+                }else if(data.equals("to_settings")){
+                    sendApiMethodAsync(dialogHandler.createSettingMessage(chatId));
                 }
                 //Setting callbacks
                 else if (data.equals("bank")) {
@@ -125,12 +130,32 @@ import java.util.*;
                     sendApiMethodAsync(dialogHandler.createCurrencyMessage(chatId));
                 }else if (data.equals("decimal_places")){
                     sendApiMethodAsync(dialogHandler.createDecimalMessage(chatId));
-                }//else if (data.equals("currencies")){
-//                    sendApiMethodAsync(dialogHandler.createBankMessage(chatId));
-//                }
+                } else if (data.equals("notification_time")) {
+                    sendApiMethodAsync(dialogHandler.createSetNotifyMessage(chatId));
+                }
             }
         }
+        // Метод для проверки, является ли текст сообщения выбором времени
+        private boolean isTimeSelection(String messageText) {
+            return messageText.matches("\\d{1,2}:00")||
+                    messageText.equals(new String("До налаштувань".getBytes(), StandardCharsets.UTF_8))||
+                    messageText.equals(new String("Вимкнути сповіщення".getBytes(), StandardCharsets.UTF_8));
+        }
 
+        // Метод для обработки выбора времени
+        private void handleTimeSelection(Long chatId, String selectedTime) {
+            if (selectedTime.equals(new String("До налаштувань".getBytes(), StandardCharsets.UTF_8))){
+                SendMessage settingMessage = dialogHandler.createSettingMessage(chatId);
+                SendMessage infromMessage = dialogHandler.createMessage("Налаштування відправки повідомлень були прийняті", chatId);
+
+                infromMessage.setReplyMarkup(new ReplyKeyboardRemove(true));
+
+                sendApiMethodAsync(infromMessage);
+                sendApiMethodAsync(settingMessage);
+            } else {
+                sendApiMethodAsync(dialogHandler.createMessage("Встановленный час: "+selectedTime, chatId));
+            }
+        }
         public Long getChatId(Update update) {
             if (update.hasMessage()) {
                 return update.getMessage().getFrom().getId();
