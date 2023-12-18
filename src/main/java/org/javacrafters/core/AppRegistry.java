@@ -21,8 +21,8 @@ public class AppRegistry {
         return ConfigLoader.get(key);
     }
 
-    public static void addUser(Long userId, User user){
-        users.put(userId, user);
+    public static void addUser(User user){
+        users.put(user.getId(), user);
     }
 
     public static Map<Long, User>getUsers(){
@@ -31,6 +31,10 @@ public class AppRegistry {
 
     public static User getUser(Long userId){
         return users.get(userId);
+    }
+
+    public static boolean hasUser(Long userId){
+        return users.get(userId) != null;
     }
 
     public static void addBank(String bankLocalName, Bank bank){ banks.put(bankLocalName, bank);}
