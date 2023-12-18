@@ -62,10 +62,7 @@ import java.util.Map;
             user.setCountLastDigits(AppRegistry.getConfCountLastDigits());
             user.setNotifyTime(AppRegistry.getConfNotifyTime());
             user.setNotifyStatus(AppRegistry.getConfNotifyStatus());
-            // for prod
-//            user.setScheduledTask(new Scheduler().userSchedule(this, user, AppRegistry.getConfNotifyTime()));
-            // for test
-            user.setScheduledTask(new Scheduler().userSchedule(this, user,15));
+            user.setScheduledTask(new Scheduler().userSchedule(this, user, AppRegistry.getConfNotifyTime()));
             AppRegistry.addUser(user);
         }
 

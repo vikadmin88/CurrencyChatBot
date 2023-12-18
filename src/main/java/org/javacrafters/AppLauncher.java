@@ -25,7 +25,7 @@ public class AppLauncher {
         AppRegistry.addBank("NBU", new NbuBank());
 
         // period in minutes
-        new Scheduler().currencySchedule( 1);
+        new Scheduler().currencySchedule(1);
 
         String appName = ConfigLoader.get("APP_NAME");
         String botName = ConfigLoader.get("APP_BOT_NAME");

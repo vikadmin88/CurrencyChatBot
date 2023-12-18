@@ -7,8 +7,13 @@ BANK_PB_API_URL=https://api.privatbank.ua/p24api/pubinfo?json&exchange&coursid=5
 BANK_MB_API_URL=https://api.monobank.ua/bank/currency
 BANK_NBU_API_URL=https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange?json
 
+# only one (bank_local_name: PB - PrivatBank)
 USER_DEF_BANK=PB
+# only one (USD)
 USER_DEF_CURRENCY=USD
+# one of: 2 | 3 | 4
 USER_DEF_COUNT_LAST_DIGITS=2
+# one of: 9 | 10 | 11 |...18
 USER_DEF_NOTIFY_TIME=9
+# true | false
 USER_DEF_NOTIFY_ENABLED=true
