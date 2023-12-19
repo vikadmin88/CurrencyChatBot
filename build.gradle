@@ -44,8 +44,11 @@ test {
 tasks.register("createRelease") {
     doLast {
         mkdir('./build/release')
-        println "Creating release jar file: ./build/release/${newAppName}.jar"
-        println "To run: java -jar ./build/release/${newAppName}.jar"
+        println "Release folder: ./build/release/"
+        println "Config file: ./build/release/${appProperties}"
+        println "Jar file: ./build/release/${newAppName}.jar"
+        println "To run ${newAppName} as a jar, go to ./build/release/"
+        println "Run: java -jar ${newAppName}.jar"
     }
 }
 

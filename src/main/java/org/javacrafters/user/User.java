@@ -1,7 +1,6 @@
 package org.javacrafters.user;
 
 import java.util.*;
-import java.util.concurrent.ScheduledFuture;
 
 public class User {
 
@@ -12,7 +11,7 @@ public class User {
     private final List<String> currency = new ArrayList<>();
     private int countLastDigits = 2;
     private int notifyTime = 21;
-    private ScheduledFuture<?> scheduledTask;
+
     private boolean isNotifyOn = true;
 
     {
@@ -93,13 +92,6 @@ public class User {
     public void setNotifyTime(int notifyTime) {
         this.notifyTime = notifyTime;
     }
-    public ScheduledFuture<?> getScheduledTask() {
-        return this.scheduledTask;
-    }
-
-    public void setScheduledTask(ScheduledFuture<?> scheduledTask) {
-        this.scheduledTask = scheduledTask;
-    }
 
     public boolean isNotifyOn() {
         return isNotifyOn;
@@ -139,7 +131,6 @@ public class User {
                 ", numOfDigits=" + countLastDigits +
                 ", notifyTime=" + notifyTime +
                 ", isNotifyOn=" + isNotifyOn +
-//                ", scheduledTask=" + scheduledTask.toString() +
                 '}';
     }
 }
