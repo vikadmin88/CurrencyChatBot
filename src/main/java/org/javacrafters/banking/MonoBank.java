@@ -2,9 +2,7 @@ package org.javacrafters.banking;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import org.javacrafters.core.AppRegistry;
 import org.javacrafters.networkclient.NetworkClient;
-import org.javacrafters.core.ConfigLoader;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -12,7 +10,13 @@ import java.util.Map;
 public class MonoBank extends Bank {
     private final static String NAME = "Моно-Банк";
     private final static String LOCAL_NAME = "MB";
-    private final static String API_URL = AppRegistry.getConfVal("BANK_MB_API_URL");
+    private final String apiUrl;
+    private final NetworkClient netClient;
+
+    public MonoBank(String apiUrl, NetworkClient netClient) {
+        this.apiUrl = apiUrl;
+        this.netClient = netClient;
+    }
 
     private final static Map<String, Integer> currencies = new HashMap<>();
     static {
@@ -26,7 +30,7 @@ public class MonoBank extends Bank {
     @Override
     public Map<String, NormalizeCurrencyPair> getRates() {
         Gson gson = new Gson();
-        JsonObject[] jsonObjArr = gson.fromJson(AppRegistry.getNetClient().get(API_URL), JsonObject[].class);
+        JsonObject[] jsonObjArr = gson.fromJson(netClient.get(apiUrl), JsonObject[].class);
         // {"USD" => "USD", "36.95000", "37.45000"}
         Map<String, NormalizeCurrencyPair> rateMap = new HashMap<>();
 
@@ -72,7 +76,7 @@ public class MonoBank extends Bank {
         return "MonoBank{" +
                 "NAME='" + NAME + '\'' +
                 ", LOCAL_NAME='" + LOCAL_NAME + '\'' +
-                ", API_URL='" + API_URL + '\'' +
+                ", API_URL='" + apiUrl + '\'' +
                 '}';
     }
 }

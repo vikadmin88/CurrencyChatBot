@@ -2,21 +2,25 @@ package org.javacrafters.banking;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import org.javacrafters.core.AppRegistry;
 import org.javacrafters.networkclient.NetworkClient;
-import org.javacrafters.core.ConfigLoader;
 
 import java.util.*;
 
 public class PrivatBank extends Bank {
     private final static String NAME = "Приват Банк";
     private final static String LOCAL_NAME  = "PB";
-    private final static String API_URL = AppRegistry.getConfVal("BANK_PB_API_URL");
+    private final String apiUrl;
+    private final NetworkClient netClient;
+
+    public PrivatBank(String apiUrl, NetworkClient netClient) {
+        this.apiUrl = apiUrl;
+        this.netClient = netClient;
+    }
 
     @Override
     public Map<String, NormalizeCurrencyPair> getRates() {
         Gson gson = new Gson();
-        JsonObject[] jsonObjArr = gson.fromJson(AppRegistry.getNetClient().get(API_URL), JsonObject[].class);
+        JsonObject[] jsonObjArr = gson.fromJson(netClient.get(apiUrl), JsonObject[].class);
 
         // {"USD" => "USD", "36.95000", "37.45000"}
         Map<String, NormalizeCurrencyPair> rateMap = new HashMap<>();
