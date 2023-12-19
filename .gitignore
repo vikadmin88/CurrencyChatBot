@@ -1,4 +1,6 @@
 .idea
+botusers/
+user-*.json
 app.properties
 release
 .gradle

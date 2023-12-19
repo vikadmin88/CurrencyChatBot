@@ -23,26 +23,20 @@ import java.util.Map;
             this.botName = botName;
             this.botToken = botToken;
         }
-
         @Override
-        public String getBotUsername() {
-            return this.botName;
-        }
-
+        public String getBotUsername() { return this.botName; }
         @Override
-        public String getBotToken() {
-
-            return this.botToken;
-        }
+        public String getBotToken() { return this.botToken; }
 
         public void botRun() {
             TelegramBotsApi api = null;
             try {
                 api = new TelegramBotsApi(DefaultBotSession.class);
-                api.registerBot(new ChatBot(appName, botName, botToken));
+                api.registerBot(this);
             } catch (TelegramApiException e) {
                 throw new RuntimeException(e);
             }
+            AppRegistry.setChatBot(this);
         }
 
         public Long getChatId(Update update) {
@@ -62,8 +56,9 @@ import java.util.Map;
             user.setCountLastDigits(AppRegistry.getConfCountLastDigits());
             user.setNotifyTime(AppRegistry.getConfNotifyTime());
             user.setNotifyStatus(AppRegistry.getConfNotifyStatus());
-            user.setScheduledTask(new Scheduler().userSchedule(this, user, AppRegistry.getConfNotifyTime()));
+            Scheduler.addUserSchedule(chatId, user, AppRegistry.getConfNotifyTime());
             AppRegistry.addUser(user);
+            UserLoader.save(user);
         }
 
         @Override
@@ -85,7 +80,6 @@ import java.util.Map;
 
             // Callbacks processing
             if (update.hasCallbackQuery()) {
-
                 if (update.getCallbackQuery().getData().equals("level_1_task")) {
 //                    sendMessage(chatId);
                 }
