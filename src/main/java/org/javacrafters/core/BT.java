@@ -20,8 +20,8 @@ public enum BT {
     EUR,
     //BANK BUTTONS
     NBU,
-    MONO,
-    PRIVAT,
+    MB,
+    PB,
     //NOTIFY TIME BUTTONS
     NINE_O_CLOCK,
     TEN_O_CLOCK,

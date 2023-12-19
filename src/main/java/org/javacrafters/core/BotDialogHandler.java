@@ -63,12 +63,12 @@ public class BotDialogHandler{
     public SendMessage createBankMessage(User user, Long chatId){
         String text = "Виберіть банк";
         SendMessage message = createMessage(text, chatId);
-        message.setReplyMarkup(getAdditionalButtons(user, Arrays.asList(BT.NBU, BT.MONO, BT.PRIVAT, BT.TO_SETTINGS)));
+        message.setReplyMarkup(getAdditionalButtons(user, Arrays.asList(BT.NBU, BT.MB, BT.PB, BT.TO_SETTINGS)));
         return message;
     }
     //Сообщение знаки после запятой
     public SendMessage createDecimalMessage(User user, Long chatId){
-        String text = "Виберіть кількість знаків після коми";
+        String text = "Кількість знаків після коми";
         SendMessage message = createMessage(text, chatId);
         message.setReplyMarkup(getAdditionalButtons(user, Arrays.asList(BT.TWO_DIGITS, BT.THREE_DIGITS, BT.FOUR_DIGITS, BT.TO_SETTINGS)));
         return message;
@@ -122,15 +122,15 @@ public class BotDialogHandler{
         for (BT bt : buttonsTypes) {
             String buttonText = "";
             switch (bt) {
-                case TO_SETTINGS -> buttonText = "До налаштувань";
+                case TO_SETTINGS -> buttonText = "Повернутись до налаштування";
                 case TWO_DIGITS -> buttonText = "2" + (currentNumOfDigits == 2 ? " ✅" : "");
                 case THREE_DIGITS -> buttonText = "3" + (currentNumOfDigits == 3 ? " ✅" : "");
                 case FOUR_DIGITS -> buttonText = "4" + (currentNumOfDigits == 4 ? " ✅" : "");
                 case USD -> buttonText = "USD" + (curr.contains("USD") ? " ✅" : "");
                 case EUR -> buttonText = "EUR" + (curr.contains("EUR") ? " ✅" : "");
                 case NBU -> buttonText = "Національний банк України" + (bank.equals("NBU") ? " ✅" : "");
-                case MONO -> buttonText = "МоноБанк" + (bank.equals("MB") ? " ✅" : "");
-                case PRIVAT -> buttonText = "ПриватБанк" + (bank.equals("PB") ? " ✅" : "");
+                case MB -> buttonText = "МоноБанк" + (bank.equals("MB") ? " ✅" : "");
+                case PB -> buttonText = "ПриватБанк" + (bank.equals("PB") ? " ✅" : "");
 
             }
             buttons.add(createButton(buttonText, bt.name().toLowerCase()));
@@ -159,12 +159,25 @@ public class BotDialogHandler{
         }
         return buildInlineKeyboard(buttons);
     }
+    public EditMessageText updateBankSelectionMessage(Long chatId, Integer messageId, User user) {
+        return createEditMessage(chatId, messageId, "Виберіть банк", user,
+                Arrays.asList(BT.NBU, BT.MB, BT.PB, BT.TO_SETTINGS));
+    }
     public EditMessageText updateCurrencySelectionMessage(Long chatId, Integer messageId, User user) {
+        return createEditMessage(chatId, messageId, "Виберіть валюту", user,
+                Arrays.asList(BT.USD, BT.EUR, BT.TO_SETTINGS));
+    }
+    public EditMessageText updateNumOfDigitsSelectionMessage(Long chatId, Integer messageId, User user) {
+        return createEditMessage(chatId, messageId, "Кількість знаків після коми", user,
+                Arrays.asList(BT.TWO_DIGITS, BT.THREE_DIGITS, BT.FOUR_DIGITS, BT.TO_SETTINGS));
+    }
+
+    private EditMessageText createEditMessage(Long chatId, Integer messageId, String messageText, User user, List<BT> buttonsTypes) {
         EditMessageText newMessage = new EditMessageText();
         newMessage.setChatId(String.valueOf(chatId));
         newMessage.setMessageId(messageId);
-        newMessage.setText(new String("Виберіть валюту".getBytes(), StandardCharsets.UTF_8));
-        newMessage.setReplyMarkup(getAdditionalButtons(user, Arrays.asList(BT.USD, BT.EUR, BT.TO_SETTINGS)));
+        newMessage.setText(new String(messageText.getBytes(), StandardCharsets.UTF_8));
+        newMessage.setReplyMarkup(getAdditionalButtons(user, buttonsTypes));
         return newMessage;
     }
     private InlineKeyboardButton createButton(String buttonText, String callbackData) {

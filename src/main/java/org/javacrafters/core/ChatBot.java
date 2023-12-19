@@ -1,5 +1,8 @@
 package org.javacrafters.core;
 
+import org.javacrafters.banking.Bank;
+import org.javacrafters.banking.MonoBank;
+import org.javacrafters.banking.NbuBank;
 import org.javacrafters.banking.PrivatBank;
 import org.javacrafters.networkclient.NetworkStreamReader;
 import org.javacrafters.scheduler.Scheduler;
@@ -114,38 +117,75 @@ import java.util.*;
                 User user = getUser(chatId);
                 Integer messageId = update.getCallbackQuery().getMessage().getMessageId();
 
-                //Main callbacks
-                if (data.equals("settings")) {
-                    sendApiMethodAsync(dialogHandler.createSettingMessage(chatId));
+                switch (data) {
+                    //Main callbacks
+                    case "settings", "to_settings" -> sendApiMethodAsync(dialogHandler.createSettingMessage(chatId));
+                    case "get_info" -> sendApiMethodAsync(dialogHandler.createInfoMessage(user, chatId));
+                    case "to_main" -> sendApiMethodAsync(dialogHandler.createWelcomeMessage(chatId));
 
-                }else if (data.equals("get_info")) {
-                    sendApiMethodAsync(dialogHandler.createInfoMessage(user, chatId));
+                    //Setting callbacks
+                    case "bank" -> sendApiMethodAsync(dialogHandler.createBankMessage(user, chatId));
+                    case "currencies" -> sendApiMethodAsync(dialogHandler.createCurrencyMessage(user, chatId));
+                    case "decimal_places" -> sendApiMethodAsync(dialogHandler.createDecimalMessage(user, chatId));
+                    case "notification_time" -> sendApiMethodAsync(dialogHandler.createSetNotifyMessage(chatId));
 
-                }else if(data.equals("to_main")){
-                    sendApiMethodAsync(dialogHandler.createWelcomeMessage(chatId));
-                }else if(data.equals("to_settings")){
-                    sendApiMethodAsync(dialogHandler.createSettingMessage(chatId));
-                }
-                //Setting callbacks
-                else if (data.equals("bank")) {
-                    sendApiMethodAsync(dialogHandler.createBankMessage(user, chatId));
-                }else if (data.equals("currencies")) {
-                    sendApiMethodAsync(dialogHandler.createCurrencyMessage(user, chatId));
-                }else if (data.equals("decimal_places")){
-                    sendApiMethodAsync(dialogHandler.createDecimalMessage(user, chatId));
-                } else if (data.equals("notification_time")) {
-                    sendApiMethodAsync(dialogHandler.createSetNotifyMessage(chatId));
-                }
-                //Currency callback
-                else if (data.equals("usd") || data.equals("eur")) {
-                    toggleCurrency(user, data.toUpperCase());
-                    EditMessageText newMessage = dialogHandler.updateCurrencySelectionMessage(chatId, messageId, user);
-                    try {
-                        execute(newMessage);
-                    } catch (TelegramApiException e) {
-                        throw new RuntimeException(e);
+
+                    //Bank callback
+//                    case "nbu", "mono", "private" -> {
+//                        toggleBank(user, data.toUpperCase());
+//                        EditMessageText newMessage = dialogHandler.updateBankSelectionMessage(chatId, messageId, user);
+//                        try {
+//                            execute(newMessage);
+//                        } catch (TelegramApiException e) {
+//                            throw new RuntimeException(e);
+//                        }
+//                    }
+                    //Currency callback
+                    case "usd", "eur" -> {
+                        toggleCurrency(user, data.toUpperCase());
+                        EditMessageText newMessage = dialogHandler.updateCurrencySelectionMessage(chatId, messageId, user);
+                        try {
+                            execute(newMessage);
+                        } catch (TelegramApiException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                    //Digits callback
+                    case "two_digits", "three_digits", "four_digits" -> {
+                        toggleDigit(user, data);
+                        EditMessageText newMessage = dialogHandler.updateNumOfDigitsSelectionMessage(chatId, messageId, user);
+                        try {
+                            execute(newMessage);
+                        } catch (TelegramApiException e) {
+                            throw new RuntimeException(e);
+                        }
                     }
                 }
+            }
+        }
+        // Mетод для переключения банков
+//        private void toggleBank(User user, String digits) {
+//            if (user.getBank().getLocalName().toLowerCase().equals(digits)) {
+//                user.setBank(null);
+//            } else {
+//                user.setBank(switch (digits) {
+//                    case "nbu" -> new NbuBank();
+//                    case "mb" -> new MonoBank();
+//                    default -> new PrivatBank();
+//                });
+//            }
+//        }
+        // Mетод для переключения знаков полсе запятой
+        private void toggleDigit(User user, String digits) {
+            int dig = switch (digits) {
+                case "three_digits" -> 3;
+                case "four_digits" -> 4;
+                default -> 2;
+            };
+            if (user.getNumOfDigits()==dig) {
+                user.setNumOfDigits(0);
+            } else {
+                user.setNumOfDigits(dig);
             }
         }
         // Mетод для переключения валюты
@@ -159,13 +199,14 @@ import java.util.*;
         // Метод для проверки, является ли текст сообщения выбором времени
         private boolean isTimeSelection(String messageText) {
             return messageText.matches("\\d{1,2}:00")||
-                    messageText.equals(new String("До налаштувань".getBytes(), StandardCharsets.UTF_8))||
+                    messageText.equals(new String("Повернутись до налаштування".getBytes(), StandardCharsets.UTF_8))||
                     messageText.equals(new String("Вимкнути сповіщення".getBytes(), StandardCharsets.UTF_8));
         }
 
         // Метод для обработки выбора времени
         private void handleTimeSelection(Long chatId, String selectedTime) {
-            if (selectedTime.equals(new String("До налаштувань".getBytes(), StandardCharsets.UTF_8))){
+            User user = getUser(chatId);
+            if (selectedTime.equals(new String("Повернутись до налаштування".getBytes(), StandardCharsets.UTF_8))){
                 SendMessage settingMessage = dialogHandler.createSettingMessage(chatId);
                 SendMessage infromMessage = dialogHandler.createMessage("Налаштування відправки повідомлень були прийняті", chatId);
 
@@ -175,6 +216,11 @@ import java.util.*;
                 sendApiMethodAsync(settingMessage);
             } else {
                 sendApiMethodAsync(dialogHandler.createMessage("Встановленный час: "+selectedTime, chatId));
+                if (selectedTime.length()==4){
+                    user.setNotifyTime(Integer.parseInt(selectedTime.substring(0,1)));
+                }else {
+                    user.setNotifyTime(Integer.parseInt(selectedTime.substring(0,2)));
+                }
             }
         }
         public Long getChatId(Update update) {
