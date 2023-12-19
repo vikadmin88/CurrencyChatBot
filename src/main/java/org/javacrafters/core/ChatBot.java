@@ -131,7 +131,7 @@ import java.util.Map;
 
                     if (currency.equals(curCurrency.getName())) {
                         sb.append(curCurrency.getName()).append("\n");
-                        sb.append("Покупка: ");
+                        sb.append("Купівля: ");
                         String format = "%." + user.getCountLastDigits() + "f";
                         sb.append(String.format(format, Float.valueOf(curCurrency.getBuy()))).append("\n");
                         sb.append("Продаж: ");
