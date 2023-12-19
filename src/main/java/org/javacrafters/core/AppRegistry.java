@@ -23,7 +23,7 @@ public class AppRegistry {
     public static void initDefaults() {
         Arrays.stream(ConfigLoader.get("BANK_CURRENCY").split(",")).forEach(AppRegistry::addCurrency);
         // Refresh currency period in minutes
-        Scheduler.addCurrencySchedule(Integer.parseInt(ConfigLoader.get("BANK_REFRESH_PERIOD")));
+        Scheduler.addCurrencySchedule(Integer.parseInt(ConfigLoader.get("BANK_FREQUENCY_REQUEST")));
     }
 
     /*
