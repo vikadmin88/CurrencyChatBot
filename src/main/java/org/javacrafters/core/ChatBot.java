@@ -4,6 +4,8 @@ import org.javacrafters.banking.CurrencyHolder;
 import org.javacrafters.banking.NormalizeCurrencyPair;
 import org.javacrafters.scheduler.Scheduler;
 import org.javacrafters.user.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -13,6 +15,7 @@ import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 import java.util.Map;
 
     public class ChatBot extends TelegramLongPollingBot {
+        private static final Logger logger = LoggerFactory.getLogger(ChatBot.class);
 
         private final String appName;
         private final String botName;
@@ -67,6 +70,7 @@ import java.util.Map;
 
             // Messages processing
             if (update.hasMessage()) {
+                logger.trace(update.getMessage().getText(), update);
                 if (update.getMessage().getText().equals("/start")) {
 //                    sendMessage(chatId);
 
@@ -95,11 +99,11 @@ import java.util.Map;
             String message = createNotifyMessage(user);
             if (message != null) {
                 sendMessage.setText(message);
-            }
-            try {
-                execute(sendMessage);
-            } catch (TelegramApiException e) {
+                try {
+                    execute(sendMessage);
+                } catch (TelegramApiException e) {
 
+                }
             }
 
         }
