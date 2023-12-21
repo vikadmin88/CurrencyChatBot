@@ -52,6 +52,7 @@ public class User {
     }
 
     public void removeBank(String bankLocalName) {
+
         banks.remove(bankLocalName);
     }
 

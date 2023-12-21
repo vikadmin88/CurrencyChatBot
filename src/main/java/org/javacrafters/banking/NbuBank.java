@@ -9,7 +9,7 @@ import java.util.Map;
 
 public class NbuBank extends Bank {
 
-    private final static String NAME = "НБУ Національний Банк України";
+    private final static String NAME = "Національний Банк України";
     private final static String LOCAL_NAME = "NBU";
     private final String apiUrl;
     private final NetworkClient netClient;
