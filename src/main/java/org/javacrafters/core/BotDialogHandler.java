@@ -2,7 +2,7 @@ package org.javacrafters.core;
 
 import org.javacrafters.banking.Bank;
 
-import org.javacrafters.user.User;
+import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
@@ -18,48 +18,54 @@ public class BotDialogHandler {
 
     // Стартовое сообщение
     public SendMessage createWelcomeMessage(Long chatId) {
-        String text = "Ласкаво просимо. Цей бот допоможе відслідковувати актуальні курси валют";
+        String text = "<b>Ласкаво просимо.</b> \nЦей бот допоможе відслідковувати актуальні курси валют!";
         SendMessage message = createMessage(text, chatId);
         message.setReplyMarkup(getPermanentKeyboard());
+        message.setParseMode(ParseMode.HTML);
         return message;
     }
+    //Сообщение с настройками
     public  SendMessage createSettingsMessage(Long chatId){
-        String text = "Налаштування";
+        String text = "<b>Налаштування</b>";
         SendMessage message = createMessage(text, chatId);
         message.setReplyMarkup(createSettingsButtons());
+        message.setParseMode(ParseMode.HTML);
         return message;
     }
 
     //Сообщение время уведомления
     public SendMessage createSetNotifyMessage(Long chatId){
-        String text = "Виберіть час сповіщення";
+        String text = "<b>Виберіть час сповіщення</b>";
         SendMessage message = createMessage(text, chatId);
         message.setReplyMarkup(getTimeKeyboard());
+        message.setParseMode(ParseMode.HTML);
         return message;
     }
 
     public EditMessageText onSettingMessage(Long chatId, Integer messageId) {
-        String text = "Налаштування";
+        String text = "<b>Налаштування</b>";
         return createEditMessage(chatId, messageId, text, BT.SETTINGS);
     }
     public EditMessageText onDecimalMessage(Long chatId, Integer messageId) {
-        String text = "Кількість знаків після коми";
+        String text = "<b>Кількість знаків після коми</b>";
         return createEditMessage(chatId, messageId, text, BT.DEC_BUT);
     }
     public EditMessageText onBankMessage(Long chatId, Integer messageId) {
-        String text = "Банки";
+        String text = "<b>Банки</b>";
         return createEditMessage(chatId, messageId, text, BT.BAN_BUT);
     }
     public EditMessageText onCurrencyMessage(Long chatId, Integer messageId) {
-        String text = "Валюти";
+        String text = "<b>Валюти</b>";
         return createEditMessage(chatId, messageId, text, BT.CUR_BUT);
     }
 
+    //метод для добавления кнопок к разделам настроек
     private EditMessageText createEditMessage(Long chatId, Integer messageId, String messageText, BT buttonType) {
         EditMessageText newMessage = new EditMessageText();
         newMessage.setChatId(String.valueOf(chatId));
         newMessage.setMessageId(messageId);
         newMessage.setText(new String(messageText.getBytes(), StandardCharsets.UTF_8));
+        newMessage.setParseMode(ParseMode.HTML);
 
         InlineKeyboardMarkup replyMarkup = switch (buttonType) {
             case BAN_BUT -> createBankButtons(chatId);
@@ -96,10 +102,9 @@ public class BotDialogHandler {
         replyKeyboardMarkup.setKeyboard(keyboard);
         return replyKeyboardMarkup;
     }
-
+    //создание кнопок - сколько знаков после запятой
     private InlineKeyboardMarkup createDecimalButtons(Long chatId) {
         List<InlineKeyboardButton> buttons = new ArrayList<>();
-        int currentNumOfDigits = AppRegistry.getConfCountLastDigits();
         int userNumOfDigits = AppRegistry.getUser(chatId).getCountLastDigits();
 
         for (int i = 2; i <= 4; i++) {
@@ -108,7 +113,7 @@ public class BotDialogHandler {
         }
         return buildInlineKeyboard(buttons);
     }
-
+    //создание кнопок - валюты
     private InlineKeyboardMarkup createCurrencyButtons(Long chatId) {
         List<InlineKeyboardButton> buttons = new ArrayList<>();
         List<String> availableCurrencies = AppRegistry.getCurrency();
@@ -120,6 +125,7 @@ public class BotDialogHandler {
         }
         return buildInlineKeyboard(buttons);
     }
+    //создание кнопок - банки
     private InlineKeyboardMarkup createBankButtons(Long chatId) {
         List<InlineKeyboardButton> buttons = new ArrayList<>();
         Map<String, Bank> allBanks = AppRegistry.getBanks();
@@ -133,8 +139,7 @@ public class BotDialogHandler {
         }
         return buildInlineKeyboard(buttons);
     }
-
-
+    //создание кнопок - сколько знаков после запятой
     private InlineKeyboardMarkup createMainMenuButtons() {
         List<InlineKeyboardButton> buttons = new ArrayList<>();
 
@@ -156,14 +161,14 @@ public class BotDialogHandler {
 
         return buildInlineKeyboard(buttons);
     }
-
+    //Метод для создания кнопки
     private InlineKeyboardButton createButton(String buttonText, String callbackData) {
         InlineKeyboardButton button = new InlineKeyboardButton();
         button.setText(new String(buttonText.getBytes(), StandardCharsets.UTF_8));
         button.setCallbackData(callbackData);
         return button;
     }
-
+    //Метод для создания клавиатур для сообщения из кнопок
     private InlineKeyboardMarkup buildInlineKeyboard(List<InlineKeyboardButton> buttons) {
         InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
