@@ -1,5 +1,6 @@
 package org.javacrafters.core;
 
+import org.javacrafters.banking.Bank;
 import org.javacrafters.banking.NormalizeCurrencyPair;
 import org.javacrafters.user.User;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -10,12 +11,9 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMar
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-public class BotDialogHandler{
+public class BotDialogHandler {
 
     // Стартовое сообщение
     public SendMessage createWelcomeMessage(Long chatId) {
@@ -24,32 +22,7 @@ public class BotDialogHandler{
         message.setReplyMarkup(getSectionButtons(Arrays.asList(BT.GET_INFO, BT.SETTINGS)));
         return message;
     }
-    // Текст уведомления/текст курса валют
-    public String getCurrencyRate(User user) {
-        StringBuilder sb = new StringBuilder("Поточні курси валют:\n");
-        sb.append(user.getBank().getName()).append("\n");
 
-        Map<String, NormalizeCurrencyPair> currencyRates = user.getBank().getRates();
-
-        for (String currency : user.getCurrencies()) {
-            NormalizeCurrencyPair curCurrency = currencyRates.get(currency);
-            if (currency.equals(curCurrency.getName())) {
-                sb.append(curCurrency.getName()).append("\n");
-                sb.append("Покупка: ");
-                sb.append(curCurrency.getBuy()).append("\n");
-                sb.append("Продаж: ");
-                sb.append(curCurrency.getSale()).append("\n\n");
-            }
-        }
-        return !sb.toString().isEmpty() ? sb.toString() : null;
-    }
-    //Сообщение информации
-    public SendMessage createInfoMessage(User user, Long chatId){
-        String text = getCurrencyRate(user);
-        SendMessage message = createMessage(text, chatId);
-        message.setReplyMarkup(getSectionButtons(Arrays.asList(BT.TO_MAIN)));
-        return message;
-    }
     //Сообщение настроек
     public SendMessage createSettingMessage(Long chatId){
         String text = "Ваші налаштування";
@@ -60,24 +33,24 @@ public class BotDialogHandler{
 
 
     //Сообщение банк
-    public SendMessage createBankMessage(User user, Long chatId){
+    public SendMessage createBankMessage(Long chatId){
         String text = "Виберіть банк";
         SendMessage message = createMessage(text, chatId);
-        message.setReplyMarkup(getAdditionalButtons(user, Arrays.asList(BT.NBU, BT.MB, BT.PB, BT.TO_SETTINGS)));
+        message.setReplyMarkup(getAdditionalButtons(Arrays.asList(BT.NBU, BT.MB, BT.PB, BT.TO_SETTINGS)));
         return message;
     }
     //Сообщение знаки после запятой
-    public SendMessage createDecimalMessage(User user, Long chatId){
+    public SendMessage createDecimalMessage(Long chatId){
         String text = "Кількість знаків після коми";
         SendMessage message = createMessage(text, chatId);
-        message.setReplyMarkup(getAdditionalButtons(user, Arrays.asList(BT.TWO_DIGITS, BT.THREE_DIGITS, BT.FOUR_DIGITS, BT.TO_SETTINGS)));
+        message.setReplyMarkup(getAdditionalButtons(Arrays.asList(BT.TWO_DIGITS, BT.THREE_DIGITS, BT.FOUR_DIGITS, BT.TO_SETTINGS)));
         return message;
     }
     //Сообщение вылюты
-    public SendMessage createCurrencyMessage(User user, Long chatId){
+    public SendMessage createCurrencyMessage(Long chatId){
         String text = "Виберіть валюту";
         SendMessage message = createMessage(text, chatId);
-        message.setReplyMarkup(getAdditionalButtons(user, Arrays.asList(BT.USD, BT.EUR, BT.TO_SETTINGS)));
+        message.setReplyMarkup(getAdditionalButtons(Arrays.asList(BT.USD, BT.EUR, BT.TO_SETTINGS)));
         return message;
     }
     //Сообщение время уведомления
@@ -112,12 +85,12 @@ public class BotDialogHandler{
         return replyKeyboardMarkup;
     }
     //Метод для выбора доп кнопок под сообщение
-    private InlineKeyboardMarkup getAdditionalButtons(User user, List<BT> buttonsTypes) {
+    private InlineKeyboardMarkup getAdditionalButtons(List<BT> buttonsTypes) {
         List<InlineKeyboardButton> buttons = new ArrayList<>();
 
-        int currentNumOfDigits = user.getNumOfDigits();
-        List<String> curr = user.getCurrencies();
-        String bank = user.getBank().getLocalName();
+        int currentNumOfDigits = AppRegistry.getConfCountLastDigits();
+        List<String> availableCurrencies = AppRegistry.getCurrency();
+        Map<String, Bank> banks = AppRegistry.getBanks();
 
         for (BT bt : buttonsTypes) {
             String buttonText = "";
@@ -126,12 +99,11 @@ public class BotDialogHandler{
                 case TWO_DIGITS -> buttonText = "2" + (currentNumOfDigits == 2 ? " ✅" : "");
                 case THREE_DIGITS -> buttonText = "3" + (currentNumOfDigits == 3 ? " ✅" : "");
                 case FOUR_DIGITS -> buttonText = "4" + (currentNumOfDigits == 4 ? " ✅" : "");
-                case USD -> buttonText = "USD" + (curr.contains("USD") ? " ✅" : "");
-                case EUR -> buttonText = "EUR" + (curr.contains("EUR") ? " ✅" : "");
-                case NBU -> buttonText = "Національний банк України" + (bank.equals("NBU") ? " ✅" : "");
-                case MB -> buttonText = "МоноБанк" + (bank.equals("MB") ? " ✅" : "");
-                case PB -> buttonText = "ПриватБанк" + (bank.equals("PB") ? " ✅" : "");
-
+                case USD -> buttonText = "USD" + (availableCurrencies.contains("USD") ? " ✅" : "");
+                case EUR -> buttonText = "EUR" + (availableCurrencies.contains("EUR") ? " ✅" : "");
+                case NBU -> buttonText = "Національний банк України" + (banks.containsKey("NBU") ? " ✅" : "");
+                case MB -> buttonText = "МоноБанк" + (banks.containsKey("MB") ? " ✅" : "");
+                case PB -> buttonText = "ПриватБанк" + (banks.containsKey("PB") ? " ✅" : "");
             }
             buttons.add(createButton(buttonText, bt.name().toLowerCase()));
         }
@@ -159,25 +131,25 @@ public class BotDialogHandler{
         }
         return buildInlineKeyboard(buttons);
     }
-    public EditMessageText updateBankSelectionMessage(Long chatId, Integer messageId, User user) {
-        return createEditMessage(chatId, messageId, "Виберіть банк", user,
-                Arrays.asList(BT.NBU, BT.MB, BT.PB, BT.TO_SETTINGS));
-    }
-    public EditMessageText updateCurrencySelectionMessage(Long chatId, Integer messageId, User user) {
-        return createEditMessage(chatId, messageId, "Виберіть валюту", user,
-                Arrays.asList(BT.USD, BT.EUR, BT.TO_SETTINGS));
-    }
-    public EditMessageText updateNumOfDigitsSelectionMessage(Long chatId, Integer messageId, User user) {
-        return createEditMessage(chatId, messageId, "Кількість знаків після коми", user,
-                Arrays.asList(BT.TWO_DIGITS, BT.THREE_DIGITS, BT.FOUR_DIGITS, BT.TO_SETTINGS));
-    }
+//    public EditMessageText updateBankSelectionMessage(Long chatId, Integer messageId, User user) {
+//        return createEditMessage(chatId, messageId, "Виберіть банк", user,
+//                Arrays.asList(BT.NBU, BT.MB, BT.PB, BT.TO_SETTINGS));
+//    }
+//    public EditMessageText updateCurrencySelectionMessage(Long chatId, Integer messageId, User user) {
+//        return createEditMessage(chatId, messageId, "Виберіть валюту", user,
+//                Arrays.asList(BT.USD, BT.EUR, BT.TO_SETTINGS));
+//    }
+//    public EditMessageText updateNumOfDigitsSelectionMessage(Long chatId, Integer messageId, User user) {
+//        return createEditMessage(chatId, messageId, "Кількість знаків після коми", user,
+//                Arrays.asList(BT.TWO_DIGITS, BT.THREE_DIGITS, BT.FOUR_DIGITS, BT.TO_SETTINGS));
+//    }
 
-    private EditMessageText createEditMessage(Long chatId, Integer messageId, String messageText, User user, List<BT> buttonsTypes) {
+    private EditMessageText createEditMessage(Long chatId, Integer messageId, String messageText, List<BT> buttonsTypes) {
         EditMessageText newMessage = new EditMessageText();
         newMessage.setChatId(String.valueOf(chatId));
         newMessage.setMessageId(messageId);
         newMessage.setText(new String(messageText.getBytes(), StandardCharsets.UTF_8));
-        newMessage.setReplyMarkup(getAdditionalButtons(user, buttonsTypes));
+        newMessage.setReplyMarkup(getAdditionalButtons(buttonsTypes));
         return newMessage;
     }
     private InlineKeyboardButton createButton(String buttonText, String callbackData) {
