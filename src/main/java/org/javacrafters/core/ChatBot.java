@@ -74,10 +74,10 @@ import java.util.Map;
 
             // Messages processing
             if (update.hasMessage()) {
-                String message = update.getMessage().getText();
+                String messageText = update.getMessage().getText();
 
-                logger.trace(message, update);
-                if (message.equals("/start")) {
+                logger.trace(messageText, update);
+                if (messageText.equals("/start")) {
 //                    sendMessage(chatId);
                     startMesID = update.getMessage().getMessageId();
                     sendApiMethodAsync(bd.createWelcomeMessage(chatId));
@@ -86,10 +86,13 @@ import java.util.Map;
                     }
                     // while testing
 //                    userNotify(AppRegistry.getUser(chatId));
-                }else if (message.equals(new String("Налаштування".getBytes(), StandardCharsets.UTF_8))) {
+                }else if (messageText.equals(new String("Налаштування".getBytes(), StandardCharsets.UTF_8))) {
                     sendApiMethodAsync(bd.createSettingsMessage(chatId));
-                }else if (message.equals(new String("Отримати інформацію".getBytes(), StandardCharsets.UTF_8))){
+                }else if (messageText.equals(new String("Отримати інформацію".getBytes(), StandardCharsets.UTF_8))){
                     sendApiMethodAsync(bd.createMessage(createNotifyMessage(AppRegistry.getUser(chatId)), chatId));
+                }else if (isTimeSelection(messageText)) {
+                    // Обработка выбранного времени
+                    handleTimeSelection(chatId, messageText);
                 }
             }
 
@@ -138,7 +141,35 @@ import java.util.Map;
                 }
             }
         }
+        // Метод для проверки, является ли текст сообщения выбором времени
+        private boolean isTimeSelection(String messageText) {
+            return messageText.matches("\\d{1,2}:00")||
+                    messageText.equals(new String("До налаштувань".getBytes(), StandardCharsets.UTF_8))||
+                    messageText.equals(new String("Вимкнути сповіщення".getBytes(), StandardCharsets.UTF_8));
+        }
+        // Метод для обработки выбора времени
+        private void handleTimeSelection(Long chatId, String selectedTime) {
+            User user = AppRegistry.getUser(chatId);
+            if (selectedTime.equals(new String("До налаштувань".getBytes(), StandardCharsets.UTF_8))){
+                SendMessage settingMessage = bd.createSettingsMessage(chatId);
+                SendMessage informMessage = bd.createMessage("Налаштування відправки повідомлень були прийняті", chatId);
 
+                informMessage.setReplyMarkup(bd.getPermanentKeyboard());
+
+                sendApiMethodAsync(informMessage);
+                sendApiMethodAsync(settingMessage);
+            } else if(selectedTime.equals(new String("Вимкнути сповіщення".getBytes(), StandardCharsets.UTF_8))){
+                sendApiMethodAsync(bd.createMessage("Сповіщення вимнкуті", chatId));
+                user.setNotifyStatus(false);
+            }else {
+                sendApiMethodAsync(bd.createMessage("Встановленный час: "+selectedTime, chatId));
+                if (selectedTime.length()==4){
+                    user.setNotifyTime(Integer.parseInt(selectedTime.substring(0,1)));
+                }else {
+                    user.setNotifyTime(Integer.parseInt(selectedTime.substring(0,2)));
+                }
+            }
+        }
         public void userNotify(User user) {
             System.out.println("userNotify() = " + user.getId() + " " + user.getName());
 
@@ -147,7 +178,7 @@ import java.util.Map;
 
             String message = createNotifyMessage(user);
             if (message != null) {
-                sendMessage.setText(message);
+                sendMessage.setText(new String(message.getBytes(), StandardCharsets.UTF_8));
                 try {
                     execute(sendMessage);
                 } catch (TelegramApiException e) {

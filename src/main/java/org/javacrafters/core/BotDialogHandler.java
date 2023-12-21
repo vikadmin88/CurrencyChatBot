@@ -1,7 +1,7 @@
 package org.javacrafters.core;
 
 import org.javacrafters.banking.Bank;
-import org.javacrafters.banking.NormalizeCurrencyPair;
+
 import org.javacrafters.user.User;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
@@ -62,9 +62,9 @@ public class BotDialogHandler {
         newMessage.setText(new String(messageText.getBytes(), StandardCharsets.UTF_8));
 
         InlineKeyboardMarkup replyMarkup = switch (buttonType) {
-            case BAN_BUT -> createBankButtons();
-            case CUR_BUT -> createCurrencyButtons();
-            case DEC_BUT -> createDecimalButtons();
+            case BAN_BUT -> createBankButtons(chatId);
+            case CUR_BUT -> createCurrencyButtons(chatId);
+            case DEC_BUT -> createDecimalButtons(chatId);
             case SETTINGS -> createSettingsButtons();
             default -> createMainMenuButtons();
         };
@@ -96,36 +96,44 @@ public class BotDialogHandler {
         replyKeyboardMarkup.setKeyboard(keyboard);
         return replyKeyboardMarkup;
     }
-    private InlineKeyboardMarkup createDecimalButtons() {
+
+    private InlineKeyboardMarkup createDecimalButtons(Long chatId) {
         List<InlineKeyboardButton> buttons = new ArrayList<>();
         int currentNumOfDigits = AppRegistry.getConfCountLastDigits();
+        int userNumOfDigits = AppRegistry.getUser(chatId).getCountLastDigits();
 
         for (int i = 2; i <= 4; i++) {
-            String buttonText = (currentNumOfDigits == i ? " ✅" : "") + i;
+            String buttonText = (userNumOfDigits == i ? " ✅" : "") + i;
             buttons.add(createButton(buttonText, "decimal_" + i));
         }
         return buildInlineKeyboard(buttons);
     }
-    private InlineKeyboardMarkup createCurrencyButtons() {
+
+    private InlineKeyboardMarkup createCurrencyButtons(Long chatId) {
         List<InlineKeyboardButton> buttons = new ArrayList<>();
         List<String> availableCurrencies = AppRegistry.getCurrency();
+        List<String> userCurrency = AppRegistry.getUser(chatId).getCurrency();
 
         for (String currency : availableCurrencies) {
-            String buttonText = (currency.equals("USD") || currency.equals("EUR") ? " ✅" : "") + currency;
+            String buttonText = (userCurrency.contains(currency) ? "✅ " : "") + currency;
             buttons.add(createButton(buttonText, "currency_" + currency));
         }
         return buildInlineKeyboard(buttons);
     }
-    private InlineKeyboardMarkup createBankButtons() {
+    private InlineKeyboardMarkup createBankButtons(Long chatId) {
         List<InlineKeyboardButton> buttons = new ArrayList<>();
-        Map<String, Bank> banks = AppRegistry.getBanks();
+        Map<String, Bank> allBanks = AppRegistry.getBanks();
+        List<String> userBanks = AppRegistry.getUser(chatId).getBanks();
 
-        for (Map.Entry<String, Bank> entry : banks.entrySet()) {
-            String buttonText = (entry.getValue() != null ? " ✅" : "") + entry.getKey();
-            buttons.add(createButton(buttonText, "bank_" + entry.getKey()));
+        for (Map.Entry<String, Bank> entry : allBanks.entrySet()) {
+            String bankName = entry.getValue().getName();
+            String bankLocalName = entry.getKey();
+            String buttonText = userBanks.contains(bankLocalName) ? "✅ " + bankName : bankName;
+            buttons.add(createButton(buttonText, "bank_" + bankLocalName));
         }
         return buildInlineKeyboard(buttons);
     }
+
 
     private InlineKeyboardMarkup createMainMenuButtons() {
         List<InlineKeyboardButton> buttons = new ArrayList<>();
@@ -181,24 +189,18 @@ public class BotDialogHandler {
         ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
         List<KeyboardRow> keyboard = new ArrayList<>();
 
-        // Добавление кнопки "Отримати інформацію"
-        KeyboardRow row1 = new KeyboardRow();
-        row1.add(new String("Отримати інформацію".getBytes(), StandardCharsets.UTF_8));
-        keyboard.add(row1);
+        // Создаем один ряд кнопок
+        KeyboardRow row = new KeyboardRow();
+        row.add(new String("Отримати інформацію".getBytes(), StandardCharsets.UTF_8)); // Добавляем кнопку "Отримати інформацію"
+        row.add(new String("Стоп".getBytes(), StandardCharsets.UTF_8)); // Добавляем кнопку "Стоп"
+        row.add(new String("Налаштування".getBytes(), StandardCharsets.UTF_8)); // Добавляем кнопку "Налаштування"
 
-        // Добавление кнопки "На головну"
-        KeyboardRow row2 = new KeyboardRow();
-        row2.add(new String("Стоп".getBytes(), StandardCharsets.UTF_8));
-        keyboard.add(row2);
-
-        // Добавление кнопки "Налаштування"
-        KeyboardRow row3 = new KeyboardRow();
-        row3.add(new String("Налаштування".getBytes(), StandardCharsets.UTF_8));
-        keyboard.add(row3);
+        keyboard.add(row); // Добавляем ряд в клавиатуру
 
         replyKeyboardMarkup.setKeyboard(keyboard);
         replyKeyboardMarkup.setResizeKeyboard(true); // Делаем клавиатуру подгоняемой по размеру
         replyKeyboardMarkup.setOneTimeKeyboard(false); // Клавиатура будет постоянной
+
         return replyKeyboardMarkup;
     }
 }
