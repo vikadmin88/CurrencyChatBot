@@ -4,6 +4,7 @@ import org.javacrafters.banking.Bank;
 import org.javacrafters.banking.MonoBank;
 import org.javacrafters.banking.NbuBank;
 import org.javacrafters.banking.PrivatBank;
+import org.javacrafters.networkclient.NetworkClient;
 import org.javacrafters.networkclient.NetworkStreamReader;
 import org.javacrafters.scheduler.Scheduler;
 import org.javacrafters.user.User;
@@ -131,15 +132,15 @@ import java.util.*;
 
 
                     //Bank callback
-//                    case "nbu", "mono", "private" -> {
-//                        toggleBank(user, data.toUpperCase());
-//                        EditMessageText newMessage = dialogHandler.updateBankSelectionMessage(chatId, messageId, user);
-//                        try {
-//                            execute(newMessage);
-//                        } catch (TelegramApiException e) {
-//                            throw new RuntimeException(e);
-//                        }
-//                    }
+                    case "nbu", "mono", "private" -> {
+                        toggleBank(user, data.toUpperCase());
+                        EditMessageText newMessage = dialogHandler.updateBankSelectionMessage(chatId, messageId, user);
+                        try {
+                            execute(newMessage);
+                        } catch (TelegramApiException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
                     //Currency callback
                     case "usd", "eur" -> {
                         toggleCurrency(user, data.toUpperCase());
@@ -163,18 +164,18 @@ import java.util.*;
                 }
             }
         }
-        // Mетод для переключения банков
-//        private void toggleBank(User user, String digits) {
-//            if (user.getBank().getLocalName().toLowerCase().equals(digits)) {
-//                user.setBank(null);
-//            } else {
-//                user.setBank(switch (digits) {
-//                    case "nbu" -> new NbuBank();
-//                    case "mb" -> new MonoBank();
-//                    default -> new PrivatBank();
-//                });
-//            }
-//        }
+         //Mетод для переключения банков
+        private void toggleBank(User user, String digits) {
+            if (user.getBank().getLocalName().toLowerCase().equals(digits)) {
+                user.setBank(null);
+            } else {
+                user.setBank(switch (digits) {
+                    case "nbu" -> new NbuBank();
+                    case "mb" -> new MonoBank();
+                    default -> new PrivatBank();
+                });
+            }
+        }
         // Mетод для переключения знаков полсе запятой
         private void toggleDigit(User user, String digits) {
             int dig = switch (digits) {
@@ -214,7 +215,9 @@ import java.util.*;
 
                 sendApiMethodAsync(infromMessage);
                 sendApiMethodAsync(settingMessage);
-            } else {
+            } else if(selectedTime.equals("Вимкнути сповіщення")){
+                user.setNotifyTime(0);
+            }else {
                 sendApiMethodAsync(dialogHandler.createMessage("Встановленный час: "+selectedTime, chatId));
                 if (selectedTime.length()==4){
                     user.setNotifyTime(Integer.parseInt(selectedTime.substring(0,1)));
