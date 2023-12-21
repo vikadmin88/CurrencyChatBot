@@ -20,7 +20,13 @@ public class BotDialogHandler {
     public SendMessage createWelcomeMessage(Long chatId) {
         String text = "Ласкаво просимо. Цей бот допоможе відслідковувати актуальні курси валют";
         SendMessage message = createMessage(text, chatId);
-        message.setReplyMarkup(createMainMenuButtons());
+        message.setReplyMarkup(getPermanentKeyboard());
+        return message;
+    }
+    public  SendMessage createSettingsMessage(Long chatId){
+        String text = "Налаштування";
+        SendMessage message = createMessage(text, chatId);
+        message.setReplyMarkup(createSettingsButtons());
         return message;
     }
 
@@ -36,10 +42,17 @@ public class BotDialogHandler {
         String text = "Налаштування";
         return createEditMessage(chatId, messageId, text, BT.SETTINGS);
     }
-
+    public EditMessageText onDecimalMessage(Long chatId, Integer messageId) {
+        String text = "Кількість знаків після коми";
+        return createEditMessage(chatId, messageId, text, BT.DEC_BUT);
+    }
     public EditMessageText onBankMessage(Long chatId, Integer messageId) {
         String text = "Банки";
         return createEditMessage(chatId, messageId, text, BT.BAN_BUT);
+    }
+    public EditMessageText onCurrencyMessage(Long chatId, Integer messageId) {
+        String text = "Валюти";
+        return createEditMessage(chatId, messageId, text, BT.CUR_BUT);
     }
 
     private EditMessageText createEditMessage(Long chatId, Integer messageId, String messageText, BT buttonType) {
@@ -163,7 +176,7 @@ public class BotDialogHandler {
         return message;
     }
 
-    //пока не использовать
+    //клавиатура пользователя
     public ReplyKeyboardMarkup getPermanentKeyboard() {
         ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
         List<KeyboardRow> keyboard = new ArrayList<>();
@@ -175,12 +188,12 @@ public class BotDialogHandler {
 
         // Добавление кнопки "На головну"
         KeyboardRow row2 = new KeyboardRow();
-        row2.add(new String("На головну".getBytes(), StandardCharsets.UTF_8));
+        row2.add(new String("Стоп".getBytes(), StandardCharsets.UTF_8));
         keyboard.add(row2);
 
-        // Добавление кнопки "Повернутись до налаштування"
+        // Добавление кнопки "Налаштування"
         KeyboardRow row3 = new KeyboardRow();
-        row3.add(new String("Повернутись до налаштування".getBytes(), StandardCharsets.UTF_8));
+        row3.add(new String("Налаштування".getBytes(), StandardCharsets.UTF_8));
         keyboard.add(row3);
 
         replyKeyboardMarkup.setKeyboard(keyboard);

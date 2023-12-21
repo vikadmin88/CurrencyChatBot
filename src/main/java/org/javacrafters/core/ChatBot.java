@@ -75,6 +75,7 @@ import java.util.Map;
             // Messages processing
             if (update.hasMessage()) {
                 String message = update.getMessage().getText();
+
                 logger.trace(message, update);
                 if (message.equals("/start")) {
 //                    sendMessage(chatId);
@@ -85,9 +86,11 @@ import java.util.Map;
                     }
                     // while testing
 //                    userNotify(AppRegistry.getUser(chatId));
-                }//else if (message.equals(new String("Повернутись до налаштування".getBytes(), StandardCharsets.UTF_8))) {
-//                    sendApiMethodAsync(bd.onSettingMessage(chatId, startMesID));
-//                }
+                }else if (message.equals(new String("Налаштування".getBytes(), StandardCharsets.UTF_8))) {
+                    sendApiMethodAsync(bd.createSettingsMessage(chatId));
+                }else if (message.equals(new String("Отримати інформацію".getBytes(), StandardCharsets.UTF_8))){
+                    sendApiMethodAsync(bd.createMessage(createNotifyMessage(AppRegistry.getUser(chatId)), chatId));
+                }
             }
 
             // Callbacks processing
@@ -96,6 +99,7 @@ import java.util.Map;
                 int messageId = update.getCallbackQuery().getMessage().getMessageId();
                 switch (data) {
                     //Main callbacks
+                    case "get_info" -> sendApiMethodAsync(bd.createMessage(createNotifyMessage(AppRegistry.getUser(chatId)), chatId));
                     case "settings", "to_settings" -> {
                         try {
                             execute(bd.onSettingMessage(chatId, messageId));
@@ -103,7 +107,34 @@ import java.util.Map;
                             throw new RuntimeException(e);
                         }
                     }
-                    case "get_info" -> sendApiMethodAsync(bd.createMessage(createNotifyMessage(AppRegistry.getUser(chatId)), chatId));
+                    case "decimal_places" -> {
+                        try {
+                            execute(bd.onDecimalMessage(chatId, messageId));
+                        } catch (TelegramApiException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                    case "bank" -> {
+                        try {
+                            execute(bd.onBankMessage(chatId, messageId));
+                        } catch (TelegramApiException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                    case "currencies" -> {
+                        try {
+                            execute(bd.onCurrencyMessage(chatId, messageId));
+                        } catch (TelegramApiException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                    case "notification_time" -> {
+                        try {
+                            execute(bd.createSetNotifyMessage(chatId));
+                        } catch (TelegramApiException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
                 }
             }
         }
