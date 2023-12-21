@@ -15,6 +15,8 @@ repositories {
 }
 
 dependencies {
+    // https://mvnrepository.com/artifact/org.jsoup/jsoup
+    implementation 'org.jsoup:jsoup:1.17.1'
     // https://mvnrepository.com/artifact/com.google.code.gson/gson
     implementation 'com.google.code.gson:gson:2.10.1'
     // https://mvnrepository.com/artifact/org.telegram/telegrambots
@@ -43,8 +45,11 @@ test {
 tasks.register("createRelease") {
     doLast {
         mkdir('./build/release')
-        println "Creating release jar file: ./build/release/${newAppName}.jar"
-        println "To run: java -jar ./build/release/${newAppName}.jar"
+        println "Release folder: ./build/release/"
+        println "Config file: ./build/release/${appProperties}"
+        println "Jar file: ./build/release/${newAppName}.jar"
+        println "To run ${newAppName} as a jar, go to ./build/release/"
+        println "Run: java -jar ${newAppName}.jar"
     }
 }
 

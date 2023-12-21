@@ -1,27 +1,22 @@
 package org.javacrafters.user;
 
-import org.javacrafters.banking.Bank;
-import org.javacrafters.banking.PrivatBank;
-import org.javacrafters.networkclient.NetworkStreamReader;
-
 import java.util.*;
-import java.util.concurrent.ScheduledFuture;
 
 public class User {
 
     private Long id;
     private String name;
     private String username;
-    private Bank bank;
-    private final List<String> currencies = new ArrayList<>();
-    private int numOfDigits = 2;
+    private final List<String> banks = new ArrayList<>();
+    private final List<String> currency = new ArrayList<>();
+    private int countLastDigits = 2;
     private int notifyTime = 21;
-    private ScheduledFuture<?> scheduledTask;
+
     private boolean isNotifyOn = true;
 
     {
-        currencies.add("USD");
-        bank = new PrivatBank(new NetworkStreamReader());
+        currency.add("USD");
+        banks.add("PB");
     }
     public User() {
     }
@@ -52,34 +47,42 @@ public class User {
         this.username = username;
     }
 
-    public Bank getBank() {
-        return bank;
+    public List<String> getBanks() {
+        return banks;
     }
 
-    public void setBank(Bank bank) {
-        this.bank = bank;
+    public void removeBank(String bankLocalName) {
+        banks.remove(bankLocalName);
     }
 
-    public List<String> getCurrencies() {
-        return currencies;
+    public void addBank(String bankLocalName) {
+        if (banks.contains(bankLocalName)) {
+            return;
+        }
+        banks.add(bankLocalName);
+
+    }
+
+    public List<String> getCurrency() {
+        return currency;
     }
 
     public void addCurrency(String name) {
-        if (currencies.contains(name)) {
+        if (currency.contains(name)) {
             return;
         }
-        this.currencies.add(name);
+        currency.add(name);
     }
     public void removeCurrency(String name) {
-        this.currencies.remove(name);
+        this.currency.remove(name);
     }
 
-    public int getNumOfDigits() {
-        return numOfDigits;
+    public int getCountLastDigits() {
+        return countLastDigits;
     }
 
-    public void setNumOfDigits(int numOfDigits) {
-        this.numOfDigits = numOfDigits;
+    public void setCountLastDigits(int countLastDigits) {
+        this.countLastDigits = countLastDigits;
     }
 
     public int getNotifyTime() {
@@ -88,13 +91,6 @@ public class User {
 
     public void setNotifyTime(int notifyTime) {
         this.notifyTime = notifyTime;
-    }
-    public ScheduledFuture<?> getScheduledTask() {
-        return this.scheduledTask;
-    }
-
-    public void setScheduledTask(ScheduledFuture<?> scheduledTask) {
-        this.scheduledTask = scheduledTask;
     }
 
     public boolean isNotifyOn() {
@@ -106,6 +102,9 @@ public class User {
     }
     public void setNotifyOff() {
         this.isNotifyOn = false;
+    }
+    public void setNotifyStatus(boolean status) {
+        this.isNotifyOn = status;
     }
 
     @Override
@@ -127,12 +126,11 @@ public class User {
                 "id=" + id +
                 ", name='" + name + '\'' +
                 ", username='" + username + '\'' +
-                ", banks=" + bank.toString() +
-                ", currencies=" + currencies.toString() +
-                ", numOfDigits=" + numOfDigits +
+                ", banks=" + banks.toString() +
+                ", currencies=" + currency.toString() +
+                ", numOfDigits=" + countLastDigits +
                 ", notifyTime=" + notifyTime +
-                ", isNotifyEnabled=" + isNotifyOn +
-//                ", scheduledTask=" + scheduledTask.toString() +
+                ", isNotifyOn=" + isNotifyOn +
                 '}';
     }
 }

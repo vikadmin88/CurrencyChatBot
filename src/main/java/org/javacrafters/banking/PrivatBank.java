@@ -3,34 +3,26 @@ package org.javacrafters.banking;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import org.javacrafters.networkclient.NetworkClient;
-import org.javacrafters.core.ConfigLoader;
 
 import java.util.*;
 
 public class PrivatBank extends Bank {
-    private NetworkClient netClient;
     private final static String NAME = "Приват Банк";
     private final static String LOCAL_NAME  = "PB";
-//    private final static String API_URL = "https://api.privatbank.ua/p24api/pubinfo?json&exchange&coursid=5";
-    private final static String API_URL = ConfigLoader.get("PB_API_URL");
+    private final String apiUrl;
+    private final NetworkClient netClient;
 
-    public PrivatBank() {
-    }
-
-    public PrivatBank(NetworkClient netClient) {
-        this.netClient = netClient;
-    }
-    @Override
-    public void setNetClient(NetworkClient netClient) {
+    public PrivatBank(String apiUrl, NetworkClient netClient) {
+        this.apiUrl = apiUrl;
         this.netClient = netClient;
     }
 
     @Override
     public Map<String, NormalizeCurrencyPair> getRates() {
         Gson gson = new Gson();
-        JsonObject[] jsonObjArr = gson.fromJson(netClient.get(API_URL), JsonObject[].class);
+        JsonObject[] jsonObjArr = gson.fromJson(netClient.get(apiUrl), JsonObject[].class);
 
-        // {"USD" => ""USD"", "36.95000", "37.45000"}
+        // {"USD" => "USD", "36.95000", "37.45000"}
         Map<String, NormalizeCurrencyPair> rateMap = new HashMap<>();
 
         for (JsonObject jsonObjItem : jsonObjArr) {

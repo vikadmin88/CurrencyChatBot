@@ -1,41 +1,35 @@
 package org.javacrafters;
 
+import org.javacrafters.banking.MonoBank;
+import org.javacrafters.banking.NbuBank;
+import org.javacrafters.banking.PrivatBank;
+import org.javacrafters.core.AppRegistry;
 import org.javacrafters.core.ChatBot;
-import org.javacrafters.scheduler.Scheduler;
-import org.javacrafters.user.User;
+import org.javacrafters.core.UserLoader;
+import org.javacrafters.core.storage.JsonStorageProvider;
+import org.javacrafters.networkclient.NetworkClient;
+import org.javacrafters.networkclient.NetworkStreamReader;
 import org.javacrafters.core.ConfigLoader;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.ScheduledFuture;
 
 
 public class AppLauncher {
 
 
     public static void main(String[] args) {
-        System.out.println("Starting " + Thread.currentThread().getName());
+        System.out.println("Program starting in Thread: " + Thread.currentThread().getName());
 
-        Map<Long, User> users = new HashMap<>();
-        String appName = ConfigLoader.get("appName");
-        String botName = ConfigLoader.get("botName");
-        String botToken = ConfigLoader.get("botToken");
+        AppRegistry.initDefaults();
+        AppRegistry.addBank("PB", new PrivatBank(ConfigLoader.get("BANK_PB_API_URL"), new NetworkStreamReader()));
+        AppRegistry.addBank("MB", new MonoBank(ConfigLoader.get("BANK_MB_API_URL"), new NetworkStreamReader()));
+        AppRegistry.addBank("NBU", new NbuBank(ConfigLoader.get("BANK_NBU_API_URL"), new NetworkStreamReader()));
 
-        ChatBot bot = new ChatBot(users, appName, botName, botToken);
+        UserLoader.setStorageProvider(new JsonStorageProvider()).load();
 
-//        User user = new User(1L, "Viktest1", "UserName1");
-//        ScheduledFuture<?> notifyTask = new Scheduler().schedule(bot, user, 9);
+        String appName = ConfigLoader.get("APP_NAME");
+        String botName = ConfigLoader.get("APP_BOT_NAME");
+        String botToken = ConfigLoader.get("APP_BOT_TOKEN");
 
-//        user.setScheduledTask(notifyTask);
-//        System.out.println("user = " + user);
-//        System.out.println("user.getScheduledTask() = " + user.getScheduledTask());
-//        System.out.println("user.getScheduledTask().cancel(true) = " + user.getScheduledTask().cancel(true));
-//        try {
-//            Thread.sleep(5000);
-//        } catch (InterruptedException e) {
-//            throw new RuntimeException(e);
-//        }
-//        System.out.println("notifyTask.isDone() = " + notifyTask.isDone());
-
+        ChatBot bot = new ChatBot(appName, botName, botToken);
         bot.botRun();
     }
 
