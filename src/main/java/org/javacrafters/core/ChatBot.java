@@ -12,14 +12,17 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
+
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
     public class ChatBot extends TelegramLongPollingBot {
         private static final Logger logger = LoggerFactory.getLogger(ChatBot.class);
-
+        private BotDialogHandler bd = new BotDialogHandler();
         private final String appName;
         private final String botName;
         private final String botToken;
+        private int startMesID;
 
         public ChatBot(String appName, String botName, String botToken) {
             this.appName = appName;
@@ -66,26 +69,41 @@ import java.util.Map;
 
         @Override
         public void onUpdateReceived(Update update) {
+
             Long chatId = getChatId(update);
 
             // Messages processing
             if (update.hasMessage()) {
-                logger.trace(update.getMessage().getText(), update);
-                if (update.getMessage().getText().equals("/start")) {
+                String message = update.getMessage().getText();
+                logger.trace(message, update);
+                if (message.equals("/start")) {
 //                    sendMessage(chatId);
-
+                    startMesID = update.getMessage().getMessageId();
+                    sendApiMethodAsync(bd.createWelcomeMessage(chatId));
                     if (!AppRegistry.hasUser(chatId)) {
                         addUser(chatId, update);
                     }
                     // while testing
-                    userNotify(AppRegistry.getUser(chatId));
-                }
+//                    userNotify(AppRegistry.getUser(chatId));
+                }//else if (message.equals(new String("Повернутись до налаштування".getBytes(), StandardCharsets.UTF_8))) {
+//                    sendApiMethodAsync(bd.onSettingMessage(chatId, startMesID));
+//                }
             }
 
             // Callbacks processing
             if (update.hasCallbackQuery()) {
-                if (update.getCallbackQuery().getData().equals("level_1_task")) {
-//                    sendMessage(chatId);
+                String data = update.getCallbackQuery().getData();
+                int messageId = update.getCallbackQuery().getMessage().getMessageId();
+                switch (data) {
+                    //Main callbacks
+                    case "settings", "to_settings" -> {
+                        try {
+                            execute(bd.onSettingMessage(chatId, messageId));
+                        } catch (TelegramApiException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                    case "get_info" -> sendApiMethodAsync(bd.createMessage(createNotifyMessage(AppRegistry.getUser(chatId)), chatId));
                 }
             }
         }
