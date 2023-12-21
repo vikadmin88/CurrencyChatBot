@@ -20,7 +20,7 @@ public class BotDialogHandler {
     public SendMessage createWelcomeMessage(Long chatId) {
         String text = "Ласкаво просимо. Цей бот допоможе відслідковувати актуальні курси валют";
         SendMessage message = createMessage(text, chatId);
-        message.setReplyMarkup(getSectionButtons(Arrays.asList(BT.GET_INFO, BT.SETTINGS)));
+        message.setReplyMarkup(createMainMenuButtons());
         return message;
     }
 
@@ -30,6 +30,34 @@ public class BotDialogHandler {
         SendMessage message = createMessage(text, chatId);
         message.setReplyMarkup(getTimeKeyboard());
         return message;
+    }
+
+    public EditMessageText onSettingMessage(Long chatId, Integer messageId) {
+        String text = "Налаштування";
+        return createEditMessage(chatId, messageId, text, BT.SETTINGS);
+    }
+
+    public EditMessageText onBankMessage(Long chatId, Integer messageId) {
+        String text = "Банки";
+        return createEditMessage(chatId, messageId, text, BT.BAN_BUT);
+    }
+
+    private EditMessageText createEditMessage(Long chatId, Integer messageId, String messageText, BT buttonType) {
+        EditMessageText newMessage = new EditMessageText();
+        newMessage.setChatId(String.valueOf(chatId));
+        newMessage.setMessageId(messageId);
+        newMessage.setText(new String(messageText.getBytes(), StandardCharsets.UTF_8));
+
+        InlineKeyboardMarkup replyMarkup = switch (buttonType) {
+            case BAN_BUT -> createBankButtons();
+            case CUR_BUT -> createCurrencyButtons();
+            case DEC_BUT -> createDecimalButtons();
+            case SETTINGS -> createSettingsButtons();
+            default -> createMainMenuButtons();
+        };
+
+        newMessage.setReplyMarkup(replyMarkup);
+        return newMessage;
     }
     // Метод для создания клавиатуры пользователя с выбором времени уведомлений
     private ReplyKeyboardMarkup getTimeKeyboard() {
@@ -55,61 +83,84 @@ public class BotDialogHandler {
         replyKeyboardMarkup.setKeyboard(keyboard);
         return replyKeyboardMarkup;
     }
-    //Метод для выбора доп кнопок под сообщение
-    private InlineKeyboardMarkup getAdditionalButtons(List<BT> buttonsTypes) {
+    private InlineKeyboardMarkup createDecimalButtons() {
         List<InlineKeyboardButton> buttons = new ArrayList<>();
-
         int currentNumOfDigits = AppRegistry.getConfCountLastDigits();
+
+        for (int i = 2; i <= 4; i++) {
+            String buttonText = (currentNumOfDigits == i ? " ✅" : "") + i;
+            buttons.add(createButton(buttonText, "decimal_" + i));
+        }
+        return buildInlineKeyboard(buttons);
+    }
+    private InlineKeyboardMarkup createCurrencyButtons() {
+        List<InlineKeyboardButton> buttons = new ArrayList<>();
         List<String> availableCurrencies = AppRegistry.getCurrency();
+
+        for (String currency : availableCurrencies) {
+            String buttonText = (currency.equals("USD") || currency.equals("EUR") ? " ✅" : "") + currency;
+            buttons.add(createButton(buttonText, "currency_" + currency));
+        }
+        return buildInlineKeyboard(buttons);
+    }
+    private InlineKeyboardMarkup createBankButtons() {
+        List<InlineKeyboardButton> buttons = new ArrayList<>();
         Map<String, Bank> banks = AppRegistry.getBanks();
 
-        for (BT bt : buttonsTypes) {
-            String buttonText = "";
-            switch (bt) {
-                case TWO_DIGITS -> buttonText = (currentNumOfDigits == 2 ? " ✅" : "") + "2";
-                case THREE_DIGITS -> buttonText = (currentNumOfDigits == 3 ? " ✅" : "") + "3";
-                case FOUR_DIGITS -> buttonText = (currentNumOfDigits == 4 ? " ✅" : "") + "4";
-                case USD -> buttonText = (availableCurrencies.contains("USD") ? " ✅" : "") + "USD";
-                case EUR -> buttonText = (availableCurrencies.contains("EUR") ? " ✅" : "") + "EUR";
-                case NBU -> buttonText = (banks.containsKey("NBU") ? " ✅" : "") + "Національний банк України";
-                case MB -> buttonText = (banks.containsKey("MB") ? " ✅" : "") + "МоноБанк";
-                case PB -> buttonText = (banks.containsKey("PB") ? " ✅" : "") + "ПриватБанк";
-            }
-            buttons.add(createButton(buttonText, bt.name().toLowerCase()));
+        for (Map.Entry<String, Bank> entry : banks.entrySet()) {
+            String buttonText = (entry.getValue() != null ? " ✅" : "") + entry.getKey();
+            buttons.add(createButton(buttonText, "bank_" + entry.getKey()));
         }
         return buildInlineKeyboard(buttons);
     }
-    //метод для выбора кнопок разделов
-    private InlineKeyboardMarkup getSectionButtons(List<BT> buttonsTypes) {
+
+    private InlineKeyboardMarkup createMainMenuButtons() {
         List<InlineKeyboardButton> buttons = new ArrayList<>();
 
-        for (BT bt : buttonsTypes) {
-            String buttonText = "";
-            switch (bt) {
-                //MAIN BUTTONS
-                case GET_INFO -> buttonText = "Отримати інформацію";
-                case SETTINGS -> buttonText = "Налаштування";
-                //SETTING BUTTONS
-                case DECIMAL_PLACES -> buttonText = "Кількість знаків після коми";
-                case BANK -> buttonText = "Банки";
-                case CURRENCIES -> buttonText = "Валюти";
-                case NOTIFICATION_TIME -> buttonText = "Час сповіщення";
+        // Добавление кнопок для главного меню
+        buttons.add(createButton("Отримати інформацію", "get_info"));
+        buttons.add(createButton("Налаштування", "settings"));
 
-            }
-            buttons.add(createButton(buttonText, bt.name().toLowerCase()));
-        }
         return buildInlineKeyboard(buttons);
     }
-    public EditMessageText onSettingMessage(Long chatId, Integer messageId) {
-        String text = "Налаштування";
-        return createEditMessage(chatId, messageId, text,
-                Arrays.asList(BT.BANK, BT.CURRENCIES, BT.DECIMAL_PLACES, BT.NOTIFICATION_TIME), false);
+
+    private InlineKeyboardMarkup createSettingsButtons() {
+        List<InlineKeyboardButton> buttons = new ArrayList<>();
+
+        // Добавление кнопок для настроек
+        buttons.add(createButton("Кількість знаків після коми", "decimal_places"));
+        buttons.add(createButton("Банки", "bank"));
+        buttons.add(createButton("Валюти", "currencies"));
+        buttons.add(createButton("Час сповіщення", "notification_time"));
+
+        return buildInlineKeyboard(buttons);
     }
 
-    public EditMessageText onBankMessage(Long chatId, Integer messageId) {
-        String text = "Банки";
-        return createEditMessage(chatId, messageId, text,
-                Arrays.asList(BT.NBU, BT.MB, BT.PB), true);
+    private InlineKeyboardButton createButton(String buttonText, String callbackData) {
+        InlineKeyboardButton button = new InlineKeyboardButton();
+        button.setText(new String(buttonText.getBytes(), StandardCharsets.UTF_8));
+        button.setCallbackData(callbackData);
+        return button;
+    }
+
+    private InlineKeyboardMarkup buildInlineKeyboard(List<InlineKeyboardButton> buttons) {
+        InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
+        for (InlineKeyboardButton button : buttons) {
+            List<InlineKeyboardButton> row = new ArrayList<>();
+            row.add(button);
+            keyboard.add(row);
+        }
+        inlineKeyboardMarkup.setKeyboard(keyboard);
+        return inlineKeyboardMarkup;
+    }
+    //Создание сообщения
+    public SendMessage createMessage(String text, Long chatId) {
+        SendMessage message = new SendMessage();
+        message.setText(new String(text.getBytes(), StandardCharsets.UTF_8));
+        message.setParseMode("markdown");
+        message.setChatId(chatId);
+        return message;
     }
 
     //пока не использовать
@@ -136,40 +187,5 @@ public class BotDialogHandler {
         replyKeyboardMarkup.setResizeKeyboard(true); // Делаем клавиатуру подгоняемой по размеру
         replyKeyboardMarkup.setOneTimeKeyboard(false); // Клавиатура будет постоянной
         return replyKeyboardMarkup;
-    }
-
-    private EditMessageText createEditMessage(Long chatId, Integer messageId, String messageText, List<BT> buttonsTypes, boolean isAdditionalButtons) {
-        EditMessageText newMessage = new EditMessageText();
-        newMessage.setChatId(String.valueOf(chatId));
-        newMessage.setMessageId(messageId);
-        newMessage.setText(new String(messageText.getBytes(), StandardCharsets.UTF_8));
-        newMessage.setReplyMarkup(isAdditionalButtons ? getAdditionalButtons(buttonsTypes) : getSectionButtons(buttonsTypes));
-        return newMessage;
-    }
-    private InlineKeyboardButton createButton(String buttonText, String callbackData) {
-        InlineKeyboardButton button = new InlineKeyboardButton();
-        button.setText(new String(buttonText.getBytes(), StandardCharsets.UTF_8));
-        button.setCallbackData(callbackData);
-        return button;
-    }
-
-    private InlineKeyboardMarkup buildInlineKeyboard(List<InlineKeyboardButton> buttons) {
-        InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
-        List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
-        for (InlineKeyboardButton button : buttons) {
-            List<InlineKeyboardButton> row = new ArrayList<>();
-            row.add(button);
-            keyboard.add(row);
-        }
-        inlineKeyboardMarkup.setKeyboard(keyboard);
-        return inlineKeyboardMarkup;
-    }
-    //Создание сообщения
-    public SendMessage createMessage(String text, Long chatId) {
-        SendMessage message = new SendMessage();
-        message.setText(new String(text.getBytes(), StandardCharsets.UTF_8));
-        message.setParseMode("markdown");
-        message.setChatId(chatId);
-        return message;
     }
 }
