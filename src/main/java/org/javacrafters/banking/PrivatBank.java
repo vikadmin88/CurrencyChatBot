@@ -8,7 +8,7 @@ import java.util.*;
 
 public class PrivatBank extends Bank {
     private final static String NAME = "Приват Банк";
-    private final static String LOCAL_NAME  = "PB";
+    private final static String LOCAL_NAME = "PB";
     private final String apiUrl;
     private final NetworkClient netClient;
 
