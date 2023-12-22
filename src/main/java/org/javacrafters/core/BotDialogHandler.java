@@ -29,8 +29,8 @@ public class BotDialogHandler {
         message.setParseMode(ParseMode.HTML);
         return message;
     }
-    public SendMessage createEmptyMessage(Long chatId) {
-        String text = "⚒\uFE0F";
+    public SendMessage createCustomMessage(Long chatId, String textMessage) {
+        String text = "" + textMessage;
         SendMessage message = createMessage(text, chatId);
         message.setReplyMarkup(getPermanentKeyboard());
         message.setParseMode(ParseMode.HTML);
@@ -107,7 +107,7 @@ public class BotDialogHandler {
             }
         }
         row.add(new String("Вимкнути сповіщення".getBytes(), StandardCharsets.UTF_8));
-        row.add(new String("Налаштування".getBytes(), StandardCharsets.UTF_8));
+//        row.add(new String("Налаштування".getBytes(), StandardCharsets.UTF_8));
         // Добавляем последний ряд, если он не пустой
         if (!row.isEmpty()) {
             keyboard.add(row);
@@ -158,8 +158,8 @@ public class BotDialogHandler {
         List<InlineKeyboardButton> buttons = new ArrayList<>();
 
         // Добавление кнопок для главного меню
-        buttons.add(createButton("Отримати інформацію", "get_info"));
-        buttons.add(createButton("Налаштування", "settings"));
+        buttons.add(createButton("\uD83C\uDFA2 Курси валют", "get_info"));
+        buttons.add(createButton("\u2699 Налаштування", "settings"));
 
         return buildInlineKeyboard(buttons);
     }
@@ -168,10 +168,10 @@ public class BotDialogHandler {
         List<InlineKeyboardButton> buttons = new ArrayList<>();
 
         // Добавление кнопок для настроек
-        buttons.add(createButton("Кількість знаків після коми", "decimal"));
-        buttons.add(createButton("Банки", "bank"));
-        buttons.add(createButton("Валюти", "currency"));
-        buttons.add(createButton("Час сповіщення", "notification"));
+        buttons.add(createButton("\uD83D\uDD22 Кількість знаків після коми", "decimal"));
+        buttons.add(createButton("\uD83C\uDFE6 Банки", "bank"));
+        buttons.add(createButton("\uD83D\uDCB5 Валюти", "currency"));
+        buttons.add(createButton("⏰ Час сповіщення", "notification"));
 
         return buildInlineKeyboard(buttons);
     }
@@ -210,9 +210,9 @@ public class BotDialogHandler {
 
         // Создаем один ряд кнопок
         KeyboardRow row = new KeyboardRow();
-        row.add(new String("Отримати інформацію".getBytes(), StandardCharsets.UTF_8)); // Добавляем кнопку "Отримати інформацію"
-        row.add(new String("Стоп".getBytes(), StandardCharsets.UTF_8)); // Добавляем кнопку "Стоп"
-        row.add(new String("Налаштування".getBytes(), StandardCharsets.UTF_8)); // Добавляем кнопку "Налаштування"
+        row.add(new String("\uD83C\uDFA2 Курси валют".getBytes(), StandardCharsets.UTF_8)); // Добавляем кнопку "Отримати інформацію"
+        row.add(new String("❌ Стоп".getBytes(), StandardCharsets.UTF_8)); // Добавляем кнопку "Стоп"
+        row.add(new String("\u2699 Налаштування".getBytes(), StandardCharsets.UTF_8)); // Добавляем кнопку "Налаштування"
 
         keyboard.add(row); // Добавляем ряд в клавиатуру
 

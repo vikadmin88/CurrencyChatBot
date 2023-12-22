@@ -90,7 +90,7 @@ import java.util.Map;
                     doCommandStart(chatId, update);
                 }
                 // Stop / Disable notify
-                if (msgCommand.equals("/stop") || msgCommand.equals("Стоп")) {
+                if (msgCommand.equals("/stop") || msgCommand.endsWith("Стоп")) {
                     doCommandStop(chatId, update);
                 }
                 if (msgCommand.equals("Вимкнути сповіщення")) {
@@ -103,6 +103,10 @@ import java.util.Map;
                 // Settings
                 if (msgCommand.endsWith("Налаштування")) {
                     doCommandSettings(chatId, update);
+                }
+                //
+                if (msgCommand.endsWith("Курси валют")) {
+                    userNotify(AppRegistry.getUser(chatId));
                 }
             }
 
@@ -134,14 +138,14 @@ import java.util.Map;
                 addUser(chatId, update);
                 saveUser(chatId);
             }
-            System.out.println("AppRegistry.getUser(chatId) = " + AppRegistry.getUser(chatId));
             userNotify(AppRegistry.getUser(chatId));
         }
         public void doCommandStop(Long chatId, Update update) {
             BotDialogHandler dh = new BotDialogHandler(chatId);
             SendMessage ms = dh.createMessage("""
-                                Ви відписалися від розсилки. Щоб підписатися наново введіть команду /start 
-                                Також в налаштуваннях оберіть час розсилки.
+                                ❗Вашу підписку на отримання курсів валют деактивовано!❗ 
+                                Якщо ви бажаєте активувати її наново, будь ласка введіть або натисніть на команду /start 
+                                Також в налаштуваннях ви маєте обрати зручний для вас час розсилки курсів валют.
                                 """, chatId);
             sendMessage(ms);
 
@@ -158,7 +162,7 @@ import java.util.Map;
         }
         public void doCommandNotifyOff(Long chatId, Update update) {
             BotDialogHandler dh = new BotDialogHandler(chatId);
-            SendMessage ms = dh.createMessage("Сповіщення вимкнуті!", chatId);
+            SendMessage ms = dh.createCustomMessage(chatId,"⚠\uFE0F  Сповіщення вимкнено!");
             sendMessage(ms);
 
             Scheduler.getUserScheduler(chatId).cancel(true);
@@ -169,7 +173,7 @@ import java.util.Map;
         public void doCommandNotifySetTime(Long chatId, Update update) {
             BotDialogHandler dh = new BotDialogHandler(chatId);
             String msgCommand = update.getMessage().getText();
-            SendMessage ms = dh.createMessage("Час сповіщень змінений на " + msgCommand, chatId);
+            SendMessage ms = dh.createCustomMessage(chatId,"\uD83D\uDEC8  Час сповіщень змінено на " + msgCommand);
             sendMessage(ms);
 
             int hour = Integer.parseInt(msgCommand.split(":")[0]);
@@ -212,7 +216,6 @@ import java.util.Map;
                     userCurrency.remove(toggleCurrency);
                 } else {userCurrency.add(toggleCurrency);}
                 saveUser(chatId);
-                System.out.println("AppRegistry.getUser(chatId) = " + AppRegistry.getUser(chatId));
             }
             BotDialogHandler dh = new BotDialogHandler(chatId);
             EditMessageText ms = dh.onCurrencyMessage(chatId, update.getCallbackQuery().getMessage().getMessageId());
