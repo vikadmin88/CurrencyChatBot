@@ -33,7 +33,10 @@ public class ConfigLoader {
         try (FileInputStream input = new FileInputStream("./app.properties")) {
             prop.load(input);
         } catch (IOException ex) {
-            LOGGER.error(""" 
+            LOGGER.error("Can't find config file", ex);
+            System.out.println(""" 
+                    Config file ./app.properties not found! Please rename file ./app.properties-example to ./app.properties
+                    and configure it like this:
                     APP_NAME=CurrencyChatBot
                     APP_BOT_NAME=<bot name>
                     APP_BOT_TOKEN=<bot token>

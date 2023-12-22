@@ -27,8 +27,7 @@ public class NetworkStreamReader extends NetworkClient {
             return sb.toString();
 
         } catch (IOException e) {
-            LOGGER.error("NetworkStreamReader {}", e);
+            return "[]";
         }
-        return url;
     }
 }

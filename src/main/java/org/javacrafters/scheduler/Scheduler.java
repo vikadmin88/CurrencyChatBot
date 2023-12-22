@@ -37,9 +37,9 @@ public class Scheduler {
         }
 
         final Runnable threadUserScheduledTask = () -> {
-            System.out.println(".");
-            if (user != null && user.isNotifyOn()) {
-                LOGGER.info("Scheduler : Notified user: " + user.getId() + " " + user.getName() + " in Thread: " + Thread.currentThread().getName());
+            LOGGER.info("Scheduler : user: {} in Thread: {}", user.getId(), Thread.currentThread().getName());
+            if (user.isNotifyOn()) {
+                LOGGER.info("Scheduler : Notified user: {}  {} in Thread: {}", user.getId(), user.getName(), Thread.currentThread().getName());
                 AppRegistry.getChatBot().userNotify(user);
             }
         };
@@ -62,7 +62,7 @@ public class Scheduler {
         int initDelay = 3;
 
         final Runnable threadCurrencyScheduledTask = () -> {
-            LOGGER.info("Got new currency rates. Next time in " + period + " minutes. thread: " + Thread.currentThread().getName());
+            LOGGER.info("Got new currency rates. Next request in {} minutes. thread: {}", period,  Thread.currentThread().getName());
             CurrencyHolder.refreshRates();
         };
         currencyScheduler = scheduler.scheduleAtFixedRate(threadCurrencyScheduledTask, initDelay, period * 60L, SECONDS);

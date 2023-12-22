@@ -24,11 +24,10 @@ public class JsonStorageProvider implements StorageProvider {
     public User load(Long userId) {
         String filePath = String.format("./botusers/user-%d-bot.json", userId);
         try (Reader reader = new FileReader(filePath)) {
-            System.out.println("Loading user " + filePath);
             LOGGER.info("Loading user {}", filePath);
             return new Gson().fromJson(reader, User.class);
         } catch (IOException e) {
-            LOGGER.error("File  {} not found.", filePath);
+            LOGGER.error("File {} not found.", filePath);
         }
 
         return null;
@@ -50,15 +49,15 @@ public class JsonStorageProvider implements StorageProvider {
                             User user = new Gson().fromJson(reader, User.class);
                             AppRegistry.addUser(user);
                             Scheduler.addUserSchedule(user.getId(), user, user.getNotifyTime());
-                            LOGGER.info("User %d loaded from file: ./botusers/user-%d-bot.json (thread: %s)\n", user.getId(), user.getId(), Thread.currentThread().getName());
+                            LOGGER.info("User {} loaded from file: ./botusers/user-{}-bot.json (thread: {})", user.getId(), user.getId(), Thread.currentThread().getName());
                         } catch (IOException e) {
-                            LOGGER.error("Not Loading users {}", e);
+                            LOGGER.error("Not Loading users", e);
                         }
 
                     });
 
                 } catch (IOException e) {
-                    LOGGER.error("sendMessage {}", e);
+                    LOGGER.error("sendMessage", e);
                 }
             }
         };
@@ -77,10 +76,10 @@ public class JsonStorageProvider implements StorageProvider {
                     Files.createDirectories(Paths.get("./botusers"));
                     try (FileWriter writer = new FileWriter("./botusers/user-" + user.getId() + "-bot.json")) {
                         new Gson().toJson(user, writer);
-                        LOGGER.info("User %d saved to file: ./botusers/user-%d-bot.json (thread: %s)\n", user.getId(), user.getId(), Thread.currentThread().getName());
+                        LOGGER.info("User {} saved to file: ./botusers/user-{}-bot.json (thread: {})", user.getId(), user.getId(), Thread.currentThread().getName());
                     }
                 } catch (IOException e) {
-                    LOGGER.error("Erorr {}", e);
+                    LOGGER.error("Can't create ./botusers", e);
                 }
             }
         };

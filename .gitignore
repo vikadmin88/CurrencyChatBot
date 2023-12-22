@@ -1,5 +1,6 @@
 .idea
 botusers/
+*.log
 user-*.json
 app.properties
 release

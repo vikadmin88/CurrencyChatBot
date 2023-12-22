@@ -90,8 +90,8 @@ public class ChatBot extends TelegramLongPollingBot {
         // Messages processing
         if (update.hasMessage()) {
 
-            LOGGER.info(update.getMessage().getText(), update);
             String msgCommand = update.getMessage().getText();
+            LOGGER.info("msgCommand {}", msgCommand);
 
             // Start
             if (msgCommand.equals("/start")) {
@@ -273,7 +273,7 @@ public class ChatBot extends TelegramLongPollingBot {
     }
 
     public void userNotify(User user) {
-        System.out.println("userNotify() = " + user.getId() + " " + user.getName());
+        LOGGER.info("userNotify() = {} {}", user.getId(), user.getName());
 
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(String.valueOf(user.getId()));
@@ -333,7 +333,7 @@ public class ChatBot extends TelegramLongPollingBot {
             try {
                 execute(message);
             } catch (TelegramApiException e) {
-                LOGGER.error("sendMessage() {}", e);
+                LOGGER.error("Can't sendMessage()", e);
             }
         }
     }
@@ -343,7 +343,7 @@ public class ChatBot extends TelegramLongPollingBot {
             try {
                 execute(message);
             } catch (TelegramApiException e) {
-                LOGGER.error("sendMessage {}", e);
+                LOGGER.error("Can't sendMessage", e);
             }
         }
     }
