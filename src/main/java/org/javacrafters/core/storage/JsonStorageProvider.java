@@ -57,7 +57,7 @@ public class JsonStorageProvider implements StorageProvider {
                     });
 
                 } catch (IOException e) {
-                    LOGGER.error("sendMessage", e);
+                    LOGGER.error("Folder ./botusers not found!", e);
                 }
             }
         };
