@@ -24,7 +24,7 @@ public class CurrencyHolder {
     }
 
     public static Map<String, Map<String, NormalizeCurrencyPair>> getRates() {
-        return currency;
+        return new HashMap<String, Map<String, NormalizeCurrencyPair>>(currency);
     }
 
     public static Map<String, NormalizeCurrencyPair> getRates(String bankLocalName) {

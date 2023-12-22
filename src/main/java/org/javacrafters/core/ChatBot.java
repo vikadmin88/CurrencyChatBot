@@ -17,8 +17,9 @@ import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
-    /**
+/**
     * MVC: Controller
     * @author ViktorK viktork8888@gmail.com
     */
@@ -155,8 +156,6 @@ import java.util.Map;
         }
         public void doCommandSettings(Long chatId, Update update) {
             BotDialogHandler dh = new BotDialogHandler(chatId);
-//            SendMessage ms2 = dh.createEmptyMessage(chatId);
-//            sendMessage(ms2);
             SendMessage ms = dh.createSettingsMessage(chatId);
             sendMessage(ms);
         }
@@ -256,16 +255,9 @@ import java.util.Map;
             SendMessage sendMessage = new SendMessage();
             sendMessage.setChatId(String.valueOf(user.getId()));
 
-            String message = createNotifyMessage(user);
-            if (message != null) {
-                sendMessage.setText(message);
-                try {
-                    execute(sendMessage);
-                } catch (TelegramApiException e) {
-
-                }
-            }
-
+            BotDialogHandler dh = new BotDialogHandler(user.getId());
+            SendMessage ms = dh.createMessage(Objects.requireNonNull(createNotifyMessage(user)), user.getId());
+            sendMessage(ms);
         }
 
         private String createNotifyMessage(User user) {
