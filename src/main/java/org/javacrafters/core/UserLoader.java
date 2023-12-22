@@ -3,7 +3,6 @@ package org.javacrafters.core;
 import org.javacrafters.core.storage.StorageProvider;
 import org.javacrafters.user.User;
 
-
 public class UserLoader {
 
     private static StorageProvider storageProvider;
@@ -16,6 +15,7 @@ public class UserLoader {
     public static User load(Long userId) {
         return storageProvider.load(userId);
     }
+
     public static void load() {
         storageProvider.load();
     }
@@ -25,8 +25,3 @@ public class UserLoader {
     }
 
 }
-
-
-
-
-

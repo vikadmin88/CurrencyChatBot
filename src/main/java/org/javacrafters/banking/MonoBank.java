@@ -19,6 +19,7 @@ public class MonoBank extends Bank {
     }
 
     private final static Map<String, Integer> currencies = new HashMap<>();
+
     static {
         currencies.put("UAH", 980);
         currencies.put("USD", 840);
