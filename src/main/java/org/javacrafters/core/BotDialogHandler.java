@@ -1,5 +1,6 @@
 package org.javacrafters.core;
 
+import com.vdurmont.emoji.EmojiParser;
 import org.javacrafters.banking.Bank;
 
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
@@ -12,7 +13,10 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.Keyboard
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-
+/**
+ * MVC: View
+ * @author AlekseyB belovmladshui@gmail.com
+ */
 public class BotDialogHandler {
 
     private final Long chatId;
@@ -70,6 +74,10 @@ public class BotDialogHandler {
     }
     public EditMessageText onCurrencyMessage(Long chatId, Integer messageId) {
         String text = "\uD83D\uDCB5  <b>Валюти</b>";
+        return createEditMessage(chatId, messageId, text, BT.CUR_BUT);
+    }
+    public EditMessageText onAboutUsMessage(Long chatId, Integer messageId) {
+        String text = "\uD83D\uDC40  <b>Про нас</b>";
         return createEditMessage(chatId, messageId, text, BT.CUR_BUT);
     }
 
@@ -207,12 +215,12 @@ public class BotDialogHandler {
     public ReplyKeyboardMarkup getPermanentKeyboard() {
         ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
         List<KeyboardRow> keyboard = new ArrayList<>();
-
+        //формат записи: "емодзи или его unicode" + "сам текст кнопки"
         // Создаем один ряд кнопок
         KeyboardRow row = new KeyboardRow();
-        row.add(new String("\uD83C\uDFA2 Курси валют".getBytes(), StandardCharsets.UTF_8)); // Добавляем кнопку "Отримати інформацію"
-        row.add(new String("❌ Стоп".getBytes(), StandardCharsets.UTF_8)); // Добавляем кнопку "Стоп"
-        row.add(new String("\u2699 Налаштування".getBytes(), StandardCharsets.UTF_8)); // Добавляем кнопку "Налаштування"
+        row.add("\uD83C\uDFA2"+new String(" Курси валют".getBytes(), StandardCharsets.UTF_8)); // Добавляем кнопку "Отримати інформацію"
+        row.add("❌"+new String(" Стоп".getBytes(), StandardCharsets.UTF_8)); // Добавляем кнопку "Стоп"
+        row.add("⚙"+new String(" Налаштування".getBytes(), StandardCharsets.UTF_8)); // Добавляем кнопку "Налаштування"
 
         keyboard.add(row); // Добавляем ряд в клавиатуру
 
