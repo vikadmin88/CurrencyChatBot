@@ -1,4 +1,4 @@
-package org.javacrafters.core;
+package org.javacrafters.core.ui;
 //Button Type
 public enum BT {
     //MAIN BUTTONS

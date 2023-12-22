@@ -11,6 +11,8 @@ public class ConfigLoader {
 
     private static Properties conf = null;
 
+    private ConfigLoader() {
+    }
 
     public static Properties getConf(){
         if (conf == null) {

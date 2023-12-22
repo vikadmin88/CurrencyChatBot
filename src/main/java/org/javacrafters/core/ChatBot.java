@@ -2,6 +2,7 @@ package org.javacrafters.core;
 
 import org.javacrafters.banking.CurrencyHolder;
 import org.javacrafters.banking.NormalizeCurrencyPair;
+import org.javacrafters.core.ui.BotDialogHandler;
 import org.javacrafters.scheduler.Scheduler;
 import org.javacrafters.user.User;
 import org.slf4j.Logger;
@@ -24,7 +25,7 @@ import java.util.Objects;
     * @author ViktorK viktork8888@gmail.com
     */
     public class ChatBot extends TelegramLongPollingBot {
-        private static final Logger logger = LoggerFactory.getLogger(ChatBot.class);
+        private static final Logger LOGGER = LoggerFactory.getLogger(ChatBot.class);
 
         private final String appName;
         private final String botName;
@@ -79,11 +80,17 @@ import java.util.Objects;
         @Override
         public void onUpdateReceived(Update update) {
             Long chatId = getChatId(update);
+//                LOGGER.error(update.getMessage().getText(), update);
+                LOGGER.trace("Method 1 started with argument={}", update.getMessage().getText());
+                LOGGER.debug("Database updated with script = {}", update.getMessage().getText());
+                LOGGER.info("Application has started on port = {}", update.getMessage().getText());
+                LOGGER.warn("Log4j didn't find log4j.properties. Please, provide them");
+                LOGGER.error("Connection refused to host = {}", update.getMessage().getText());
+//            System.out.println("LOGGER = " + LOGGER);
 
             // Messages processing
             if (update.hasMessage()) {
 
-                logger.info(update.getMessage().getText(), update);
                 String msgCommand = update.getMessage().getText();
 
                 // Start
@@ -302,9 +309,9 @@ import java.util.Objects;
             if (message != null) {
                 try {
                     execute(message);
-                    logger.info("sendMessage()", message);
+                    LOGGER.info("sendMessage()", message);
                 } catch (TelegramApiException e) {
-                    logger.error("sendMessage()", message);
+                    LOGGER.error("sendMessage()", message);
                 }
             }
         }
@@ -312,9 +319,9 @@ import java.util.Objects;
             if (message != null) {
                 try {
                     execute(message);
-                    logger.info("sendMessage()", message);
+                    LOGGER.info("sendMessage()", message);
                 } catch (TelegramApiException e) {
-                    logger.error("sendMessage()", message);
+                    LOGGER.error("sendMessage()", message);
                 }
             }
         }

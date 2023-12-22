@@ -22,6 +22,10 @@ public class AppRegistry {
         return ConfigLoader.get(key);
     }
 
+
+    private AppRegistry() {
+    }
+
     public static void initDefaults() {
         Arrays.stream(ConfigLoader.get("BANK_CURRENCY").split(",")).forEach(AppRegistry::addCurrency);
         // Refresh currency period in minutes

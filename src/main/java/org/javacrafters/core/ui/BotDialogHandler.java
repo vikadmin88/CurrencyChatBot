@@ -1,7 +1,8 @@
-package org.javacrafters.core;
+package org.javacrafters.core.ui;
 
 import org.javacrafters.banking.Bank;
 
+import org.javacrafters.core.AppRegistry;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
