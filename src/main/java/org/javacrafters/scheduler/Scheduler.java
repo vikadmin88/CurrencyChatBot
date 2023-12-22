@@ -37,7 +37,7 @@ public class Scheduler {
 
         final Runnable threadUserScheduledTask = () -> {
             System.out.println(".");
-            if (user.isNotifyOn()) {
+            if (user != null && user.isNotifyOn()) {
                 System.out.println("Scheduler : Notified user: " + user.getId() +" "+ user.getName() + " in Thread: " + Thread.currentThread().getName());
                 AppRegistry.getChatBot().userNotify(user);
             }

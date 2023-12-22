@@ -48,6 +48,7 @@ public class PrivatBank extends Bank {
         return "PrivatBank{" +
                 "NAME='" + NAME + '\'' +
                 ", LOCAL_NAME='" + LOCAL_NAME + '\'' +
+                ", API_URL='" + apiUrl + '\'' +
                 '}';
     }
 }

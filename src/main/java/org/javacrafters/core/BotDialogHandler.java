@@ -15,7 +15,12 @@ import java.util.*;
 
 public class BotDialogHandler {
 
+    private final Long chatId;
 
+
+    public BotDialogHandler(Long chatId) {
+        this.chatId = chatId;
+    }
     // Стартовое сообщение
     public SendMessage createWelcomeMessage(Long chatId) {
         String text = "<b>Ласкаво просимо.</b> \nЦей бот допоможе відслідковувати актуальні курси валют!";
@@ -24,18 +29,27 @@ public class BotDialogHandler {
         message.setParseMode(ParseMode.HTML);
         return message;
     }
+    public SendMessage createCustomMessage(Long chatId, String textMessage) {
+        String text = "" + textMessage;
+        SendMessage message = createMessage(text, chatId);
+        message.setReplyMarkup(getPermanentKeyboard());
+        message.setParseMode(ParseMode.HTML);
+        return message;
+    }
     //Сообщение с настройками
     public  SendMessage createSettingsMessage(Long chatId){
-        String text = "<b>Налаштування</b>";
+        String text = "\u2699  <b>Налаштування</b>";
+//        String text = "\u1F4B0  <b>Налаштування</b>";
         SendMessage message = createMessage(text, chatId);
         message.setReplyMarkup(createSettingsButtons());
+//        message.setReplyMarkup(getPermanentKeyboard());
         message.setParseMode(ParseMode.HTML);
         return message;
     }
 
     //Сообщение время уведомления
     public SendMessage createSetNotifyMessage(Long chatId){
-        String text = "<b>Виберіть час сповіщення</b>";
+        String text = "⏰  <b>Виберіть час сповіщення</b>";
         SendMessage message = createMessage(text, chatId);
         message.setReplyMarkup(getTimeKeyboard());
         message.setParseMode(ParseMode.HTML);
@@ -43,19 +57,19 @@ public class BotDialogHandler {
     }
 
     public EditMessageText onSettingMessage(Long chatId, Integer messageId) {
-        String text = "<b>Налаштування</b>";
+        String text = "⚒  <b>Налаштування</b>";
         return createEditMessage(chatId, messageId, text, BT.SETTINGS);
     }
     public EditMessageText onDecimalMessage(Long chatId, Integer messageId) {
-        String text = "<b>Кількість знаків після коми</b>";
+        String text = "\uD83D\uDD22  <b>Кількість знаків після коми</b>";
         return createEditMessage(chatId, messageId, text, BT.DEC_BUT);
     }
     public EditMessageText onBankMessage(Long chatId, Integer messageId) {
-        String text = "<b>Банки</b>";
+        String text = "\uD83C\uDFE6  <b>Банки</b>";
         return createEditMessage(chatId, messageId, text, BT.BAN_BUT);
     }
     public EditMessageText onCurrencyMessage(Long chatId, Integer messageId) {
-        String text = "<b>Валюти</b>";
+        String text = "\uD83D\uDCB5  <b>Валюти</b>";
         return createEditMessage(chatId, messageId, text, BT.CUR_BUT);
     }
 
@@ -93,7 +107,7 @@ public class BotDialogHandler {
             }
         }
         row.add(new String("Вимкнути сповіщення".getBytes(), StandardCharsets.UTF_8));
-        row.add(new String("До налаштувань".getBytes(), StandardCharsets.UTF_8));
+//        row.add(new String("Налаштування".getBytes(), StandardCharsets.UTF_8));
         // Добавляем последний ряд, если он не пустой
         if (!row.isEmpty()) {
             keyboard.add(row);
@@ -108,7 +122,7 @@ public class BotDialogHandler {
         int userNumOfDigits = AppRegistry.getUser(chatId).getCountLastDigits();
 
         for (int i = 2; i <= 4; i++) {
-            String buttonText = (userNumOfDigits == i ? " ✅" : "") + i;
+            String buttonText = (userNumOfDigits == i ? "✅  " : "") + i;
             buttons.add(createButton(buttonText, "decimal_" + i));
         }
         return buildInlineKeyboard(buttons);
@@ -120,7 +134,7 @@ public class BotDialogHandler {
         List<String> userCurrency = AppRegistry.getUser(chatId).getCurrency();
 
         for (String currency : availableCurrencies) {
-            String buttonText = (userCurrency.contains(currency) ? "✅ " : "") + currency;
+            String buttonText = (userCurrency.contains(currency) ? "✅  " : "") + currency;
             buttons.add(createButton(buttonText, "currency_" + currency));
         }
         return buildInlineKeyboard(buttons);
@@ -134,7 +148,7 @@ public class BotDialogHandler {
         for (Map.Entry<String, Bank> entry : allBanks.entrySet()) {
             String bankName = entry.getValue().getName();
             String bankLocalName = entry.getKey();
-            String buttonText = userBanks.contains(bankLocalName) ? "✅ " + bankName : bankName;
+            String buttonText = userBanks.contains(bankLocalName) ? "✅  " + bankName : bankName;
             buttons.add(createButton(buttonText, "bank_" + bankLocalName));
         }
         return buildInlineKeyboard(buttons);
@@ -144,8 +158,8 @@ public class BotDialogHandler {
         List<InlineKeyboardButton> buttons = new ArrayList<>();
 
         // Добавление кнопок для главного меню
-        buttons.add(createButton("Отримати інформацію", "get_info"));
-        buttons.add(createButton("Налаштування", "settings"));
+        buttons.add(createButton("\uD83C\uDFA2 Курси валют", "get_info"));
+        buttons.add(createButton("\u2699 Налаштування", "settings"));
 
         return buildInlineKeyboard(buttons);
     }
@@ -154,10 +168,10 @@ public class BotDialogHandler {
         List<InlineKeyboardButton> buttons = new ArrayList<>();
 
         // Добавление кнопок для настроек
-        buttons.add(createButton("Кількість знаків після коми", "decimal_places"));
-        buttons.add(createButton("Банки", "bank"));
-        buttons.add(createButton("Валюти", "currencies"));
-        buttons.add(createButton("Час сповіщення", "notification_time"));
+        buttons.add(createButton("\uD83D\uDD22 Кількість знаків після коми", "decimal"));
+        buttons.add(createButton("\uD83C\uDFE6 Банки", "bank"));
+        buttons.add(createButton("\uD83D\uDCB5 Валюти", "currency"));
+        buttons.add(createButton("⏰ Час сповіщення", "notification"));
 
         return buildInlineKeyboard(buttons);
     }
@@ -196,16 +210,15 @@ public class BotDialogHandler {
 
         // Создаем один ряд кнопок
         KeyboardRow row = new KeyboardRow();
-        row.add(new String("Отримати інформацію".getBytes(), StandardCharsets.UTF_8)); // Добавляем кнопку "Отримати інформацію"
-        row.add(new String("Стоп".getBytes(), StandardCharsets.UTF_8)); // Добавляем кнопку "Стоп"
-        row.add(new String("Налаштування".getBytes(), StandardCharsets.UTF_8)); // Добавляем кнопку "Налаштування"
+        row.add(new String("\uD83C\uDFA2 Курси валют".getBytes(), StandardCharsets.UTF_8)); // Добавляем кнопку "Отримати інформацію"
+        row.add(new String("❌ Стоп".getBytes(), StandardCharsets.UTF_8)); // Добавляем кнопку "Стоп"
+        row.add(new String("\u2699 Налаштування".getBytes(), StandardCharsets.UTF_8)); // Добавляем кнопку "Налаштування"
 
         keyboard.add(row); // Добавляем ряд в клавиатуру
 
         replyKeyboardMarkup.setKeyboard(keyboard);
         replyKeyboardMarkup.setResizeKeyboard(true); // Делаем клавиатуру подгоняемой по размеру
         replyKeyboardMarkup.setOneTimeKeyboard(false); // Клавиатура будет постоянной
-
         return replyKeyboardMarkup;
     }
 }
