@@ -53,6 +53,7 @@ public class NbuBank extends Bank {
         return "NbuBank{" +
                 "NAME='" + NAME + '\'' +
                 ", LOCAL_NAME='" + LOCAL_NAME + '\'' +
+                ", API_URL='" + apiUrl + '\'' +
                 '}';
     }
 }

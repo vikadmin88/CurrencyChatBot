@@ -8,13 +8,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
+import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -63,7 +63,6 @@ import java.util.Map;
         private User addUser(Long chatId, Update update) {
             User user = new User(chatId, update.getMessage().getFrom().getFirstName(), update.getMessage().getFrom().getUserName());
             user.addBank(AppRegistry.getConfBank());
-            user.addBank("NBU");
             user.addCurrency(AppRegistry.getConfCurrency());
             user.setCountLastDigits(AppRegistry.getConfCountLastDigits());
             user.setNotifyTime(AppRegistry.getConfNotifyTime());
@@ -79,7 +78,6 @@ import java.util.Map;
         @Override
         public void onUpdateReceived(Update update) {
             Long chatId = getChatId(update);
-            BotDialogHandler dh = new BotDialogHandler(chatId);
 
             // Messages processing
             if (update.hasMessage()) {
@@ -89,92 +87,76 @@ import java.util.Map;
 
                 // Start
                 if (msgCommand.equals("/start")) {
-                    if (!doCommandStart(chatId, update)) {
-                        sendNotFound(chatId);
-                    }
+                    doCommandStart(chatId, update);
                 }
-
                 // Stop / Disable notify
-                if (msgCommand.equals("/stop")) {
-                    if (!doCommandStop(chatId, update)) {
-                        sendNotFound(chatId);
-                    }
+                if (msgCommand.equals("/stop") || msgCommand.equals("Стоп")) {
+                    doCommandStop(chatId, update);
                 }
                 if (msgCommand.equals("Вимкнути сповіщення")) {
-                    if (!doCommandNotifyOff(chatId, update)) {
-                        sendNotFound(chatId);
-                    }
+                    doCommandNotifyOff(chatId, update);
                 }
                 // Set Notify Time
                 if (msgCommand.endsWith(":00")) {
-                    if (!doCommandNotifySetTime(chatId, update)) {
-                        sendNotFound(chatId);
-                    }
+                    doCommandNotifySetTime(chatId, update);
+                }
+                // Settings
+                if (msgCommand.endsWith("Налаштування")) {
+                    doCommandSettings(chatId, update);
                 }
             }
-
-
-//            EditMessageText ms2 = dh.onBankMessage(chatId, update.getCallbackQuery().getMessage().getMessageId());
-//            sendMessage(ms2);
-//            EditMessageText ms3 = dh.onCurrencyMessage(chatId, update.getCallbackQuery().getMessage().getMessageId());
-//            sendMessage(ms3);
 
             // Callbacks processing
             if (update.hasCallbackQuery()) {
                 String[] btnCommand = update.getCallbackQuery().getData().split("_");
 
                 switch (btnCommand[0].toUpperCase()) {
-                    case "BANK" -> doCommandBank(chatId, update, btnCommand);
-                    case "CURRENCY" -> doCommandCurrency(chatId, update, btnCommand);
+                    case "BANK" -> doCallBackBank(chatId, update, btnCommand);
+                    case "CURRENCY" -> doCallBackCurrency(chatId, update, btnCommand);
+                    case "NOTIFICATION" -> doCallBackNotification(chatId, update, btnCommand);
+                    case "DECIMAL" -> doCallBackDecimal(chatId, update, btnCommand);
+                    case "SETTINGS" -> doCallBackSettings(chatId, update, btnCommand);
                 }
 
-//                String btnCommandValue = update.getCallbackQuery().getData().split("_")[1];
-//                String[] cmdArr = update.getCallbackQuery().getData().split("_");
-                System.out.println("Arrays.toString(cmdArr) = " + Arrays.toString(btnCommand));
-//
-//                System.out.println("btnCommand = " + btnCommand);
-//                EditMessageText ms = dh.onBankMessage(chatId, update.getCallbackQuery().getMessage().getMessageId());
-//                System.out.println("ms = " + ms);
-//                sendMessage(ms);
-//                EditMessageText ms = dh.onCurrencyMessage(chatId, update.getCallbackQuery().getMessage().getMessageId());
-//                System.out.println("ms = " + ms);
-//                sendMessage(ms);
-
-                if (update.getCallbackQuery().getData().equals("level_1_task")) {
-//                    sendMessage(chatId);
-                }
             }
         }
 
-        public boolean doCommandStart(Long chatId, Update update) {
+        /*
+         *
+         * Message Commands
+         * */
+        public void doCommandStart(Long chatId, Update update) {
             BotDialogHandler dh = new BotDialogHandler(chatId);
-            SendMessage ms = dh.createSettingsMessage(chatId);
+            SendMessage ms = dh.createWelcomeMessage(chatId);
             sendMessage(ms);
 
             if (!AppRegistry.hasUser(chatId)) {
                 addUser(chatId, update);
                 saveUser(chatId);
             }
-
-            return true;
+            System.out.println("AppRegistry.getUser(chatId) = " + AppRegistry.getUser(chatId));
+            userNotify(AppRegistry.getUser(chatId));
         }
-
-        public boolean doCommandStop(Long chatId, Update update) {
-            if (AppRegistry.getUser(chatId) == null) {return false;}
+        public void doCommandStop(Long chatId, Update update) {
             BotDialogHandler dh = new BotDialogHandler(chatId);
             SendMessage ms = dh.createMessage("""
                                 Ви відписалися від розсилки. Щоб підписатися наново введіть команду /start 
-                                і в налаштуваннях оберіть час розсилки.
+                                Також в налаштуваннях оберіть час розсилки.
                                 """, chatId);
             sendMessage(ms);
 
             Scheduler.getUserScheduler(chatId).cancel(true);
             AppRegistry.getUser(chatId).setNotifyOff();
             saveUser(chatId);
-            return true;
         }
-        public boolean doCommandNotifyOff(Long chatId, Update update) {
-            if (AppRegistry.getUser(chatId) == null) {return false;}
+        public void doCommandSettings(Long chatId, Update update) {
+            BotDialogHandler dh = new BotDialogHandler(chatId);
+//            SendMessage ms2 = dh.createEmptyMessage(chatId);
+//            sendMessage(ms2);
+            SendMessage ms = dh.createSettingsMessage(chatId);
+            sendMessage(ms);
+        }
+        public void doCommandNotifyOff(Long chatId, Update update) {
             BotDialogHandler dh = new BotDialogHandler(chatId);
             SendMessage ms = dh.createMessage("Сповіщення вимкнуті!", chatId);
             sendMessage(ms);
@@ -183,10 +165,8 @@ import java.util.Map;
             AppRegistry.getUser(chatId).setNotifyOff();
 
             saveUser(chatId);
-            return true;
         }
-        public boolean doCommandNotifySetTime(Long chatId, Update update) {
-            if (AppRegistry.getUser(chatId) == null) {return false;}
+        public void doCommandNotifySetTime(Long chatId, Update update) {
             BotDialogHandler dh = new BotDialogHandler(chatId);
             String msgCommand = update.getMessage().getText();
             SendMessage ms = dh.createMessage("Час сповіщень змінений на " + msgCommand, chatId);
@@ -200,7 +180,6 @@ import java.util.Map;
             Scheduler.addUserSchedule(chatId, AppRegistry.getUser(chatId), AppRegistry.getUser(chatId).getNotifyTime());
 
             saveUser(chatId);
-            return true;
         }
         public void sendNotFound(Long chatId) {
             BotDialogHandler dh = new BotDialogHandler(chatId);
@@ -208,7 +187,11 @@ import java.util.Map;
             sendMessage(ms);
         }
 
-        private void doCommandBank(Long chatId, Update update, String[] command) {
+        /*
+        *
+        * Call Back Commands
+        * */
+        private void doCallBackBank(Long chatId, Update update, String[] command) {
             if (command.length > 1) {
                 List<String> userBanks = AppRegistry.getUser(chatId).getBanks();
                 String toggleBank = command[1];
@@ -221,7 +204,7 @@ import java.util.Map;
             EditMessageText ms = dh.onBankMessage(chatId, update.getCallbackQuery().getMessage().getMessageId());
             sendMessage(ms);
         }
-        public void doCommandCurrency(Long chatId, Update update, String[] command) {
+        public void doCallBackCurrency(Long chatId, Update update, String[] command) {
             if (command.length > 1) {
                 List<String> userCurrency = AppRegistry.getUser(chatId).getCurrency();
                 String toggleCurrency = command[1];
@@ -233,6 +216,35 @@ import java.util.Map;
             }
             BotDialogHandler dh = new BotDialogHandler(chatId);
             EditMessageText ms = dh.onCurrencyMessage(chatId, update.getCallbackQuery().getMessage().getMessageId());
+            sendMessage(ms);
+        }
+        public void doCallBackNotification(Long chatId, Update update, String[] command) {
+            AnswerCallbackQuery close = AnswerCallbackQuery.builder()
+                    .callbackQueryId(update.getCallbackQuery().getId()).build();
+            try {
+                execute(close);
+            } catch (TelegramApiException e) {
+                throw new RuntimeException(e);
+            }
+
+            BotDialogHandler dh = new BotDialogHandler(chatId);
+            SendMessage ms = dh.createSetNotifyMessage(chatId);
+            sendMessage(ms);
+
+        }
+        public void doCallBackDecimal(Long chatId, Update update, String[] command) {
+            if (command.length > 1) {
+                String num = command[1];
+                AppRegistry.getUser(chatId).setCountLastDigits(Integer.parseInt(num));
+                saveUser(chatId);
+            }
+            BotDialogHandler dh = new BotDialogHandler(chatId);
+            EditMessageText ms = dh.onDecimalMessage(chatId, update.getCallbackQuery().getMessage().getMessageId());
+            sendMessage(ms);
+        }
+        public void doCallBackSettings(Long chatId, Update update, String[] command) {
+            BotDialogHandler dh = new BotDialogHandler(chatId);
+            EditMessageText ms = dh.onSettingMessage(chatId, update.getCallbackQuery().getMessage().getMessageId());
             sendMessage(ms);
         }
         public void userNotify(User user) {
@@ -254,17 +266,18 @@ import java.util.Map;
         }
 
         private String createNotifyMessage(User user) {
-            StringBuilder sb = new StringBuilder("Поточні курси валют:\n");
-
             // {"PB" => {"USD" => {"USD", "36.95000", "37.45000"}}}
             Map<String, Map<String, NormalizeCurrencyPair>> currencyRates = CurrencyHolder.getRates();
 
             if (currencyRates == null || currencyRates.isEmpty()) {
                 return null;
             }
+            StringBuilder sb = new StringBuilder("\uD83C\uDFA2  Поточні курси валют:\n");
 
             for (String bankLocalName : user.getBanks()) {
-                sb.append(AppRegistry.getBank(bankLocalName).getName()).append("\n");
+
+                String bankName = AppRegistry.getBank(bankLocalName).getName();
+                StringBuilder sbSub = new StringBuilder();
 
                 // {"USD" => {"USD", "36.95000", "37.45000"}}
                 Map<String, NormalizeCurrencyPair> currencySet = currencyRates.get(bankLocalName);
@@ -274,14 +287,17 @@ import java.util.Map;
                     // {"USD", "36.95000", "37.45000"}
                     NormalizeCurrencyPair curCurrency = currencySet.get(currency);
 
-                    if (currency.equals(curCurrency.getName())) {
-                        sb.append(curCurrency.getName()).append("\n");
-                        sb.append("Купівля: ");
+                    if (curCurrency != null && user.getCurrency().contains(curCurrency.getName())) {
+                        sbSub.append(curCurrency.getName()).append("\n");
+                        sbSub.append("\tКупівля: ");
                         String format = "%." + user.getCountLastDigits() + "f";
-                        sb.append(String.format(format, Float.valueOf(curCurrency.getBuy()))).append("\n");
-                        sb.append("Продаж: ");
-                        sb.append(String.format(format, Float.valueOf(curCurrency.getSale()))).append("\n\n");
+                        sbSub.append(String.format(format, Float.valueOf(curCurrency.getBuy()))).append("\n");
+                        sbSub.append("\tПродаж: ");
+                        sbSub.append(String.format(format, Float.valueOf(curCurrency.getSale()))).append("\n");
                     }
+                }
+                if (!sbSub.toString().isEmpty()) {
+                    sb.append("\n\uD83C\uDFE6  " + bankName).append("\n").append(sbSub);
                 }
             }
             return !sb.toString().isEmpty() ? sb.toString() : null;
