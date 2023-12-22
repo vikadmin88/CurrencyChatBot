@@ -16,12 +16,13 @@ import java.util.stream.Stream;
 
 public class JsonStorageProvider implements StorageProvider {
 
+    private static final Gson GSON = new Gson();
     @Override
     public User load(Long userId) {
         String filePath = String.format("./botusers/user-%d-bot.json", userId);
         try (Reader reader = new FileReader(filePath)) {
             System.out.println("Loading user " + filePath);
-            return new Gson().fromJson(reader, User.class);
+            return GSON.fromJson(reader, User.class);
         } catch (IOException e) {
             System.out.println("File "+filePath+" not found.");
 //            e.printStackTrace();
@@ -44,7 +45,7 @@ public class JsonStorageProvider implements StorageProvider {
                         try (Reader reader = new FileReader(file.toString())) {
                             System.out.println("Loading users " + file);
 
-                            User user = new Gson().fromJson(reader, User.class);
+                            User user = GSON.fromJson(reader, User.class);
                             AppRegistry.addUser(user);
                             Scheduler.addUserSchedule(user.getId(), user, user.getNotifyTime());
                             System.out.printf("User %d loaded from file: ./botusers/user-%d-bot.json (thread: %s)\n",user.getId(), user.getId(), Thread.currentThread().getName());
@@ -74,7 +75,7 @@ public class JsonStorageProvider implements StorageProvider {
                 try {
                     Files.createDirectories(Paths.get("./botusers"));
                     try (FileWriter writer = new FileWriter("./botusers/user-" + user.getId() + "-bot.json")) {
-                        new Gson().toJson(user, writer);
+                        GSON.toJson(user, writer);
                         System.out.printf("User %d saved to file: ./botusers/user-%d-bot.json (thread: %s)\n",user.getId(), user.getId(), Thread.currentThread().getName());
                     }
                 } catch (IOException e) {

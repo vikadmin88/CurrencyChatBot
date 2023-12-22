@@ -1,8 +1,8 @@
-package org.javacrafters.core;
+package org.javacrafters.core.ui;
 
-import com.vdurmont.emoji.EmojiParser;
 import org.javacrafters.banking.Bank;
 
+import org.javacrafters.core.AppRegistry;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
@@ -13,10 +13,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.Keyboard
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-/**
- * MVC: View
- * @author AlekseyB belovmladshui@gmail.com
- */
+
 public class BotDialogHandler {
 
     private final Long chatId;
@@ -42,8 +39,7 @@ public class BotDialogHandler {
     }
     //Сообщение с настройками
     public  SendMessage createSettingsMessage(Long chatId){
-        String text = "\u2699  <b>Налаштування</b>";
-//        String text = "\u1F4B0  <b>Налаштування</b>";
+        String text = "⚙  <b>Налаштування</b>";
         SendMessage message = createMessage(text, chatId);
         message.setReplyMarkup(createSettingsButtons());
 //        message.setReplyMarkup(getPermanentKeyboard());
@@ -163,7 +159,7 @@ public class BotDialogHandler {
 
         // Добавление кнопок для главного меню
         buttons.add(createButton("\uD83C\uDFA2 Курси валют", "get_info"));
-        buttons.add(createButton("\u2699 Налаштування", "settings"));
+        buttons.add(createButton("⚙ Налаштування", "settings"));
 
         return buildInlineKeyboard(buttons);
     }
@@ -172,11 +168,10 @@ public class BotDialogHandler {
         List<InlineKeyboardButton> buttons = new ArrayList<>();
 
         // Добавление кнопок для настроек
-        buttons.add(createButton("\uD83D\uDD22 Кількість знаків після коми", "decimal"));
         buttons.add(createButton("\uD83C\uDFE6 Банки", "bank"));
         buttons.add(createButton("\uD83D\uDCB5 Валюти", "currency"));
+        buttons.add(createButton("\uD83D\uDD22 Кількість знаків після коми", "decimal"));
         buttons.add(createButton("⏰ Час сповіщення", "notification"));
-        buttons.add(createButton("\uD83D\uDC40 Про нас", "about_us"));
 
         return buildInlineKeyboard(buttons);
     }
@@ -212,14 +207,14 @@ public class BotDialogHandler {
     public ReplyKeyboardMarkup getPermanentKeyboard() {
         ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
         List<KeyboardRow> keyboard = new ArrayList<>();
-        //формат записи: "емодзи или его unicode" + "сам текст кнопки"
+
         // Создаем один ряд кнопок
         KeyboardRow row = new KeyboardRow();
-        row.add("\uD83C\uDFA2"+new String(" Курси валют".getBytes(), StandardCharsets.UTF_8)); // Добавляем кнопку "Отримати інформацію"
-        row.add("❌"+new String(" Стоп".getBytes(), StandardCharsets.UTF_8)); // Добавляем кнопку "Стоп"
-        row.add("⚙"+new String(" Налаштування".getBytes(), StandardCharsets.UTF_8)); // Добавляем кнопку "Налаштування"
+        row.add(new String("\uD83C\uDFA2 Курси валют".getBytes(), StandardCharsets.UTF_8));
+        row.add(new String("❌ Стоп".getBytes(), StandardCharsets.UTF_8));
+        row.add(new String("⚙ Налаштування".getBytes(), StandardCharsets.UTF_8));
 
-        keyboard.add(row); // Добавляем ряд в клавиатуру
+        keyboard.add(row);
 
         replyKeyboardMarkup.setKeyboard(keyboard);
         replyKeyboardMarkup.setResizeKeyboard(true); // Делаем клавиатуру подгоняемой по размеру

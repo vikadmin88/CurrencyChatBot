@@ -2,6 +2,7 @@ package org.javacrafters.core;
 
 import org.javacrafters.banking.CurrencyHolder;
 import org.javacrafters.banking.NormalizeCurrencyPair;
+import org.javacrafters.core.ui.BotDialogHandler;
 import org.javacrafters.scheduler.Scheduler;
 import org.javacrafters.user.User;
 import org.slf4j.Logger;
@@ -17,13 +18,14 @@ import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
-    /**
+/**
     * MVC: Controller
     * @author ViktorK viktork8888@gmail.com
     */
     public class ChatBot extends TelegramLongPollingBot {
-        private static final Logger logger = LoggerFactory.getLogger(ChatBot.class);
+        private static final Logger LOGGER = LoggerFactory.getLogger(ChatBot.class);
 
         private final String appName;
         private final String botName;
@@ -61,7 +63,17 @@ import java.util.Map;
         }
 
         private User addUser(Long chatId, Update update) {
-            User user = new User(chatId, update.getMessage().getFrom().getFirstName(), update.getMessage().getFrom().getUserName());
+            String firstName = "";
+            String userName = "";
+            if (update.hasMessage()) {
+                firstName = update.getMessage().getFrom().getFirstName();
+                userName = update.getMessage().getFrom().getLastName();
+            }
+            if (update.hasCallbackQuery()) {
+                firstName = update.getCallbackQuery().getFrom().getFirstName();
+                userName = update.getCallbackQuery().getFrom().getLastName();
+            }
+            User user = new User(chatId, firstName, userName);
             user.addBank(AppRegistry.getConfBank());
             user.addCurrency(AppRegistry.getConfCurrency());
             user.setCountLastDigits(AppRegistry.getConfCountLastDigits());
@@ -75,14 +87,21 @@ import java.util.Map;
         private void saveUser(Long userId) {
             UserLoader.save(AppRegistry.getUser(userId));
         }
+        private void checkOrAddUser(Long chatId, Update update) {
+            if (!AppRegistry.hasUser(chatId)) {
+                addUser(chatId, update);
+                saveUser(chatId);
+            }
+        }
         @Override
         public void onUpdateReceived(Update update) {
             Long chatId = getChatId(update);
+            // check or add user
+            checkOrAddUser(chatId, update);
 
             // Messages processing
             if (update.hasMessage()) {
 
-                logger.info(update.getMessage().getText(), update);
                 String msgCommand = update.getMessage().getText();
 
                 // Start
@@ -133,12 +152,6 @@ import java.util.Map;
             BotDialogHandler dh = new BotDialogHandler(chatId);
             SendMessage ms = dh.createWelcomeMessage(chatId);
             sendMessage(ms);
-
-            if (!AppRegistry.hasUser(chatId)) {
-                addUser(chatId, update);
-                saveUser(chatId);
-            }
-            userNotify(AppRegistry.getUser(chatId));
         }
         public void doCommandStop(Long chatId, Update update) {
             BotDialogHandler dh = new BotDialogHandler(chatId);
@@ -155,14 +168,12 @@ import java.util.Map;
         }
         public void doCommandSettings(Long chatId, Update update) {
             BotDialogHandler dh = new BotDialogHandler(chatId);
-//            SendMessage ms2 = dh.createEmptyMessage(chatId);
-//            sendMessage(ms2);
             SendMessage ms = dh.createSettingsMessage(chatId);
             sendMessage(ms);
         }
         public void doCommandNotifyOff(Long chatId, Update update) {
             BotDialogHandler dh = new BotDialogHandler(chatId);
-            SendMessage ms = dh.createCustomMessage(chatId,"⚠\uFE0F  Сповіщення вимкнено!");
+            SendMessage ms = dh.createCustomMessage(chatId,"⚠  Сповіщення вимкнено!");
             sendMessage(ms);
 
             Scheduler.getUserScheduler(chatId).cancel(true);
@@ -173,7 +184,7 @@ import java.util.Map;
         public void doCommandNotifySetTime(Long chatId, Update update) {
             BotDialogHandler dh = new BotDialogHandler(chatId);
             String msgCommand = update.getMessage().getText();
-            SendMessage ms = dh.createCustomMessage(chatId,"\uD83D\uDEC8  Час сповіщень змінено на " + msgCommand);
+            SendMessage ms = dh.createCustomMessage(chatId,"⏰  Час сповіщень змінено на " + msgCommand);
             sendMessage(ms);
 
             int hour = Integer.parseInt(msgCommand.split(":")[0]);
@@ -185,9 +196,9 @@ import java.util.Map;
 
             saveUser(chatId);
         }
-        public void sendNotFound(Long chatId) {
+        public void sendErrorMessage(Long chatId) {
             BotDialogHandler dh = new BotDialogHandler(chatId);
-            SendMessage ms = dh.createMessage("Command Not Found!", chatId);
+            SendMessage ms = dh.createMessage("❗ Command not found! Or you haven't launched the bot. Try run: /start", chatId);
             sendMessage(ms);
         }
 
@@ -256,23 +267,16 @@ import java.util.Map;
             SendMessage sendMessage = new SendMessage();
             sendMessage.setChatId(String.valueOf(user.getId()));
 
-            String message = createNotifyMessage(user);
-            if (message != null) {
-                sendMessage.setText(message);
-                try {
-                    execute(sendMessage);
-                } catch (TelegramApiException e) {
-
-                }
-            }
-
+            BotDialogHandler dh = new BotDialogHandler(user.getId());
+            SendMessage ms = dh.createMessage(Objects.requireNonNull(createNotifyMessage(user)), user.getId());
+            sendMessage(ms);
         }
 
         private String createNotifyMessage(User user) {
             // {"PB" => {"USD" => {"USD", "36.95000", "37.45000"}}}
             Map<String, Map<String, NormalizeCurrencyPair>> currencyRates = CurrencyHolder.getRates();
 
-            if (currencyRates == null || currencyRates.isEmpty()) {
+            if (currencyRates.isEmpty()) {
                 return null;
             }
             StringBuilder sb = new StringBuilder("\uD83C\uDFA2  Поточні курси валют:\n");
@@ -300,7 +304,7 @@ import java.util.Map;
                     }
                 }
                 if (!sbSub.toString().isEmpty()) {
-                    sb.append("\n\uD83C\uDFE6  " + bankName).append("\n").append(sbSub);
+                    sb.append("\n\uD83C\uDFE6  ").append(bankName).append("\n").append(sbSub);
                 }
             }
             return !sb.toString().isEmpty() ? sb.toString() : null;
@@ -310,9 +314,9 @@ import java.util.Map;
             if (message != null) {
                 try {
                     execute(message);
-                    logger.info("sendMessage()", message);
+                    LOGGER.info("sendMessage()", message);
                 } catch (TelegramApiException e) {
-                    logger.error("sendMessage()", message);
+                    LOGGER.error("sendMessage()", message);
                 }
             }
         }
@@ -320,9 +324,9 @@ import java.util.Map;
             if (message != null) {
                 try {
                     execute(message);
-                    logger.info("sendMessage()", message);
+                    LOGGER.info("sendMessage() {}", message);
                 } catch (TelegramApiException e) {
-                    logger.error("sendMessage()", message);
+                    LOGGER.error("sendMessage()", e);
                 }
             }
         }
