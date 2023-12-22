@@ -7,6 +7,9 @@ public class UserLoader {
 
     private static StorageProvider storageProvider;
 
+    private UserLoader() {
+    }
+
     public static StorageProvider setStorageProvider(StorageProvider provider) {
         storageProvider = provider;
         return storageProvider;

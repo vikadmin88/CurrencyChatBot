@@ -20,6 +20,10 @@ public class AppRegistry {
         return ConfigLoader.get(key);
     }
 
+
+    private AppRegistry() {
+    }
+
     public static void initDefaults() {
         Arrays.stream(ConfigLoader.get("BANK_CURRENCY").split(",")).forEach(AppRegistry::addCurrency);
         // Refresh currency period in minutes
@@ -44,7 +48,7 @@ public class AppRegistry {
         users.put(user.getId(), user);
     }
     public static Map<Long, User>getUsers(){
-        return users;
+        return new HashMap<Long, User>(users);
     }
     public static User getUser(Long userId){
         return users.get(userId);
@@ -58,7 +62,7 @@ public class AppRegistry {
     */
     public static void addBank(String bankLocalName, Bank bank){ banks.put(bankLocalName, bank);}
     public static Map <String, Bank> getBanks(){
-        return banks;
+        return new HashMap<String, Bank>(banks);
     }
     public static Bank getBank(String bankLocalName){
         return banks.get(bankLocalName);
@@ -71,7 +75,7 @@ public class AppRegistry {
         currency.add(currencyName);
     }
     public static List<String> getCurrency(){
-        return currency;
+        return new ArrayList<>(currency);
     }
     public static String getCurrency(int currencyId){
         return currency.get(currencyId);

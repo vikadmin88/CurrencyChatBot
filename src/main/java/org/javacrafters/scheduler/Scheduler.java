@@ -23,6 +23,9 @@ public class Scheduler {
     private static ScheduledFuture<?> currencyScheduler;
     private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(4);
 
+    private Scheduler() {
+    }
+
     public static void addUserSchedule(Long userId, User user, int toHour) {
 
         int curHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);

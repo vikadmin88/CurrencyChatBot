@@ -8,10 +8,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class MonoBank extends Bank {
-    private final static String NAME = "Моно-Банк";
-    private final static String LOCAL_NAME = "MB";
+    private static final String NAME = "Моно-Банк";
+    private static final String LOCAL_NAME = "MB";
     private final String apiUrl;
     private final NetworkClient netClient;
+    private static final Gson GSON = new Gson();
 
     public MonoBank(String apiUrl, NetworkClient netClient) {
         this.apiUrl = apiUrl;
@@ -30,13 +31,12 @@ public class MonoBank extends Bank {
 
     @Override
     public Map<String, NormalizeCurrencyPair> getRates() {
-        Gson gson = new Gson();
-        JsonObject[] jsonObjArr = gson.fromJson(netClient.get(apiUrl), JsonObject[].class);
+        JsonObject[] jsonObjArr = GSON.fromJson(netClient.get(apiUrl), JsonObject[].class);
         // {"USD" => "USD", "36.95000", "37.45000"}
         Map<String, NormalizeCurrencyPair> rateMap = new HashMap<>();
 
         for (JsonObject jsonObjItem : jsonObjArr) {
-            JsonObject jsonObj = gson.fromJson(jsonObjItem, JsonObject.class);
+            JsonObject jsonObj = GSON.fromJson(jsonObjItem, JsonObject.class);
             if (jsonObj.get("rateBuy") != null
                     && jsonObj.get("rateSell") != null
                     && getNameById(jsonObj.get("currencyCodeB").getAsInt()).equals("UAH")) {
