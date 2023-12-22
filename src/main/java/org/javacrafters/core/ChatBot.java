@@ -63,7 +63,17 @@ import java.util.Objects;
         }
 
         private User addUser(Long chatId, Update update) {
-            User user = new User(chatId, update.getMessage().getFrom().getFirstName(), update.getMessage().getFrom().getUserName());
+            String firstName = "";
+            String userName = "";
+            if (update.hasMessage()) {
+                firstName = update.getMessage().getFrom().getFirstName();
+                userName = update.getMessage().getFrom().getLastName();
+            }
+            if (update.hasCallbackQuery()) {
+                firstName = update.getCallbackQuery().getFrom().getFirstName();
+                userName = update.getCallbackQuery().getFrom().getLastName();
+            }
+            User user = new User(chatId, firstName, userName);
             user.addBank(AppRegistry.getConfBank());
             user.addCurrency(AppRegistry.getConfCurrency());
             user.setCountLastDigits(AppRegistry.getConfCountLastDigits());
@@ -77,16 +87,17 @@ import java.util.Objects;
         private void saveUser(Long userId) {
             UserLoader.save(AppRegistry.getUser(userId));
         }
+        private void checkOrAddUser(Long chatId, Update update) {
+            if (!AppRegistry.hasUser(chatId)) {
+                addUser(chatId, update);
+                saveUser(chatId);
+            }
+        }
         @Override
         public void onUpdateReceived(Update update) {
             Long chatId = getChatId(update);
-//                LOGGER.error(update.getMessage().getText(), update);
-                LOGGER.trace("Method 1 started with argument={}", update.getMessage().getText());
-                LOGGER.debug("Database updated with script = {}", update.getMessage().getText());
-                LOGGER.info("Application has started on port = {}", update.getMessage().getText());
-                LOGGER.warn("Log4j didn't find log4j.properties. Please, provide them");
-                LOGGER.error("Connection refused to host = {}", update.getMessage().getText());
-//            System.out.println("LOGGER = " + LOGGER);
+            // check or add user
+            checkOrAddUser(chatId, update);
 
             // Messages processing
             if (update.hasMessage()) {
@@ -141,12 +152,6 @@ import java.util.Objects;
             BotDialogHandler dh = new BotDialogHandler(chatId);
             SendMessage ms = dh.createWelcomeMessage(chatId);
             sendMessage(ms);
-
-            if (!AppRegistry.hasUser(chatId)) {
-                addUser(chatId, update);
-                saveUser(chatId);
-            }
-            userNotify(AppRegistry.getUser(chatId));
         }
         public void doCommandStop(Long chatId, Update update) {
             BotDialogHandler dh = new BotDialogHandler(chatId);
@@ -168,7 +173,7 @@ import java.util.Objects;
         }
         public void doCommandNotifyOff(Long chatId, Update update) {
             BotDialogHandler dh = new BotDialogHandler(chatId);
-            SendMessage ms = dh.createCustomMessage(chatId,"⚠\uFE0F  Сповіщення вимкнено!");
+            SendMessage ms = dh.createCustomMessage(chatId,"⚠  Сповіщення вимкнено!");
             sendMessage(ms);
 
             Scheduler.getUserScheduler(chatId).cancel(true);
@@ -179,7 +184,7 @@ import java.util.Objects;
         public void doCommandNotifySetTime(Long chatId, Update update) {
             BotDialogHandler dh = new BotDialogHandler(chatId);
             String msgCommand = update.getMessage().getText();
-            SendMessage ms = dh.createCustomMessage(chatId,"\uD83D\uDEC8  Час сповіщень змінено на " + msgCommand);
+            SendMessage ms = dh.createCustomMessage(chatId,"⏰  Час сповіщень змінено на " + msgCommand);
             sendMessage(ms);
 
             int hour = Integer.parseInt(msgCommand.split(":")[0]);
@@ -191,9 +196,9 @@ import java.util.Objects;
 
             saveUser(chatId);
         }
-        public void sendNotFound(Long chatId) {
+        public void sendErrorMessage(Long chatId) {
             BotDialogHandler dh = new BotDialogHandler(chatId);
-            SendMessage ms = dh.createMessage("Command Not Found!", chatId);
+            SendMessage ms = dh.createMessage("❗ Command not found! Or you haven't launched the bot. Try run: /start", chatId);
             sendMessage(ms);
         }
 
@@ -271,7 +276,7 @@ import java.util.Objects;
             // {"PB" => {"USD" => {"USD", "36.95000", "37.45000"}}}
             Map<String, Map<String, NormalizeCurrencyPair>> currencyRates = CurrencyHolder.getRates();
 
-            if (currencyRates == null || currencyRates.isEmpty()) {
+            if (currencyRates.isEmpty()) {
                 return null;
             }
             StringBuilder sb = new StringBuilder("\uD83C\uDFA2  Поточні курси валют:\n");
@@ -299,7 +304,7 @@ import java.util.Objects;
                     }
                 }
                 if (!sbSub.toString().isEmpty()) {
-                    sb.append("\n\uD83C\uDFE6  " + bankName).append("\n").append(sbSub);
+                    sb.append("\n\uD83C\uDFE6  ").append(bankName).append("\n").append(sbSub);
                 }
             }
             return !sb.toString().isEmpty() ? sb.toString() : null;
@@ -319,9 +324,9 @@ import java.util.Objects;
             if (message != null) {
                 try {
                     execute(message);
-                    LOGGER.info("sendMessage()", message);
+                    LOGGER.info("sendMessage() {}", message);
                 } catch (TelegramApiException e) {
-                    LOGGER.error("sendMessage()", message);
+                    LOGGER.error("sendMessage()", e);
                 }
             }
         }

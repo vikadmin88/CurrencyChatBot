@@ -17,10 +17,8 @@ repositories {
 dependencies {
     // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
     implementation 'org.slf4j:slf4j-api:2.0.9'
-// https://mvnrepository.com/artifact/org.slf4j/slf4j-log4j12
+    // https://mvnrepository.com/artifact/org.slf4j/slf4j-log4j12
     implementation 'org.slf4j:slf4j-log4j12:2.0.9'
-    // https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-slf4j-impl
-//    implementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.22.0'
 
 
     // https://mvnrepository.com/artifact/org.jsoup/jsoup
