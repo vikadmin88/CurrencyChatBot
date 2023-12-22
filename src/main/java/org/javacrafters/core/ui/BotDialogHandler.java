@@ -13,7 +13,10 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.Keyboard
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-
+/**
+ * MVC: View
+ * @author AlekseyB belovmladshui@gmail.com
+ */
 public class BotDialogHandler {
 
     private final Long chatId;
@@ -39,7 +42,7 @@ public class BotDialogHandler {
     }
     //Сообщение с настройками
     public  SendMessage createSettingsMessage(Long chatId){
-        String text = "⚙  <b>Налаштування</b>";
+        String text = "⚙   <b>Налаштування</b>";
         SendMessage message = createMessage(text, chatId);
         message.setReplyMarkup(createSettingsButtons());
 //        message.setReplyMarkup(getPermanentKeyboard());
@@ -61,16 +64,19 @@ public class BotDialogHandler {
         return createEditMessage(chatId, messageId, text, BT.SETTINGS);
     }
     public EditMessageText onDecimalMessage(Long chatId, Integer messageId) {
-        String text = "\uD83D\uDD22  <b>Кількість знаків після коми</b>";
-        return createEditMessage(chatId, messageId, text, BT.DEC_BUT);
+        String text = "<b>Кількість знаків після коми</b>";
+        String emoji = "\uD83D\uDD22";
+        return createEditMessage(chatId, messageId, emoji, text, BT.DEC_BUT);
     }
     public EditMessageText onBankMessage(Long chatId, Integer messageId) {
-        String text = "\uD83C\uDFE6  <b>Банки</b>";
-        return createEditMessage(chatId, messageId, text, BT.BAN_BUT);
+        String text = "<b>Банки</b>";
+        String emoji = "\uD83C\uDFE6";
+        return createEditMessage(chatId, messageId, emoji, text, BT.BAN_BUT);
     }
     public EditMessageText onCurrencyMessage(Long chatId, Integer messageId) {
-        String text = "\uD83D\uDCB5  <b>Валюти</b>";
-        return createEditMessage(chatId, messageId, text, BT.CUR_BUT);
+        String text = "<b>Валюти</b>";
+        String emoji = "\uD83D\uDCB5";
+        return createEditMessage(chatId, messageId, emoji, text, BT.CUR_BUT);
     }
 
     //метод для добавления кнопок к разделам настроек
@@ -79,6 +85,25 @@ public class BotDialogHandler {
         newMessage.setChatId(String.valueOf(chatId));
         newMessage.setMessageId(messageId);
         newMessage.setText(new String(messageText.getBytes(), StandardCharsets.UTF_8));
+        newMessage.setParseMode(ParseMode.HTML);
+
+        InlineKeyboardMarkup replyMarkup = switch (buttonType) {
+            case BAN_BUT -> createBankButtons(chatId);
+            case CUR_BUT -> createCurrencyButtons(chatId);
+            case DEC_BUT -> createDecimalButtons(chatId);
+            case SETTINGS -> createSettingsButtons();
+            default -> createMainMenuButtons();
+        };
+
+        newMessage.setReplyMarkup(replyMarkup);
+        return newMessage;
+    }
+    //метод для добавления кнопок к разделам настроек
+    private EditMessageText createEditMessage(Long chatId, Integer messageId, String emoji, String messageText, BT buttonType) {
+        EditMessageText newMessage = new EditMessageText();
+        newMessage.setChatId(String.valueOf(chatId));
+        newMessage.setMessageId(messageId);
+        newMessage.setText(emoji + "  " + new String(messageText.getBytes(), StandardCharsets.UTF_8));
         newMessage.setParseMode(ParseMode.HTML);
 
         InlineKeyboardMarkup replyMarkup = switch (buttonType) {
@@ -158,7 +183,7 @@ public class BotDialogHandler {
         List<InlineKeyboardButton> buttons = new ArrayList<>();
 
         // Добавление кнопок для главного меню
-        buttons.add(createButton("\uD83C\uDFA2 Курси валют", "get_info"));
+        buttons.add(createButton("\uD83C\uDFA2", "Курси валют", "get_info"));
         buttons.add(createButton("⚙ Налаштування", "settings"));
 
         return buildInlineKeyboard(buttons);
@@ -168,14 +193,22 @@ public class BotDialogHandler {
         List<InlineKeyboardButton> buttons = new ArrayList<>();
 
         // Добавление кнопок для настроек
-        buttons.add(createButton("\uD83C\uDFE6 Банки", "bank"));
-        buttons.add(createButton("\uD83D\uDCB5 Валюти", "currency"));
-        buttons.add(createButton("\uD83D\uDD22 Кількість знаків після коми", "decimal"));
+        buttons.add(createButton("\uD83C\uDFE6", "Банки", "bank"));
+        buttons.add(createButton("\uD83D\uDCB5", "Валюти", "currency"));
+        buttons.add(createButton("\uD83D\uDD22", "Кількість знаків після коми", "decimal"));
         buttons.add(createButton("⏰ Час сповіщення", "notification"));
 
         return buildInlineKeyboard(buttons);
     }
-    //Метод для создания кнопки
+
+    //Метод для создания кнопки с ломаными емодзи
+    private InlineKeyboardButton createButton(String emoji, String buttonText, String callbackData) {
+        InlineKeyboardButton button = new InlineKeyboardButton();
+        button.setText(emoji+" "+new String(buttonText.getBytes(), StandardCharsets.UTF_8));
+        button.setCallbackData(callbackData);
+        return button;
+    }
+    //Метод для создания кнопки с нормальными емодзи
     private InlineKeyboardButton createButton(String buttonText, String callbackData) {
         InlineKeyboardButton button = new InlineKeyboardButton();
         button.setText(new String(buttonText.getBytes(), StandardCharsets.UTF_8));
@@ -210,7 +243,7 @@ public class BotDialogHandler {
 
         // Создаем один ряд кнопок
         KeyboardRow row = new KeyboardRow();
-        row.add(new String("\uD83C\uDFA2 Курси валют".getBytes(), StandardCharsets.UTF_8));
+        row.add("\uD83C\uDFA2" + new String(" Курси валют".getBytes(), StandardCharsets.UTF_8));
         row.add(new String("❌ Стоп".getBytes(), StandardCharsets.UTF_8));
         row.add(new String("⚙ Налаштування".getBytes(), StandardCharsets.UTF_8));
 
