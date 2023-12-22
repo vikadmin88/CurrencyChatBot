@@ -76,10 +76,6 @@ public class BotDialogHandler {
         String text = "\uD83D\uDCB5  <b>Валюти</b>";
         return createEditMessage(chatId, messageId, text, BT.CUR_BUT);
     }
-    public EditMessageText onAboutUsMessage(Long chatId, Integer messageId) {
-        String text = "\uD83D\uDC40  <b>Про нас</b>";
-        return createEditMessage(chatId, messageId, text, BT.CUR_BUT);
-    }
 
     //метод для добавления кнопок к разделам настроек
     private EditMessageText createEditMessage(Long chatId, Integer messageId, String messageText, BT buttonType) {
@@ -180,6 +176,7 @@ public class BotDialogHandler {
         buttons.add(createButton("\uD83C\uDFE6 Банки", "bank"));
         buttons.add(createButton("\uD83D\uDCB5 Валюти", "currency"));
         buttons.add(createButton("⏰ Час сповіщення", "notification"));
+        buttons.add(createButton("\uD83D\uDC40 Про нас", "about_us"));
 
         return buildInlineKeyboard(buttons);
     }

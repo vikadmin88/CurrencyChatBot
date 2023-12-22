@@ -11,6 +11,6 @@ public enum BT {
     NOTIFICATION_TIME,
     DEC_BUT,
     CUR_BUT,
-    BAN_BUT
-
+    BAN_BUT,
+    ABOUT_US_BUT
 }
