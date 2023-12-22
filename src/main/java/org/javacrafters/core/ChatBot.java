@@ -16,6 +16,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -133,6 +134,7 @@ import java.util.Objects;
             // Callbacks processing
             if (update.hasCallbackQuery()) {
                 String[] btnCommand = update.getCallbackQuery().getData().split("_");
+                LOGGER.info("btnCommand: {} btnCommand[] {}", update.getCallbackQuery().getData(), Arrays.toString(btnCommand));
 
                 switch (btnCommand[0].toUpperCase()) {
                     case "BANK" -> doCallBackBank(chatId, update, btnCommand);
