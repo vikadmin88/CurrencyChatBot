@@ -16,6 +16,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -111,22 +112,22 @@ import java.util.Objects;
                     doCommandStart(chatId, update);
                 }
                 // Stop / Disable notify
-                if (msgCommand.equals("/stop") || msgCommand.endsWith("Стоп")) {
+                if (msgCommand.equals("/stop") || msgCommand.endsWith(new String("Стоп".getBytes(), StandardCharsets.UTF_8))) {
                     doCommandStop(chatId, update);
                 }
-                if (msgCommand.equals("Вимкнути сповіщення")) {
+                if (msgCommand.equals(new String("Вимкнути сповіщення".getBytes(), StandardCharsets.UTF_8))) {
                     doCommandNotifyOff(chatId, update);
                 }
                 // Set Notify Time
-                if (msgCommand.endsWith(":00")) {
+                if (msgCommand.endsWith(new String(":00".getBytes(), StandardCharsets.UTF_8))) {
                     doCommandNotifySetTime(chatId, update);
                 }
                 // Settings
-                if (msgCommand.endsWith("Налаштування")) {
+                if (msgCommand.endsWith(new String("Налаштування".getBytes(), StandardCharsets.UTF_8))) {
                     doCommandSettings(chatId, update);
                 }
                 //
-                if (msgCommand.endsWith("Курси валют")) {
+                if (msgCommand.endsWith(new String("Курси валют".getBytes(), StandardCharsets.UTF_8))) {
                     userNotify(AppRegistry.getUser(chatId));
                 }
             }
@@ -153,7 +154,7 @@ import java.util.Objects;
          * */
         public void doCommandStart(Long chatId, Update update) {
             BotDialogHandler dh = new BotDialogHandler(chatId);
-            SendMessage ms = dh.createWelcomeMessage(chatId);
+            SendMessage ms = dh.createWelcomeMessage();
             sendMessage(ms);
         }
         public void doCommandStop(Long chatId, Update update) {
@@ -171,12 +172,12 @@ import java.util.Objects;
         }
         public void doCommandSettings(Long chatId, Update update) {
             BotDialogHandler dh = new BotDialogHandler(chatId);
-            SendMessage ms = dh.createSettingsMessage(chatId);
+            SendMessage ms = dh.createSettingsMessage();
             sendMessage(ms);
         }
         public void doCommandNotifyOff(Long chatId, Update update) {
             BotDialogHandler dh = new BotDialogHandler(chatId);
-            SendMessage ms = dh.createCustomMessage(chatId,"⚠  Сповіщення вимкнено!");
+            SendMessage ms = dh.createCustomMessage("⚠  Сповіщення вимкнено!");
             sendMessage(ms);
 
             Scheduler.getUserScheduler(chatId).cancel(true);
@@ -187,7 +188,7 @@ import java.util.Objects;
         public void doCommandNotifySetTime(Long chatId, Update update) {
             BotDialogHandler dh = new BotDialogHandler(chatId);
             String msgCommand = update.getMessage().getText();
-            SendMessage ms = dh.createCustomMessage(chatId,"⏰  Час сповіщень змінено на " + msgCommand);
+            SendMessage ms = dh.createCustomMessage("⏰  Час сповіщень змінено на " + msgCommand);
             sendMessage(ms);
 
             int hour = Integer.parseInt(msgCommand.split(":")[0]);
@@ -219,7 +220,7 @@ import java.util.Objects;
                 saveUser(chatId);
             }
             BotDialogHandler dh = new BotDialogHandler(chatId);
-            EditMessageText ms = dh.onBankMessage(chatId, update.getCallbackQuery().getMessage().getMessageId());
+            EditMessageText ms = dh.onBankMessage(update.getCallbackQuery().getMessage().getMessageId());
             sendMessage(ms);
         }
         public void doCallBackCurrency(Long chatId, Update update, String[] command) {
@@ -232,7 +233,7 @@ import java.util.Objects;
                 saveUser(chatId);
             }
             BotDialogHandler dh = new BotDialogHandler(chatId);
-            EditMessageText ms = dh.onCurrencyMessage(chatId, update.getCallbackQuery().getMessage().getMessageId());
+            EditMessageText ms = dh.onCurrencyMessage(update.getCallbackQuery().getMessage().getMessageId());
             sendMessage(ms);
         }
         public void doCallBackNotification(Long chatId, Update update, String[] command) {
@@ -245,7 +246,7 @@ import java.util.Objects;
             }
 
             BotDialogHandler dh = new BotDialogHandler(chatId);
-            SendMessage ms = dh.createSetNotifyMessage(chatId);
+            SendMessage ms = dh.createSetNotifyMessage();
             sendMessage(ms);
 
         }
@@ -256,12 +257,12 @@ import java.util.Objects;
                 saveUser(chatId);
             }
             BotDialogHandler dh = new BotDialogHandler(chatId);
-            EditMessageText ms = dh.onDecimalMessage(chatId, update.getCallbackQuery().getMessage().getMessageId());
+            EditMessageText ms = dh.onDecimalMessage(update.getCallbackQuery().getMessage().getMessageId());
             sendMessage(ms);
         }
         public void doCallBackSettings(Long chatId, Update update, String[] command) {
             BotDialogHandler dh = new BotDialogHandler(chatId);
-            EditMessageText ms = dh.onSettingMessage(chatId, update.getCallbackQuery().getMessage().getMessageId());
+            EditMessageText ms = dh.onSettingMessage(update.getCallbackQuery().getMessage().getMessageId());
             sendMessage(ms);
         }
         public void userNotify(User user) {
@@ -282,7 +283,7 @@ import java.util.Objects;
             if (currencyRates.isEmpty()) {
                 return "Нажаль системі не вдалося отримати курси валют від банків.";
             }
-            StringBuilder sb = new StringBuilder("\uD83C\uDFA2  Поточні курси валют:\n");
+            StringBuilder sb = new StringBuilder("⚡  <b>Поточні курси валют:</b>\n");
             boolean noCurrency = true;
 
             for (String bankLocalName : user.getBanks()) {
@@ -309,7 +310,7 @@ import java.util.Objects;
                 }
                 if (!sbSub.toString().isEmpty()) {
                     noCurrency = false;
-                    sb.append("\n").append("\uD83C\uDFE6  ").append(bankName).append("\n").append(sbSub);
+                    sb.append("\n").append("✔  ").append("<b>").append(bankName).append("</b>").append("\n").append(sbSub);
                 }
             }
             if (noCurrency) {

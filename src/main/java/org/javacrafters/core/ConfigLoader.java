@@ -30,7 +30,7 @@ public class ConfigLoader {
 
     private static Properties loadConfig() {
         Properties prop = new Properties();
-        try (FileInputStream input = new FileInputStream("./app.properties")) {
+        try (FileInputStream input = new FileInputStream("src/app.properties")) {
             prop.load(input);
         } catch (IOException ex) {
             LOGGER.error("Can't find config file", ex);
