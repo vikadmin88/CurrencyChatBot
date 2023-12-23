@@ -280,9 +280,10 @@ import java.util.Objects;
             Map<String, Map<String, NormalizeCurrencyPair>> currencyRates = CurrencyHolder.getRates();
 
             if (currencyRates.isEmpty()) {
-                return null;
+                return "Нажаль системі не вдалося отримати курси валют від банків.";
             }
             StringBuilder sb = new StringBuilder("\uD83C\uDFA2  Поточні курси валют:\n");
+            boolean noCurrency = true;
 
             for (String bankLocalName : user.getBanks()) {
 
@@ -307,10 +308,16 @@ import java.util.Objects;
                     }
                 }
                 if (!sbSub.toString().isEmpty()) {
+                    noCurrency = false;
+                    sb.append("\n\uD83C\uDFE6  ").append(bankName).append("\n").append(sbSub);
+                } else {
                     sb.append("\n\uD83C\uDFE6  ").append(bankName).append("\n").append(sbSub);
                 }
             }
-            return !sb.toString().isEmpty() ? sb.toString() : null;
+            if (noCurrency) {
+                return "Обрані вами банки не надають обмінні курси по обраним вами валютам.";
+            }
+            return sb.toString();
         }
 
     public void sendMessage(SendMessage message) {
