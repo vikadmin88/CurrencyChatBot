@@ -16,6 +16,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -114,19 +115,19 @@ import java.util.Objects;
                 if (msgCommand.equals("/stop") || msgCommand.endsWith("Стоп")) {
                     doCommandStop(chatId, update);
                 }
-                if (msgCommand.equals("Вимкнути сповіщення")) {
+                if (msgCommand.equals(new String("Вимкнути сповіщення".getBytes(), StandardCharsets.UTF_8))) {
                     doCommandNotifyOff(chatId, update);
                 }
                 // Set Notify Time
-                if (msgCommand.endsWith(":00")) {
+                if (msgCommand.endsWith(new String(":00".getBytes(), StandardCharsets.UTF_8))) {
                     doCommandNotifySetTime(chatId, update);
                 }
                 // Settings
-                if (msgCommand.endsWith("Налаштування")) {
+                if (msgCommand.endsWith(new String("Налаштування".getBytes(), StandardCharsets.UTF_8))) {
                     doCommandSettings(chatId, update);
                 }
                 //
-                if (msgCommand.endsWith("Курси валют")) {
+                if (msgCommand.endsWith(new String("Курси валют".getBytes(), StandardCharsets.UTF_8))) {
                     userNotify(AppRegistry.getUser(chatId));
                 }
             }
