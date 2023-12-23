@@ -1,5 +1,9 @@
 package org.javacrafters.core;
 
+/**
+ * @author Mykhailo Orban
+ */
+
 import java.util.*;
 
 import org.javacrafters.banking.Bank;
