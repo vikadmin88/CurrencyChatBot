@@ -7,8 +7,11 @@ import org.javacrafters.networkclient.NetworkClient;
 import org.javacrafters.scheduler.Scheduler;
 import org.javacrafters.user.User;
 
-
+/**
+ * @author Mykhailo Orban
+ */
 public class AppRegistry {
+
 
     private static ChatBot chatBot;
     private static final Map<Long, User> users = new HashMap<>();
