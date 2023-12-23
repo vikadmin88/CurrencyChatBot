@@ -4,6 +4,8 @@ package org.javacrafters.scheduler;
 import org.javacrafters.banking.CurrencyHolder;
 import org.javacrafters.core.AppRegistry;
 import org.javacrafters.user.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Calendar;
 import java.util.HashMap;
@@ -15,9 +17,8 @@ import java.util.concurrent.ScheduledFuture;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
-
 public class Scheduler {
-
+    private static final Logger LOGGER = LoggerFactory.getLogger(Scheduler.class);
     private static final Map<Long, ScheduledFuture<?>> userSchedulers = new HashMap<>();
     private static ScheduledFuture<?> currencyScheduler;
     private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(4);
@@ -39,9 +40,9 @@ public class Scheduler {
         }
 
         final Runnable threadUserScheduledTask = () -> {
-            System.out.println(".");
-            if (user != null && user.isNotifyOn()) {
-                System.out.println("Scheduler : Notified user: " + user.getId() +" "+ user.getName() + " in Thread: " + Thread.currentThread().getName());
+            LOGGER.info("Scheduler : user: {} in Thread: {}", user.getId(), Thread.currentThread().getName());
+            if (user.isNotifyOn()) {
+                LOGGER.info("Scheduler : Notified user: {}  {} in Thread: {}", user.getId(), user.getName(), Thread.currentThread().getName());
                 AppRegistry.getChatBot().userNotify(user);
             }
         };
@@ -54,6 +55,7 @@ public class Scheduler {
         // test !!! period, SECONDS
 //        userSchedulers.put(userId, scheduler.scheduleAtFixedRate(threadUserScheduledTask, initDelay, 3, SECONDS));
     }
+
     public static ScheduledFuture<?> getUserScheduler(Long userId) {
         return userSchedulers.get(userId);
     }
@@ -63,11 +65,12 @@ public class Scheduler {
         int initDelay = 3;
 
         final Runnable threadCurrencyScheduledTask = () -> {
-            System.out.println("Got new currency rates. Next time in " + period + " minutes. thread: " + Thread.currentThread().getName());
+            LOGGER.info("Got new currency rates. Next request in {} minutes. thread: {}", period,  Thread.currentThread().getName());
             CurrencyHolder.refreshRates();
         };
         currencyScheduler = scheduler.scheduleAtFixedRate(threadCurrencyScheduledTask, initDelay, period * 60L, SECONDS);
     }
+
     public static ScheduledFuture<?> getCurrencyScheduler() {
         return currencyScheduler;
     }

@@ -1,8 +1,5 @@
 package org.javacrafters.banking;
 
-
-import org.javacrafters.core.AppRegistry;
-
 public class NormalizeCurrencyPair {
 
     private String name;

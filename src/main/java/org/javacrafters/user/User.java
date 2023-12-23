@@ -18,6 +18,7 @@ public class User {
         currency.add("USD");
         banks.add("PB");
     }
+
     public User() {
     }
 
@@ -25,7 +26,7 @@ public class User {
         this.id = id;
         this.name = name;
         this.username = username;
-   }
+    }
 
     public Long getId() {
         return this.id;
@@ -74,6 +75,7 @@ public class User {
         }
         currency.add(name);
     }
+
     public void removeCurrency(String name) {
         this.currency.remove(name);
     }
@@ -101,9 +103,11 @@ public class User {
     public void setNotifyOn() {
         this.isNotifyOn = true;
     }
+
     public void setNotifyOff() {
         this.isNotifyOn = false;
     }
+
     public void setNotifyStatus(boolean status) {
         this.isNotifyOn = status;
     }

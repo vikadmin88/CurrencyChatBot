@@ -16,7 +16,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
-import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -103,28 +103,30 @@ import java.util.Objects;
             // Messages processing
             if (update.hasMessage()) {
 
-                String msgCommand = update.getMessage().getText();
+            String msgCommand = update.getMessage().getText();
+            LOGGER.info("msgCommand {}", msgCommand);
+
                 // Start
                 if (msgCommand.equals("/start")) {
                     doCommandStart(chatId, update);
                 }
                 // Stop / Disable notify
-                if (msgCommand.equals("/stop") || msgCommand.endsWith("Stop")) {
+                if (msgCommand.equals("/stop") || msgCommand.endsWith("Стоп")) {
                     doCommandStop(chatId, update);
                 }
-                if (msgCommand.equals(new String("Вимкнути сповіщення".getBytes(), StandardCharsets.UTF_8))) {
+                if (msgCommand.equals("Вимкнути сповіщення")) {
                     doCommandNotifyOff(chatId, update);
                 }
                 // Set Notify Time
-                if (msgCommand.endsWith(new String(":00".getBytes(), StandardCharsets.UTF_8))) {
+                if (msgCommand.endsWith(":00")) {
                     doCommandNotifySetTime(chatId, update);
                 }
                 // Settings
-                if (msgCommand.endsWith(new String("Налаштування".getBytes(), StandardCharsets.UTF_8))) {
+                if (msgCommand.endsWith("Налаштування")) {
                     doCommandSettings(chatId, update);
                 }
                 //
-                if (msgCommand.endsWith(new String("Курси валют".getBytes(), StandardCharsets.UTF_8))) {
+                if (msgCommand.endsWith("Курси валют")) {
                     userNotify(AppRegistry.getUser(chatId));
                 }
             }
@@ -132,6 +134,7 @@ import java.util.Objects;
             // Callbacks processing
             if (update.hasCallbackQuery()) {
                 String[] btnCommand = update.getCallbackQuery().getData().split("_");
+                LOGGER.info("btnCommand: {} btnCommand[] {}", update.getCallbackQuery().getData(), Arrays.toString(btnCommand));
 
                 switch (btnCommand[0].toUpperCase()) {
                     case "BANK" -> doCallBackBank(chatId, update, btnCommand);
@@ -262,7 +265,7 @@ import java.util.Objects;
             sendMessage(ms);
         }
         public void userNotify(User user) {
-            System.out.println("userNotify() = " + user.getId() + " " + user.getName());
+            LOGGER.info("userNotify() = {} {}", user.getId(), user.getName());
 
             SendMessage sendMessage = new SendMessage();
             sendMessage.setChatId(String.valueOf(user.getId()));
@@ -277,9 +280,10 @@ import java.util.Objects;
             Map<String, Map<String, NormalizeCurrencyPair>> currencyRates = CurrencyHolder.getRates();
 
             if (currencyRates.isEmpty()) {
-                return null;
+                return "Нажаль системі не вдалося отримати курси валют від банків.";
             }
             StringBuilder sb = new StringBuilder("\uD83C\uDFA2  Поточні курси валют:\n");
+            boolean noCurrency = true;
 
             for (String bankLocalName : user.getBanks()) {
 
@@ -296,38 +300,41 @@ import java.util.Objects;
 
                     if (curCurrency != null && user.getCurrency().contains(curCurrency.getName())) {
                         sbSub.append(curCurrency.getName()).append("\n");
-                        sbSub.append("\tКупівля: ");
+                        sbSub.append("\tКупівля:   ");
                         String format = "%." + user.getCountLastDigits() + "f";
                         sbSub.append(String.format(format, Float.valueOf(curCurrency.getBuy()))).append("\n");
-                        sbSub.append("\tПродаж: ");
+                        sbSub.append("\tПродаж:   ");
                         sbSub.append(String.format(format, Float.valueOf(curCurrency.getSale()))).append("\n");
                     }
                 }
                 if (!sbSub.toString().isEmpty()) {
-                    sb.append("\n\uD83C\uDFE6  ").append(bankName).append("\n").append(sbSub);
+                    noCurrency = false;
+                    sb.append("\n").append("\uD83C\uDFE6  ").append(bankName).append("\n").append(sbSub);
                 }
             }
-            return !sb.toString().isEmpty() ? sb.toString() : null;
+            if (noCurrency) {
+                sb.append("\n").append("Обрані вами банки не надають обмінні курси по обраним вами валютам.");
+            }
+            return sb.toString();
         }
 
-        public void sendMessage(SendMessage message) {
-            if (message != null) {
-                try {
-                    execute(message);
-                    LOGGER.info("sendMessage()", message);
-                } catch (TelegramApiException e) {
-                    LOGGER.error("sendMessage()", message);
-                }
-            }
-        }
-        public void sendMessage(EditMessageText message) {
-            if (message != null) {
-                try {
-                    execute(message);
-                    LOGGER.info("sendMessage() {}", message);
-                } catch (TelegramApiException e) {
-                    LOGGER.error("sendMessage()", e);
-                }
+    public void sendMessage(SendMessage message) {
+        if (message != null) {
+            try {
+                execute(message);
+            } catch (TelegramApiException e) {
+                LOGGER.error("Can't sendMessage()", e);
             }
         }
     }
+
+    public void sendMessage(EditMessageText message) {
+        if (message != null) {
+            try {
+                execute(message);
+            } catch (TelegramApiException e) {
+                LOGGER.error("Can't sendMessage", e);
+            }
+        }
+    }
+}

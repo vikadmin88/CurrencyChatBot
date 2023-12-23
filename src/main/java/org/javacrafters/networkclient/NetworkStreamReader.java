@@ -1,5 +1,7 @@
 package org.javacrafters.networkclient;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -8,8 +10,10 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
 public class NetworkStreamReader extends NetworkClient {
+    private static final Logger LOGGER = LoggerFactory.getLogger(NetworkStreamReader.class);
+
     @Override
-   public String get(String url) {
+    public String get(String url) {
 
         try (InputStream is = new URL(url).openStream()) {
 
@@ -23,9 +27,7 @@ public class NetworkStreamReader extends NetworkClient {
             return sb.toString();
 
         } catch (IOException e) {
-//            e.printStackTrace();
             return "[]";
         }
     }
-
 }
