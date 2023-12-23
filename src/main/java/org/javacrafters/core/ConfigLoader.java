@@ -1,6 +1,8 @@
 package org.javacrafters.core;
 
 import org.javacrafters.AppLauncher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -8,17 +10,17 @@ import java.io.IOException;
 import java.util.Properties;
 
 public class ConfigLoader {
-
+    private static final Logger LOGGER = LoggerFactory.getLogger(ConfigLoader.class);
     private static Properties conf = null;
 
-
-    public static Properties getConf(){
+    public static Properties getConf() {
         if (conf == null) {
             conf = loadConfig();
         }
         return conf;
     }
-    public static String get(String key){
+
+    public static String get(String key) {
         if (conf != null && !conf.isEmpty()) {
             return (String) conf.get(key);
         }
@@ -31,7 +33,10 @@ public class ConfigLoader {
         try (FileInputStream input = new FileInputStream("./app.properties")) {
             prop.load(input);
         } catch (IOException ex) {
+            LOGGER.error("Can't find config file", ex);
             System.out.println(""" 
+                    Config file ./app.properties not found! Please rename file ./app.properties-example to ./app.properties
+                    and configure it like this:
                     APP_NAME=CurrencyChatBot
                     APP_BOT_NAME=<bot name>
                     APP_BOT_TOKEN=<bot token>

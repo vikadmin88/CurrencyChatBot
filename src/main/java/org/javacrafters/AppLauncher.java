@@ -10,13 +10,16 @@ import org.javacrafters.core.storage.JsonStorageProvider;
 import org.javacrafters.networkclient.NetworkClient;
 import org.javacrafters.networkclient.NetworkStreamReader;
 import org.javacrafters.core.ConfigLoader;
+import org.javacrafters.scheduler.Scheduler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class AppLauncher {
-
+    private static final Logger LOGGER = LoggerFactory.getLogger(AppLauncher.class);
 
     public static void main(String[] args) {
-        System.out.println("Program starting in Thread: " + Thread.currentThread().getName());
+        LOGGER.info("Program starting in Thread: {}", Thread.currentThread().getName());
 
         AppRegistry.initDefaults();
         AppRegistry.addBank("PB", new PrivatBank(ConfigLoader.get("BANK_PB_API_URL"), new NetworkStreamReader()));

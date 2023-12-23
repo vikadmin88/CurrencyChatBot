@@ -1,7 +1,5 @@
 package org.javacrafters.core;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 import org.javacrafters.banking.Bank;
@@ -9,8 +7,11 @@ import org.javacrafters.networkclient.NetworkClient;
 import org.javacrafters.scheduler.Scheduler;
 import org.javacrafters.user.User;
 
-
+/**
+ * @author Mykhailo Orban
+ */
 public class AppRegistry {
+
 
     private static ChatBot chatBot;
     private static final Map<Long, User> users = new HashMap<>();
@@ -20,6 +21,10 @@ public class AppRegistry {
 
     public static String getConfVal(String key) {
         return ConfigLoader.get(key);
+    }
+
+
+    private AppRegistry() {
     }
 
     public static void initDefaults() {
@@ -46,7 +51,7 @@ public class AppRegistry {
         users.put(user.getId(), user);
     }
     public static Map<Long, User>getUsers(){
-        return users;
+        return new HashMap<Long, User>(users);
     }
     public static User getUser(Long userId){
         return users.get(userId);
@@ -60,7 +65,7 @@ public class AppRegistry {
     */
     public static void addBank(String bankLocalName, Bank bank){ banks.put(bankLocalName, bank);}
     public static Map <String, Bank> getBanks(){
-        return banks;
+        return new HashMap<String, Bank>(banks);
     }
     public static Bank getBank(String bankLocalName){
         return banks.get(bankLocalName);
@@ -73,7 +78,7 @@ public class AppRegistry {
         currency.add(currencyName);
     }
     public static List<String> getCurrency(){
-        return currency;
+        return new ArrayList<>(currency);
     }
     public static String getCurrency(int currencyId){
         return currency.get(currencyId);

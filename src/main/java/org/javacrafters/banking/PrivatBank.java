@@ -7,10 +7,11 @@ import org.javacrafters.networkclient.NetworkClient;
 import java.util.*;
 
 public class PrivatBank extends Bank {
-    private final static String NAME = "Приват Банк";
-    private final static String LOCAL_NAME  = "PB";
+    private static final String NAME = "Приват Банк";
+    private static final String LOCAL_NAME  = "PB";
     private final String apiUrl;
     private final NetworkClient netClient;
+    private static final Gson GSON = new Gson();
 
     public PrivatBank(String apiUrl, NetworkClient netClient) {
         this.apiUrl = apiUrl;
@@ -19,14 +20,13 @@ public class PrivatBank extends Bank {
 
     @Override
     public Map<String, NormalizeCurrencyPair> getRates() {
-        Gson gson = new Gson();
-        JsonObject[] jsonObjArr = gson.fromJson(netClient.get(apiUrl), JsonObject[].class);
+        JsonObject[] jsonObjArr = GSON.fromJson(netClient.get(apiUrl), JsonObject[].class);
 
         // {"USD" => "USD", "36.95000", "37.45000"}
         Map<String, NormalizeCurrencyPair> rateMap = new HashMap<>();
 
         for (JsonObject jsonObjItem : jsonObjArr) {
-            JsonObject jsonObj = gson.fromJson(jsonObjItem, JsonObject.class);
+            JsonObject jsonObj = GSON.fromJson(jsonObjItem, JsonObject.class);
             String currencyName = jsonObj.get("ccy").getAsString();
             String currencyBuy = jsonObj.get("buy").getAsString();
             String currencySale = jsonObj.get("sale").getAsString();
@@ -48,6 +48,7 @@ public class PrivatBank extends Bank {
         return "PrivatBank{" +
                 "NAME='" + NAME + '\'' +
                 ", LOCAL_NAME='" + LOCAL_NAME + '\'' +
+                ", API_URL='" + apiUrl + '\'' +
                 '}';
     }
 }

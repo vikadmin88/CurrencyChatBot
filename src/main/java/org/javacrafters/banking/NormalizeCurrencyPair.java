@@ -1,19 +1,17 @@
 package org.javacrafters.banking;
 
-
-import org.javacrafters.core.AppRegistry;
-
 public class NormalizeCurrencyPair {
 
-private String name;
-private String buy;
-private String sale;
+    private String name;
+    private String buy;
+    private String sale;
 
-   {
+    {
         name = "N/A";
         buy = "0";
         sale = "0";
     }
+
     public NormalizeCurrencyPair(String name, String buy, String sale) {
         this.name = name;
         this.buy = buy;

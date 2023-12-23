@@ -4,6 +4,8 @@ import com.google.gson.Gson;
 import org.javacrafters.core.AppRegistry;
 import org.javacrafters.scheduler.Scheduler;
 import org.javacrafters.user.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -15,16 +17,17 @@ import java.nio.file.Paths;
 import java.util.stream.Stream;
 
 public class JsonStorageProvider implements StorageProvider {
+    private static final Logger LOGGER = LoggerFactory.getLogger(JsonStorageProvider.class);
 
+    private static final Gson GSON = new Gson();
     @Override
     public User load(Long userId) {
         String filePath = String.format("./botusers/user-%d-bot.json", userId);
         try (Reader reader = new FileReader(filePath)) {
             System.out.println("Loading user " + filePath);
-            return new Gson().fromJson(reader, User.class);
+            return GSON.fromJson(reader, User.class);
         } catch (IOException e) {
-            System.out.println("File "+filePath+" not found.");
-//            e.printStackTrace();
+            LOGGER.error("File {} not found.", filePath);
         }
 
         return null;
@@ -42,21 +45,19 @@ public class JsonStorageProvider implements StorageProvider {
                     paths.filter((file) -> file.toString().endsWith("-bot.json")).forEach(file -> {
 
                         try (Reader reader = new FileReader(file.toString())) {
-                            System.out.println("Loading users " + file);
-
-                            User user = new Gson().fromJson(reader, User.class);
+                            LOGGER.info("Loading users {}", file);
+                            User user = GSON.fromJson(reader, User.class);
                             AppRegistry.addUser(user);
                             Scheduler.addUserSchedule(user.getId(), user, user.getNotifyTime());
-                            System.out.printf("User %d loaded from file: ./botusers/user-%d-bot.json (thread: %s)\n",user.getId(), user.getId(), Thread.currentThread().getName());
-
+                            LOGGER.info("User {} loaded from file: ./botusers/user-{}-bot.json (thread: {})", user.getId(), user.getId(), Thread.currentThread().getName());
                         } catch (IOException e) {
-//                            e.printStackTrace();
+                            LOGGER.error("Not Loading users", e);
                         }
 
                     });
 
                 } catch (IOException e) {
-//                    throw new RuntimeException(e);
+                    LOGGER.error("Folder ./botusers not found!", e);
                 }
             }
         };
@@ -74,15 +75,14 @@ public class JsonStorageProvider implements StorageProvider {
                 try {
                     Files.createDirectories(Paths.get("./botusers"));
                     try (FileWriter writer = new FileWriter("./botusers/user-" + user.getId() + "-bot.json")) {
-                        new Gson().toJson(user, writer);
-                        System.out.printf("User %d saved to file: ./botusers/user-%d-bot.json (thread: %s)\n",user.getId(), user.getId(), Thread.currentThread().getName());
+                        GSON.toJson(user, writer);
+                        LOGGER.info("User {} saved to file: ./botusers/user-{}-bot.json (thread: {})", user.getId(), user.getId(), Thread.currentThread().getName());
                     }
                 } catch (IOException e) {
-//                    e.printStackTrace();
+                    LOGGER.error("Can't create ./botusers", e);
                 }
             }
         };
         new Thread(taskSave).start();
     }
-
 }

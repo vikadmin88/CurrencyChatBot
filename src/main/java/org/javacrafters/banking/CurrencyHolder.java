@@ -8,7 +8,10 @@ import java.util.HashMap;
 public class CurrencyHolder {
 
     // {"PB" => {"USD" => {"USD", "36.95000", "37.45000"}}}
-    private final static Map<String, Map<String, NormalizeCurrencyPair>> currency = new HashMap<>();
+    private static final Map<String, Map<String, NormalizeCurrencyPair>> currency = new HashMap<>();
+
+    private CurrencyHolder() {
+    }
 
     public static void refreshRates() {
 
@@ -24,7 +27,7 @@ public class CurrencyHolder {
     }
 
     public static Map<String, Map<String, NormalizeCurrencyPair>> getRates() {
-        return currency;
+        return new HashMap<String, Map<String, NormalizeCurrencyPair>>(currency);
     }
 
     public static Map<String, NormalizeCurrencyPair> getRates(String bankLocalName) {
