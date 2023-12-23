@@ -156,8 +156,12 @@ import java.util.Objects;
          * */
         public void doCommandStart(Long chatId, Update update) {
             BotDialogHandler dh = new BotDialogHandler(chatId);
-            SendMessage ms = dh.createWelcomeMessage();
-            sendMessage(ms);
+            SendPhoto ms = dh.createWelcomeMessage();
+            try {
+                execute(ms);
+            } catch (TelegramApiException e) {
+                throw new RuntimeException(e);
+            }
         }
         public void doCommandStop(Long chatId, Update update) {
             BotDialogHandler dh = new BotDialogHandler(chatId);
@@ -270,7 +274,7 @@ import java.util.Objects;
         sendMessage(aboutUsMessage);
 
         // Отправляем фото
-        SendPhoto photoMessage = dh.createPhotoMessage("https://ubiqum.com/assets/uploads/2021/12/learn-java-with-ubiqum-logo.png");
+        SendPhoto photoMessage = dh.createPhotoMessage("https://sdvv.ru/upload/iblock/0a3/0a32817fec4db09262e40b3e93a780ea.jpg");
         sendPhoto(photoMessage);
     }
 

@@ -28,13 +28,18 @@ public class BotDialogHandler {
         this.chatId = chatId;
     }
     // Стартовое сообщение
-    public SendMessage createWelcomeMessage() {
+    public SendPhoto createWelcomeMessage() {
         String text = "<b>Ласкаво просимо.</b> \nЦей бот допоможе відслідковувати актуальні курси валют!";
-        SendMessage message = createMessage(text, chatId);
-        message.setReplyMarkup(getPermanentKeyboard());
-        message.setParseMode(ParseMode.HTML);
-        return message;
+        SendPhoto photoMessage = createPhotoMessage("https://money24.kr.ua/wp-content/uploads/2021/02/2.jpg");
+        photoMessage.setCaption(new String(text.getBytes(), StandardCharsets.UTF_8));
+        photoMessage.setParseMode(ParseMode.HTML);
+
+        ReplyKeyboardMarkup keyboardMarkup = getPermanentKeyboard();
+        photoMessage.setReplyMarkup(keyboardMarkup);
+
+        return photoMessage;
     }
+
     public SendMessage createCustomMessage(String textMessage) {
         String text = "" + textMessage;
         SendMessage message = createMessage(text, chatId);
