@@ -300,10 +300,10 @@ import java.util.Objects;
 
                     if (curCurrency != null && user.getCurrency().contains(curCurrency.getName())) {
                         sbSub.append(curCurrency.getName()).append("\n");
-                        sbSub.append("\tКупівля: ");
+                        sbSub.append("\tКупівля:   ");
                         String format = "%." + user.getCountLastDigits() + "f";
                         sbSub.append(String.format(format, Float.valueOf(curCurrency.getBuy()))).append("\n");
-                        sbSub.append("\tПродаж: ");
+                        sbSub.append("\tПродаж:   ");
                         sbSub.append(String.format(format, Float.valueOf(curCurrency.getSale()))).append("\n");
                     }
                 }
