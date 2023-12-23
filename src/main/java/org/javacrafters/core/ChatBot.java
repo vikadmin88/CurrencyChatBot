@@ -11,6 +11,7 @@ import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
@@ -143,6 +144,7 @@ import java.util.Objects;
                     case "NOTIFICATION" -> doCallBackNotification(chatId, update, btnCommand);
                     case "DECIMAL" -> doCallBackDecimal(chatId, update, btnCommand);
                     case "SETTINGS" -> doCallBackSettings(chatId, update, btnCommand);
+                    case "ABOUT"-> doCallBackAboutUs(chatId, update);
                 }
 
             }
@@ -260,7 +262,19 @@ import java.util.Objects;
             EditMessageText ms = dh.onDecimalMessage(update.getCallbackQuery().getMessage().getMessageId());
             sendMessage(ms);
         }
-        public void doCallBackSettings(Long chatId, Update update, String[] command) {
+    private void doCallBackAboutUs(Long chatId, Update update) {
+        BotDialogHandler dh = new BotDialogHandler(chatId);
+
+        // Отправляем сообщение "Про нас"
+        EditMessageText aboutUsMessage = dh.onAboutUsMessage(update.getCallbackQuery().getMessage().getMessageId());
+        sendMessage(aboutUsMessage);
+
+        // Отправляем фото
+        SendPhoto photoMessage = dh.createPhotoMessage("https://ubiqum.com/assets/uploads/2021/12/learn-java-with-ubiqum-logo.png");
+        sendPhoto(photoMessage);
+    }
+
+    public void doCallBackSettings(Long chatId, Update update, String[] command) {
             BotDialogHandler dh = new BotDialogHandler(chatId);
             EditMessageText ms = dh.onSettingMessage(update.getCallbackQuery().getMessage().getMessageId());
             sendMessage(ms);
@@ -318,6 +332,15 @@ import java.util.Objects;
             }
             return sb.toString();
         }
+    public void sendPhoto(SendPhoto photo) {
+        if (photo != null) {
+            try {
+                execute(photo);
+            } catch (TelegramApiException e) {
+                LOGGER.error("Can't send photo", e);
+            }
+        }
+    }
 
     public void sendMessage(SendMessage message) {
         if (message != null) {
