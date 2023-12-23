@@ -310,12 +310,10 @@ import java.util.Objects;
                 if (!sbSub.toString().isEmpty()) {
                     noCurrency = false;
                     sb.append("\n\uD83C\uDFE6  ").append(bankName).append("\n").append(sbSub);
-                } else {
-                    sb.append("\n\uD83C\uDFE6  ").append(bankName).append("\n").append(sbSub);
                 }
             }
             if (noCurrency) {
-                return "Обрані вами банки не надають обмінні курси по обраним вами валютам.";
+                sb.append("Обрані вами банки не надають обмінні курси по обраним вами валютам.");
             }
             return sb.toString();
         }
