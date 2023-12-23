@@ -112,7 +112,7 @@ import java.util.Objects;
                     doCommandStart(chatId, update);
                 }
                 // Stop / Disable notify
-                if (msgCommand.equals("/stop") || msgCommand.endsWith("Стоп")) {
+                if (msgCommand.equals("/stop") || msgCommand.endsWith(new String("Стоп".getBytes(), StandardCharsets.UTF_8))) {
                     doCommandStop(chatId, update);
                 }
                 if (msgCommand.equals(new String("Вимкнути сповіщення".getBytes(), StandardCharsets.UTF_8))) {
@@ -154,7 +154,7 @@ import java.util.Objects;
          * */
         public void doCommandStart(Long chatId, Update update) {
             BotDialogHandler dh = new BotDialogHandler(chatId);
-            SendMessage ms = dh.createWelcomeMessage(chatId);
+            SendMessage ms = dh.createWelcomeMessage();
             sendMessage(ms);
         }
         public void doCommandStop(Long chatId, Update update) {
@@ -172,12 +172,12 @@ import java.util.Objects;
         }
         public void doCommandSettings(Long chatId, Update update) {
             BotDialogHandler dh = new BotDialogHandler(chatId);
-            SendMessage ms = dh.createSettingsMessage(chatId);
+            SendMessage ms = dh.createSettingsMessage();
             sendMessage(ms);
         }
         public void doCommandNotifyOff(Long chatId, Update update) {
             BotDialogHandler dh = new BotDialogHandler(chatId);
-            SendMessage ms = dh.createCustomMessage(chatId,"⚠  Сповіщення вимкнено!");
+            SendMessage ms = dh.createCustomMessage("⚠  Сповіщення вимкнено!");
             sendMessage(ms);
 
             Scheduler.getUserScheduler(chatId).cancel(true);
@@ -188,7 +188,7 @@ import java.util.Objects;
         public void doCommandNotifySetTime(Long chatId, Update update) {
             BotDialogHandler dh = new BotDialogHandler(chatId);
             String msgCommand = update.getMessage().getText();
-            SendMessage ms = dh.createCustomMessage(chatId,"⏰  Час сповіщень змінено на " + msgCommand);
+            SendMessage ms = dh.createCustomMessage("⏰  Час сповіщень змінено на " + msgCommand);
             sendMessage(ms);
 
             int hour = Integer.parseInt(msgCommand.split(":")[0]);
@@ -220,7 +220,7 @@ import java.util.Objects;
                 saveUser(chatId);
             }
             BotDialogHandler dh = new BotDialogHandler(chatId);
-            EditMessageText ms = dh.onBankMessage(chatId, update.getCallbackQuery().getMessage().getMessageId());
+            EditMessageText ms = dh.onBankMessage(update.getCallbackQuery().getMessage().getMessageId());
             sendMessage(ms);
         }
         public void doCallBackCurrency(Long chatId, Update update, String[] command) {
@@ -233,7 +233,7 @@ import java.util.Objects;
                 saveUser(chatId);
             }
             BotDialogHandler dh = new BotDialogHandler(chatId);
-            EditMessageText ms = dh.onCurrencyMessage(chatId, update.getCallbackQuery().getMessage().getMessageId());
+            EditMessageText ms = dh.onCurrencyMessage(update.getCallbackQuery().getMessage().getMessageId());
             sendMessage(ms);
         }
         public void doCallBackNotification(Long chatId, Update update, String[] command) {
@@ -246,7 +246,7 @@ import java.util.Objects;
             }
 
             BotDialogHandler dh = new BotDialogHandler(chatId);
-            SendMessage ms = dh.createSetNotifyMessage(chatId);
+            SendMessage ms = dh.createSetNotifyMessage();
             sendMessage(ms);
 
         }
@@ -257,12 +257,12 @@ import java.util.Objects;
                 saveUser(chatId);
             }
             BotDialogHandler dh = new BotDialogHandler(chatId);
-            EditMessageText ms = dh.onDecimalMessage(chatId, update.getCallbackQuery().getMessage().getMessageId());
+            EditMessageText ms = dh.onDecimalMessage(update.getCallbackQuery().getMessage().getMessageId());
             sendMessage(ms);
         }
         public void doCallBackSettings(Long chatId, Update update, String[] command) {
             BotDialogHandler dh = new BotDialogHandler(chatId);
-            EditMessageText ms = dh.onSettingMessage(chatId, update.getCallbackQuery().getMessage().getMessageId());
+            EditMessageText ms = dh.onSettingMessage(update.getCallbackQuery().getMessage().getMessageId());
             sendMessage(ms);
         }
         public void userNotify(User user) {
