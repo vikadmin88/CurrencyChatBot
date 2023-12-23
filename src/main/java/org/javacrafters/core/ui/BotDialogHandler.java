@@ -231,7 +231,7 @@ public class BotDialogHandler {
     public SendMessage createMessage(String text, Long chatId) {
         SendMessage message = new SendMessage();
         message.setText(new String(text.getBytes(), StandardCharsets.UTF_8));
-        message.setParseMode("markdown");
+        message.setParseMode(ParseMode.HTML);
         message.setChatId(chatId);
         return message;
     }

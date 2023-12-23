@@ -283,7 +283,7 @@ import java.util.Objects;
             if (currencyRates.isEmpty()) {
                 return "Нажаль системі не вдалося отримати курси валют від банків.";
             }
-            StringBuilder sb = new StringBuilder("\uD83C\uDFA2  Поточні курси валют:\n");
+            StringBuilder sb = new StringBuilder("⚡  <b>Поточні курси валют:</b>\n");
             boolean noCurrency = true;
 
             for (String bankLocalName : user.getBanks()) {
@@ -310,7 +310,7 @@ import java.util.Objects;
                 }
                 if (!sbSub.toString().isEmpty()) {
                     noCurrency = false;
-                    sb.append("\n").append("\uD83C\uDFE6  ").append(bankName).append("\n").append(sbSub);
+                    sb.append("\n").append("✔  ").append("<b>").append(bankName).append("</b>").append("\n").append(sbSub);
                 }
             }
             if (noCurrency) {
