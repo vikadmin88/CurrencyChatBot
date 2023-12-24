@@ -39,6 +39,19 @@ public class BotDialogHandler {
 
         return photoMessage;
     }
+    public SendPhoto createAboutUsMessage(){
+        //нужно написать текст
+        String text = "тестовый";
+        //можно заменить фото
+        SendPhoto photoMessage = createPhotoMessage("https://sdvv.ru/upload/iblock/0a3/0a32817fec4db09262e40b3e93a780ea.jpg");
+        photoMessage.setCaption(new String(text.getBytes(), StandardCharsets.UTF_8));
+        photoMessage.setParseMode(ParseMode.HTML);
+
+        ReplyKeyboardMarkup keyboardMarkup = getPermanentKeyboard();
+        photoMessage.setReplyMarkup(keyboardMarkup);
+
+        return photoMessage;
+    }
 
     public SendMessage createCustomMessage(String textMessage) {
         String text = "" + textMessage;

@@ -269,12 +269,12 @@ import java.util.Objects;
     private void doCallBackAboutUs(Long chatId, Update update) {
         BotDialogHandler dh = new BotDialogHandler(chatId);
 
-        // Отправляем сообщение "Про нас"
+        // Переходим на раздел
         EditMessageText aboutUsMessage = dh.onAboutUsMessage(update.getCallbackQuery().getMessage().getMessageId());
         sendMessage(aboutUsMessage);
 
-        // Отправляем фото
-        SendPhoto photoMessage = dh.createPhotoMessage("https://sdvv.ru/upload/iblock/0a3/0a32817fec4db09262e40b3e93a780ea.jpg");
+        // Отправляем текст+фото
+        SendPhoto photoMessage = dh.createAboutUsMessage();
         sendPhoto(photoMessage);
     }
 
