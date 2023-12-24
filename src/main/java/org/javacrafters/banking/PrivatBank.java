@@ -30,7 +30,7 @@ public class PrivatBank extends Bank {
             String currencyName = jsonObj.get("ccy").getAsString();
             String currencyBuy = jsonObj.get("buy").getAsString();
             String currencySale = jsonObj.get("sale").getAsString();
-            rateMap.put(currencyName, new NormalizeCurrencyPair(currencyName, currencyBuy, currencySale));
+            rateMap.put(currencyName, new NormalizeCurrencyPair(currencyName, currencyBuy, currencySale, null));
         }
         return rateMap;
     }

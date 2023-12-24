@@ -5,17 +5,15 @@ public class NormalizeCurrencyPair {
     private String name;
     private String buy;
     private String sale;
+    private String cross;
 
-    {
-        name = "N/A";
-        buy = "0";
-        sale = "0";
-    }
 
-    public NormalizeCurrencyPair(String name, String buy, String sale) {
+
+    public NormalizeCurrencyPair(String name, String buy, String sale, String cross) {
         this.name = name;
         this.buy = buy;
         this.sale = sale;
+        this.cross = cross;
     }
 
     public String getName() {
@@ -29,6 +27,9 @@ public class NormalizeCurrencyPair {
     public String getSale() {
         return sale;
     }
+    public String getCross() {
+        return cross;
+    }
 
     @Override
     public String toString() {
@@ -36,6 +37,7 @@ public class NormalizeCurrencyPair {
                 "name='" + name + '\'' +
                 ", buy='" + buy + '\'' +
                 ", sale='" + sale + '\'' +
+                ", cross='" + cross + '\'' +
                 '}';
     }
 }

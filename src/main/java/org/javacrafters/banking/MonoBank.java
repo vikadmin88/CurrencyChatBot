@@ -37,13 +37,12 @@ public class MonoBank extends Bank {
 
         for (JsonObject jsonObjItem : jsonObjArr) {
             JsonObject jsonObj = GSON.fromJson(jsonObjItem, JsonObject.class);
-            if (jsonObj.get("rateBuy") != null
-                    && jsonObj.get("rateSell") != null
-                    && getNameById(jsonObj.get("currencyCodeB").getAsInt()).equals("UAH")) {
+            if (getNameById(jsonObj.get("currencyCodeB").getAsInt()).equals("UAH")) {
                 String currencyName = getNameById(jsonObj.get("currencyCodeA").getAsInt());
-                String currencyBuy = jsonObj.get("rateBuy").getAsString();
-                String currencySale = jsonObj.get("rateSell").getAsString();
-                rateMap.put(currencyName, new NormalizeCurrencyPair(currencyName, currencyBuy, currencySale));
+                String currencyBuy = jsonObj.get("rateBuy") != null ? jsonObj.get("rateBuy").getAsString() : null;
+                String currencySale = jsonObj.get("rateSell") != null ? jsonObj.get("rateSell").getAsString() : null;
+                String currencyCross = jsonObj.get("rateCross") != null ? jsonObj.get("rateCross").getAsString() : null;
+                rateMap.put(currencyName, new NormalizeCurrencyPair(currencyName, currencyBuy, currencySale, currencyCross));
             }
         }
         return rateMap;

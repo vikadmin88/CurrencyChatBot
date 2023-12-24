@@ -311,6 +311,10 @@ import java.util.Objects;
                             sbSub.append("\tПродаж:   ");
                             sbSub.append(String.format(format, Float.valueOf(curCurrency.getSale()))).append("\n");
                         }
+                        if (curCurrency.getCross() != null) {
+                            sbSub.append("\tКрос-курс:   ");
+                            sbSub.append(String.format(format, Float.valueOf(curCurrency.getCross()))).append("\n");
+                        }
                     }
                 }
                 if (!sbSub.toString().isEmpty()) {
