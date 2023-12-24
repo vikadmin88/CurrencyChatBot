@@ -5,7 +5,9 @@ import org.javacrafters.banking.Bank;
 import org.javacrafters.core.AppRegistry;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
+import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
@@ -26,13 +28,31 @@ public class BotDialogHandler {
         this.chatId = chatId;
     }
     // Стартовое сообщение
-    public SendMessage createWelcomeMessage() {
+    public SendPhoto createWelcomeMessage() {
         String text = "<b>Ласкаво просимо.</b> \nЦей бот допоможе відслідковувати актуальні курси валют!";
-        SendMessage message = createMessage(text, chatId);
-        message.setReplyMarkup(getPermanentKeyboard());
-        message.setParseMode(ParseMode.HTML);
-        return message;
+        SendPhoto photoMessage = createPhotoMessage("https://money24.kr.ua/wp-content/uploads/2021/02/2.jpg");
+        photoMessage.setCaption(new String(text.getBytes(), StandardCharsets.UTF_8));
+        photoMessage.setParseMode(ParseMode.HTML);
+
+        ReplyKeyboardMarkup keyboardMarkup = getPermanentKeyboard();
+        photoMessage.setReplyMarkup(keyboardMarkup);
+
+        return photoMessage;
     }
+    public SendPhoto createAboutUsMessage(){
+        //нужно написать текст
+        String text = "тестовый";
+        //можно заменить фото
+        SendPhoto photoMessage = createPhotoMessage("https://sdvv.ru/upload/iblock/0a3/0a32817fec4db09262e40b3e93a780ea.jpg");
+        photoMessage.setCaption(new String(text.getBytes(), StandardCharsets.UTF_8));
+        photoMessage.setParseMode(ParseMode.HTML);
+
+        ReplyKeyboardMarkup keyboardMarkup = getPermanentKeyboard();
+        photoMessage.setReplyMarkup(keyboardMarkup);
+
+        return photoMessage;
+    }
+
     public SendMessage createCustomMessage(String textMessage) {
         String text = "" + textMessage;
         SendMessage message = createMessage(text, chatId);
@@ -45,7 +65,6 @@ public class BotDialogHandler {
         String text = "⚙   <b>Налаштування</b>";
         SendMessage message = createMessage(text, chatId);
         message.setReplyMarkup(createSettingsButtons());
-//        message.setReplyMarkup(getPermanentKeyboard());
         message.setParseMode(ParseMode.HTML);
         return message;
     }
@@ -78,6 +97,17 @@ public class BotDialogHandler {
         String emoji = "\uD83D\uDCB5";
         return createEditMessage(chatId, messageId, emoji, text, BT.CUR_BUT);
     }
+    public EditMessageText onAboutUsMessage(Integer messageId) {
+        String text = "<b>Про нас</b>";
+        String emoji = "\uD83D\uDC40";
+        return createEditMessage(chatId, messageId, emoji, text, BT.ABOUT_BUT);
+    }
+    public SendPhoto createPhotoMessage(String imageUrl) {
+        SendPhoto photo = new SendPhoto();
+        photo.setChatId(chatId.toString());
+        photo.setPhoto(new InputFile(imageUrl));
+        return photo;
+    }
 
     // Метод для добавления кнопок к разделам настроек (без emoji)
     private EditMessageText createEditMessage(Long chatId, Integer messageId, String messageText, BT buttonType) {
@@ -97,6 +127,7 @@ public class BotDialogHandler {
             case CUR_BUT -> createCurrencyButtons(chatId);
             case DEC_BUT -> createDecimalButtons(chatId);
             case SETTINGS -> createSettingsButtons();
+            case ABOUT_BUT -> null;
             default -> createMainMenuButtons();
         };
 
@@ -176,6 +207,7 @@ public class BotDialogHandler {
         buttons.add(createButton("\uD83D\uDCB5", "Валюти", "currency"));
         buttons.add(createButton("\uD83D\uDD22", "Кількість знаків після коми", "decimal"));
         buttons.add(createButton("⏰ Час сповіщення", "notification"));
+        buttons.add(createButton("\uD83D\uDC40", "Про нас", "about"));
 
         return buildInlineKeyboard(buttons);
     }

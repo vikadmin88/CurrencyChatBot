@@ -5,5 +5,5 @@ public enum BT {
     DEC_BUT,
     CUR_BUT,
     BAN_BUT,
-    ABOUT_US_BUT
+    ABOUT_BUT
 }
