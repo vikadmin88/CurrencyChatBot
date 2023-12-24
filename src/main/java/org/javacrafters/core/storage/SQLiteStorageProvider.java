@@ -13,7 +13,7 @@ import java.sql.*;
  * @author Maryna Yeretska, marinka11071979@gmail.com
  */
 public class SQLiteStorageProvider implements StorageProvider {
-    private static final String JDBC_URL = "jdbc:sqlite:./users.sqlite";
+    private static final String JDBC_URL = "jdbc:sqlite:./botusers/users.sqlite";
     private static final Logger LOGGER = LoggerFactory.getLogger(SQLiteStorageProvider.class);
     private static final Gson GSON = new Gson();
 
@@ -57,51 +57,69 @@ public class SQLiteStorageProvider implements StorageProvider {
 
     @Override
     public void load() {
-        String selectAllQuery = "SELECT id, json FROM users";
-        try (Connection connection = DriverManager.getConnection(JDBC_URL);
-             Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery(selectAllQuery)) {
-
-            while (resultSet.next()) {
-                long userId = resultSet.getLong("id");
-                String userData = resultSet.getString("json");
-                User user = GSON.fromJson(userData, User.class);
-
-                AppRegistry.addUser(user);
-                Scheduler.addUserSchedule(user.getId(), user, user.getNotifyTime());
-
-                LOGGER.info("User {} loaded from database.", user.getId());
-            }
-
-        } catch (SQLException e) {
-            LOGGER.error("Cant connect to database {} Method load()", JDBC_URL, e);
+        if (!AppRegistry.getConfIsUsingUsersStorage()) {
+            return;
         }
+        Runnable taskLoadUsers = new Runnable() {
+            public void run() {
+                String selectAllQuery = "SELECT id, json FROM users";
+                try (Connection connection = DriverManager.getConnection(JDBC_URL)) {
+
+                    Statement statement = connection.createStatement();
+                    ResultSet resultSet = statement.executeQuery(selectAllQuery);
+
+                    while (resultSet.next()) {
+                        long userId = resultSet.getLong("id");
+                        String userData = resultSet.getString("json");
+                        User user = GSON.fromJson(userData, User.class);
+
+                        AppRegistry.addUser(user);
+                        Scheduler.addUserSchedule(user.getId(), user, user.getNotifyTime());
+
+                        LOGGER.info("User {} loaded from database Thread: {}", user.getId(), Thread.currentThread().getName());
+                    }
+
+                } catch (SQLException e) {
+                    LOGGER.error("Cant connect to database {} Method load()", JDBC_URL, e);
+                }
+            }
+        };
+        new Thread(taskLoadUsers).start();
     }
 
     @Override
     public void save(User user) {
-        try (Connection connection = DriverManager.getConnection(JDBC_URL);
-             PreparedStatement selectStatement = connection.prepareStatement("SELECT * FROM users WHERE id = ?");
-             PreparedStatement insertStatement = connection.prepareStatement("INSERT INTO users (id, json) VALUES (?, ?)");
-             PreparedStatement updateStatement = connection.prepareStatement("UPDATE users SET json = ? WHERE id = ?")) {
-
-            selectStatement.setLong(1, user.getId());
-            ResultSet resultSet = selectStatement.executeQuery();
-
-            if (resultSet.next()) {
-                updateStatement.setString(1, GSON.toJson(user));
-                updateStatement.setLong(2, user.getId());
-                updateStatement.executeUpdate();
-                LOGGER.info("User {} updated in database.", user.getId());
-            } else {
-                insertStatement.setLong(1, user.getId());
-                insertStatement.setString(2, GSON.toJson(user));
-                insertStatement.executeUpdate();
-                LOGGER.info("User {} saved to database.", user.getId());
-            }
-
-        } catch (SQLException e) {
-            LOGGER.error("Cant connect to database {} Method save(User user): {}", JDBC_URL, user.getId(), e);
+        if (!AppRegistry.getConfIsUsingUsersStorage()) {
+            return;
         }
+        Runnable taskSave = new Runnable() {
+            public void run() {
+                try (Connection connection = DriverManager.getConnection(JDBC_URL)) {
+
+                     PreparedStatement selectStatement = connection.prepareStatement("SELECT * FROM users WHERE id = ?");
+                     PreparedStatement insertStatement = connection.prepareStatement("INSERT INTO users (id, json) VALUES (?, ?)");
+                     PreparedStatement updateStatement = connection.prepareStatement("UPDATE users SET json = ? WHERE id = ?");
+
+                    selectStatement.setLong(1, user.getId());
+                    ResultSet resultSet = selectStatement.executeQuery();
+
+                    if (resultSet.next()) {
+                        updateStatement.setString(1, GSON.toJson(user));
+                        updateStatement.setLong(2, user.getId());
+                        updateStatement.executeUpdate();
+                        LOGGER.info("User {} updated in database. Thread: {}", user.getId(), Thread.currentThread().getName());
+                    } else {
+                        insertStatement.setLong(1, user.getId());
+                        insertStatement.setString(2, GSON.toJson(user));
+                        insertStatement.executeUpdate();
+                        LOGGER.info("User {} saved to database Thread: {}", user.getId(), Thread.currentThread().getName());
+                    }
+
+                } catch (SQLException e) {
+                    LOGGER.error("Cant connect to database {} Method save(User user): {}", JDBC_URL, user.getId(), e);
+                }
+            }
+        };
+        new Thread(taskSave).start();
     }
 }

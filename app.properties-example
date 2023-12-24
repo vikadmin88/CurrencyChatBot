@@ -1,8 +1,11 @@
 APP_NAME=CurrencyChatBot
-APP_BOT_NAME=<bot name>
-APP_BOT_TOKEN=<bot token>
+APP_BOT_NAME=bot name
+APP_BOT_TOKEN=bot token
 # users storage. save/load to/from json, database, etc.
 APP_USE_USERS_STORAGE=true
+# storage provider. files | sqlite
+# Depends on APP_USE_USERS_STORAGE
+APP_USERS_STORAGE_PROVIDER=sqlite
 
 # separate by coma
 BANK_CURRENCY=USD,EUR,GBP,PLN

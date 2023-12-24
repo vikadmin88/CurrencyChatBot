@@ -2,16 +2,22 @@ package org.javacrafters.core;
 
 import java.util.*;
 
+import org.javacrafters.AppLauncher;
 import org.javacrafters.banking.Bank;
+import org.javacrafters.core.storage.JsonStorageProvider;
+import org.javacrafters.core.storage.SQLiteStorageProvider;
 import org.javacrafters.networkclient.NetworkClient;
 import org.javacrafters.scheduler.Scheduler;
 import org.javacrafters.user.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Mykhailo Orban
  */
 public class AppRegistry {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(AppRegistry.class);
 
     private static ChatBot chatBot;
     private static final Map<Long, User> users = new HashMap<>();
@@ -28,9 +34,23 @@ public class AppRegistry {
     }
 
     public static void initDefaults() {
+        LOGGER.info("Loading config defaults: initDefaults()");
         Arrays.stream(ConfigLoader.get("BANK_CURRENCY").split(",")).forEach(AppRegistry::addCurrency);
-        // Refresh currency period in minutes
+
+        // Request currency period in minutes
         Scheduler.addCurrencySchedule(Integer.parseInt(ConfigLoader.get("BANK_FREQUENCY_REQUEST")));
+        LOGGER.info("The Currency Query Scheduler runs every {} minutes.", ConfigLoader.get("BANK_FREQUENCY_REQUEST"));
+
+        // user-storage provider
+        if (Boolean.parseBoolean(ConfigLoader.get("APP_USE_USERS_STORAGE"))) {
+            if (ConfigLoader.get("APP_USERS_STORAGE_PROVIDER").equals("files")) {
+                UserLoader.setStorageProvider(new JsonStorageProvider()).load();
+                LOGGER.info("User-storage provider ({}) added: JsonStorageProvider()", ConfigLoader.get("APP_USERS_STORAGE_PROVIDER"));
+            } else if (ConfigLoader.get("APP_USERS_STORAGE_PROVIDER").equals("sqlite")) {
+                UserLoader.setStorageProvider(new SQLiteStorageProvider()).load();
+                LOGGER.info("User-storage provider ({}) added: SQLiteStorageProvider()", ConfigLoader.get("APP_USERS_STORAGE_PROVIDER"));
+            }
+        }
     }
 
     /*
