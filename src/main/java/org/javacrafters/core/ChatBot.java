@@ -22,8 +22,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-/**
-    * MVC: Controller
+    /**
+    * Bot Controller (MVC)
     * @author ViktorK viktork8888@gmail.com
     */
     public class ChatBot extends TelegramLongPollingBot {
@@ -105,7 +105,7 @@ import java.util.Objects;
             if (update.hasMessage()) {
 
             String msgCommand = update.getMessage().getText();
-            LOGGER.info("msgCommand {}", msgCommand);
+            LOGGER.info("msgCommand: {}  User: {} {}", msgCommand, chatId, AppRegistry.getUser(chatId).getName());
 
                 // Start
                 if (msgCommand.equals("/start")) {
@@ -135,7 +135,8 @@ import java.util.Objects;
             // Callbacks processing
             if (update.hasCallbackQuery()) {
                 String[] btnCommand = update.getCallbackQuery().getData().split("_");
-                LOGGER.info("btnCommand: {} btnCommand[] {}", update.getCallbackQuery().getData(), Arrays.toString(btnCommand));
+                LOGGER.info("btnCommand: {} btnCommand[] {}  User: {} {}", update.getCallbackQuery().getData(),
+                        Arrays.toString(btnCommand), chatId, AppRegistry.getUser(chatId).getName());
 
                 switch (btnCommand[0].toUpperCase()) {
                     case "BANK" -> doCallBackBank(chatId, update, btnCommand);

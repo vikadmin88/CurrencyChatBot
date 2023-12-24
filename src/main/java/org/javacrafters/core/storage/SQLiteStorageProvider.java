@@ -30,7 +30,7 @@ public class SQLiteStorageProvider implements StorageProvider {
             LOGGER.info("Initialize database {}", JDBC_URL);
 
         } catch (SQLException e) {
-            LOGGER.error("Cant connect to database {} Method initializeDatabase()", JDBC_URL, e);
+            LOGGER.error("Database {} not found, creating new one.  Method initializeDatabase()", JDBC_URL);
         }
     }
 
