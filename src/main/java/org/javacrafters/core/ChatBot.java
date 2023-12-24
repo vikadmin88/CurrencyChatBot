@@ -301,11 +301,16 @@ import java.util.Objects;
 
                     if (curCurrency != null && user.getCurrency().contains(curCurrency.getName())) {
                         sbSub.append(curCurrency.getName()).append("\n");
-                        sbSub.append("\tКупівля:   ");
+
                         String format = "%." + user.getCountLastDigits() + "f";
-                        sbSub.append(String.format(format, Float.valueOf(curCurrency.getBuy()))).append("\n");
-                        sbSub.append("\tПродаж:   ");
-                        sbSub.append(String.format(format, Float.valueOf(curCurrency.getSale()))).append("\n");
+                        if (!curCurrency.getBuy().equals("-1")) {
+                            sbSub.append("\tКупівля:   ");
+                            sbSub.append(String.format(format, Float.valueOf(curCurrency.getBuy()))).append("\n");
+                        }
+                        if (!curCurrency.getSale().equals("-1")) {
+                            sbSub.append("\tПродаж:   ");
+                            sbSub.append(String.format(format, Float.valueOf(curCurrency.getSale()))).append("\n");
+                        }
                     }
                 }
                 if (!sbSub.toString().isEmpty()) {
