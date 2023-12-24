@@ -303,11 +303,11 @@ import java.util.Objects;
                         sbSub.append(curCurrency.getName()).append("\n");
 
                         String format = "%." + user.getCountLastDigits() + "f";
-                        if (!curCurrency.getBuy().equals("-1")) {
+                        if (curCurrency.getBuy() != null) {
                             sbSub.append("\tКупівля:   ");
                             sbSub.append(String.format(format, Float.valueOf(curCurrency.getBuy()))).append("\n");
                         }
-                        if (!curCurrency.getSale().equals("-1")) {
+                        if (curCurrency.getSale() != null) {
                             sbSub.append("\tПродаж:   ");
                             sbSub.append(String.format(format, Float.valueOf(curCurrency.getSale()))).append("\n");
                         }

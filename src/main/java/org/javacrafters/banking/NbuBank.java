@@ -30,7 +30,7 @@ public class NbuBank extends Bank {
         for (JsonObject jsonObjItem : jsonObjArr) {
             JsonObject jsonObj = GSON.fromJson(jsonObjItem, JsonObject.class);
             String currencyName = jsonObj.get("cc").getAsString();
-            String currencyBuy = "-1";
+            String currencyBuy = null;
             String currencySale = jsonObj.get("rate").getAsString();
             rateMap.put(currencyName, new NormalizeCurrencyPair(currencyName, currencyBuy, currencySale));
         }
