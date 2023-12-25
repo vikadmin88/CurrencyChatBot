@@ -18,6 +18,9 @@ public class UserLoader {
     public static User load(Long userId) {
         return storageProvider.load(userId);
     }
+    public static void delete(Long userId) {
+        storageProvider.delete(userId);
+    }
 
     public static void load() {
         storageProvider.load();

@@ -59,6 +59,11 @@ public class Scheduler {
     public static ScheduledFuture<?> getUserScheduler(Long userId) {
         return userSchedulers.get(userId);
     }
+    public static void removeUserScheduler(Long userId) {
+        getUserScheduler(userId).cancel(true);
+        userSchedulers.remove(userId);
+    }
+
 
     public static void addCurrencySchedule(int period) {
 
@@ -74,5 +79,4 @@ public class Scheduler {
     public static ScheduledFuture<?> getCurrencyScheduler() {
         return currencyScheduler;
     }
-
 }

@@ -14,6 +14,7 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.UserShared;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
@@ -89,6 +90,9 @@ import java.util.Objects;
 
         private void saveUser(Long userId) {
             UserLoader.save(AppRegistry.getUser(userId));
+        }
+        private void removeUser(Long userId) {
+            UserLoader.delete(userId);
         }
         private void checkOrAddUser(Long chatId, Update update) {
             if (!AppRegistry.hasUser(chatId)) {
@@ -173,9 +177,9 @@ import java.util.Objects;
                                 """, chatId);
             sendMessage(ms);
 
-            Scheduler.getUserScheduler(chatId).cancel(true);
-            AppRegistry.getUser(chatId).setNotifyOff();
-            saveUser(chatId);
+            Scheduler.removeUserScheduler(chatId);
+            AppRegistry.removeUser(chatId);
+            removeUser(chatId);
         }
         public void doCommandSettings(Long chatId, Update update) {
             BotDialogHandler dh = new BotDialogHandler(chatId);

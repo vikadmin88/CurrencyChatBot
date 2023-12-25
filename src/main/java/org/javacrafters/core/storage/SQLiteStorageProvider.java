@@ -13,7 +13,8 @@ import java.sql.*;
  * @author Maryna Yeretska, marinka11071979@gmail.com
  */
 public class SQLiteStorageProvider implements StorageProvider {
-    private static final String JDBC_URL = "jdbc:sqlite:./botusers/users.sqlite";
+    private static final String STORAGE_FOLDER = "./botusers";
+    private static final String JDBC_URL = "jdbc:sqlite:" + STORAGE_FOLDER + "/users.sqlite";
     private static final Logger LOGGER = LoggerFactory.getLogger(SQLiteStorageProvider.class);
     private static final Gson GSON = new Gson();
 
@@ -117,6 +118,27 @@ public class SQLiteStorageProvider implements StorageProvider {
 
                 } catch (SQLException e) {
                     LOGGER.error("Cant connect to database {} Method save(User user): {}", JDBC_URL, user.getId(), e);
+                }
+            }
+        };
+        new Thread(taskSave).start();
+    }
+    @Override
+    public void delete(Long userId) {
+        if (!AppRegistry.getConfIsUsingUsersStorage()) {
+            return;
+        }
+        Runnable taskSave = new Runnable() {
+            public void run() {
+                try (Connection connection = DriverManager.getConnection(JDBC_URL)) {
+
+                    PreparedStatement deleteStatement = connection.prepareStatement("DELETE FROM users WHERE id = ?");
+                    deleteStatement.setLong(1, userId);
+                    deleteStatement.executeUpdate();
+                    LOGGER.info("User {} deleted from database Thread: {}", userId, Thread.currentThread().getName());
+
+                } catch (SQLException e) {
+                    LOGGER.error("Cant connect to database {} Method delete(Long userId): {}", JDBC_URL, userId, e);
                 }
             }
         };

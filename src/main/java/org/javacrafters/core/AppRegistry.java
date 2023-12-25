@@ -2,7 +2,6 @@ package org.javacrafters.core;
 
 import java.util.*;
 
-import org.javacrafters.AppLauncher;
 import org.javacrafters.banking.Bank;
 import org.javacrafters.core.storage.JsonStorageProvider;
 import org.javacrafters.core.storage.SQLiteStorageProvider;
@@ -43,7 +42,7 @@ public class AppRegistry {
 
         // user-storage provider
         if (Boolean.parseBoolean(ConfigLoader.get("APP_USE_USERS_STORAGE"))) {
-            if (ConfigLoader.get("APP_USERS_STORAGE_PROVIDER").equals("files")) {
+            if (ConfigLoader.get("APP_USERS_STORAGE_PROVIDER").equals("file")) {
                 UserLoader.setStorageProvider(new JsonStorageProvider()).load();
                 LOGGER.info("User-storage provider ({}) added: JsonStorageProvider()", ConfigLoader.get("APP_USERS_STORAGE_PROVIDER"));
             } else if (ConfigLoader.get("APP_USERS_STORAGE_PROVIDER").equals("sqlite")) {
@@ -78,6 +77,9 @@ public class AppRegistry {
     }
     public static boolean hasUser(Long userId){
         return users.get(userId) != null;
+    }
+    public static void removeUser(Long userId){
+        users.remove(userId);
     }
 
     /*
