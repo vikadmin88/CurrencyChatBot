@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -15,15 +16,17 @@ import java.util.stream.Stream;
 
 public class JsonStorageProvider implements StorageProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(JsonStorageProvider.class);
-    private static final String STORAGE_FOLDER = "./botusers";
+    private static String storageFolder;
     private static final Gson GSON = new Gson();
 
-    public JsonStorageProvider() {
+    public JsonStorageProvider(String stFolder) {
+        storageFolder = stFolder;
+        LOGGER.info("Storage folder: {}", stFolder);
     }
 
     @Override
     public User load(Long userId) {
-        String filePath = String.format(STORAGE_FOLDER + "/user-%d-bot.json", userId);
+        String filePath = String.format(storageFolder + FileSystems.getDefault().getSeparator() + "user-%d-bot.json", userId);
         try (Reader reader = new FileReader(filePath)) {
             LOGGER.info("Loading user {}", userId);
             return GSON.fromJson(reader, User.class);
@@ -41,7 +44,7 @@ public class JsonStorageProvider implements StorageProvider {
         }
         Runnable taskLoadUsers = new Runnable() {
             public void run() {
-                try (Stream<Path> paths = Files.walk(Paths.get(STORAGE_FOLDER))) {
+                try (Stream<Path> paths = Files.walk(Paths.get(storageFolder))) {
 
                     paths.filter((file) -> file.toString().endsWith("-bot.json")).forEach(file -> {
 
@@ -50,7 +53,7 @@ public class JsonStorageProvider implements StorageProvider {
                             User user = GSON.fromJson(reader, User.class);
                             AppRegistry.addUser(user);
                             Scheduler.addUserSchedule(user.getId(), user, user.getNotifyTime());
-                            LOGGER.info("User {} loaded from file: {}/user-{}-bot.json (thread: {})", user.getId(), user.getId(), STORAGE_FOLDER, Thread.currentThread().getName());
+                            LOGGER.info("User {} loaded from file: {}/user-{}-bot.json (thread: {})", user.getId(), storageFolder, user.getId(), Thread.currentThread().getName());
                         } catch (IOException e) {
                             LOGGER.error("Not Loading users", e);
                         }
@@ -58,7 +61,7 @@ public class JsonStorageProvider implements StorageProvider {
                     });
 
                 } catch (IOException e) {
-                    LOGGER.error("Folder {} not found!", STORAGE_FOLDER, e);
+                    LOGGER.error("Folder {} not found!", storageFolder, e);
                 }
             }
         };
@@ -74,13 +77,13 @@ public class JsonStorageProvider implements StorageProvider {
         Runnable taskSave = new Runnable() {
             public void run() {
                 try {
-                    Files.createDirectories(Paths.get(STORAGE_FOLDER));
-                    try (FileWriter writer = new FileWriter(STORAGE_FOLDER + "/user-" + user.getId() + "-bot.json")) {
+                    Files.createDirectories(Paths.get(storageFolder));
+                    try (FileWriter writer = new FileWriter(storageFolder + FileSystems.getDefault().getSeparator() + "user-" + user.getId() + "-bot.json")) {
                         GSON.toJson(user, writer);
-                        LOGGER.info("User {} saved to file: {}/user-{}-bot.json (thread: {})", user.getId(), STORAGE_FOLDER, user.getId(), Thread.currentThread().getName());
+                        LOGGER.info("User {} saved to file: {}/user-{}-bot.json (thread: {})", user.getId(), storageFolder, user.getId(), Thread.currentThread().getName());
                     }
                 } catch (IOException e) {
-                    LOGGER.error("Can't create {}", STORAGE_FOLDER, e);
+                    LOGGER.error("Can't create {}", storageFolder, e);
                 }
             }
         };
@@ -94,11 +97,11 @@ public class JsonStorageProvider implements StorageProvider {
         }
         Runnable taskDeleteUser = new Runnable() {
             public void run() {
-                File file = new File(STORAGE_FOLDER + "/user-" + userId + "-bot.json");
+                File file = new File(storageFolder + FileSystems.getDefault().getSeparator() + "user-" + userId + "-bot.json");
                 if (file.delete()) {
-                    LOGGER.error("Deleted file {}/{}", STORAGE_FOLDER, file.getName());
+                    LOGGER.error("Deleted file {}/{}", storageFolder, file.getName());
                 } else {
-                    LOGGER.error("Can't delete {}/{}", STORAGE_FOLDER, file.getName());
+                    LOGGER.error("Can't delete {}/{}", storageFolder, file.getName());
                 }
             }
         };

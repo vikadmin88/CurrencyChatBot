@@ -1,5 +1,8 @@
 package org.javacrafters.core;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 
 import org.javacrafters.banking.Bank;
@@ -40,14 +43,20 @@ public class AppRegistry {
         Scheduler.addCurrencySchedule(Integer.parseInt(ConfigLoader.get("BANK_FREQUENCY_REQUEST")));
         LOGGER.info("The Currency Query Scheduler runs every {} minutes.", ConfigLoader.get("BANK_FREQUENCY_REQUEST"));
 
-        // user-storage provider
+        // user-storage folder, provider
         if (Boolean.parseBoolean(ConfigLoader.get("APP_USERS_USE_STORAGE"))) {
-            if (ConfigLoader.get("APP_USERS_STORAGE_PROVIDER").equals("file")) {
-                UserLoader.setStorageProvider(new JsonStorageProvider()).load();
-                LOGGER.info("User-storage provider ({}) added: JsonStorageProvider()", ConfigLoader.get("APP_USERS_STORAGE_PROVIDER"));
-            } else if (ConfigLoader.get("APP_USERS_STORAGE_PROVIDER").equals("sqlite")) {
-                UserLoader.setStorageProvider(new SQLiteStorageProvider()).load();
-                LOGGER.info("User-storage provider ({}) added: SQLiteStorageProvider()", ConfigLoader.get("APP_USERS_STORAGE_PROVIDER"));
+            try {
+                String storageFolder = AppRegistry.getConfUsersStorageFolder();
+                Files.createDirectories(Paths.get(storageFolder));
+                if (ConfigLoader.get("APP_USERS_STORAGE_PROVIDER").equals("file")) {
+                    UserLoader.setStorageProvider(new JsonStorageProvider(storageFolder)).load();
+                    LOGGER.info("User-storage provider ({}) added: JsonStorageProvider()", ConfigLoader.get("APP_USERS_STORAGE_PROVIDER"));
+                } else if (ConfigLoader.get("APP_USERS_STORAGE_PROVIDER").equals("sqlite")) {
+                    UserLoader.setStorageProvider(new SQLiteStorageProvider(storageFolder)).load();
+                    LOGGER.info("User-storage provider ({}) added: SQLiteStorageProvider()", ConfigLoader.get("APP_USERS_STORAGE_PROVIDER"));
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
         }
     }
@@ -157,5 +166,10 @@ public class AppRegistry {
     public static boolean getConfIsUsingUsersStorage() {
         return Boolean.parseBoolean(ConfigLoader.get("APP_USERS_USE_STORAGE"));
     }
+    public static String getConfUsersStorageFolder() {
+        return ConfigLoader.get("APP_USERS_STORAGE_FOLDER");
+    }
+
+
 
 }

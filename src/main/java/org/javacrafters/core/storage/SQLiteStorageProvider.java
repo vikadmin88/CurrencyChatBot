@@ -7,38 +7,42 @@ import org.javacrafters.user.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.file.FileSystems;
 import java.sql.*;
 
 /**
  * @author Maryna Yeretska, marinka11071979@gmail.com
  */
 public class SQLiteStorageProvider implements StorageProvider {
-    private static final String STORAGE_FOLDER = "./botusers";
-    private static final String JDBC_URL = "jdbc:sqlite:" + STORAGE_FOLDER + "/users.sqlite";
+    private static String dbPath;
+    private static final String DB_FILE = "users.sqlite";
+    private static final String JDBC_URL = "jdbc:sqlite:";
     private static final Logger LOGGER = LoggerFactory.getLogger(SQLiteStorageProvider.class);
     private static final Gson GSON = new Gson();
 
-    public SQLiteStorageProvider() {
+    public SQLiteStorageProvider(String stFolder) {
+        dbPath = JDBC_URL + stFolder + FileSystems.getDefault().getSeparator() + DB_FILE;
+        LOGGER.info("Storage path: {}", dbPath);
         initializeDatabase();
     }
 
     private void initializeDatabase() {
-        try (Connection connection = DriverManager.getConnection(JDBC_URL);
+        try (Connection connection = DriverManager.getConnection(dbPath);
              Statement statement = connection.createStatement()) {
 
             String createTableQuery = "CREATE TABLE IF NOT EXISTS users (id BIGINT PRIMARY KEY, json TEXT)";
             statement.executeUpdate(createTableQuery);
-            LOGGER.info("Initialize database {}", JDBC_URL);
+            LOGGER.info("Initialize database {}", dbPath);
 
         } catch (SQLException e) {
-            LOGGER.error("Database {} not found, creating new one.  Method initializeDatabase()", JDBC_URL);
+            LOGGER.error("Database {} not found, creating new one.  Method initializeDatabase()", dbPath);
         }
     }
 
     @Override
     public User load(Long userId) {
         String selectJsonQuery = "SELECT json FROM users WHERE id = ?";
-        try (Connection connection = DriverManager.getConnection(JDBC_URL);
+        try (Connection connection = DriverManager.getConnection(dbPath);
              PreparedStatement preparedStatement = connection.prepareStatement(selectJsonQuery)) {
 
             preparedStatement.setLong(1, userId);
@@ -51,7 +55,7 @@ public class SQLiteStorageProvider implements StorageProvider {
             }
 
         } catch (SQLException e) {
-            LOGGER.error("Cant connect to database {} Method load(Long userId): {}", JDBC_URL, userId, e);
+            LOGGER.error("Cant connect to database {} Method load(Long userId): {}", dbPath, userId, e);
         }
         return null;
     }
@@ -64,7 +68,7 @@ public class SQLiteStorageProvider implements StorageProvider {
         Runnable taskLoadUsers = new Runnable() {
             public void run() {
                 String selectAllQuery = "SELECT id, json FROM users";
-                try (Connection connection = DriverManager.getConnection(JDBC_URL)) {
+                try (Connection connection = DriverManager.getConnection(dbPath)) {
 
                     Statement statement = connection.createStatement();
                     ResultSet resultSet = statement.executeQuery(selectAllQuery);
@@ -81,7 +85,7 @@ public class SQLiteStorageProvider implements StorageProvider {
                     }
 
                 } catch (SQLException e) {
-                    LOGGER.error("Cant connect to database {} Method load()", JDBC_URL, e);
+                    LOGGER.error("Cant connect to database {} Method load()", dbPath, e);
                 }
             }
         };
@@ -95,7 +99,7 @@ public class SQLiteStorageProvider implements StorageProvider {
         }
         Runnable taskSave = new Runnable() {
             public void run() {
-                try (Connection connection = DriverManager.getConnection(JDBC_URL)) {
+                try (Connection connection = DriverManager.getConnection(dbPath)) {
 
                      PreparedStatement selectStatement = connection.prepareStatement("SELECT * FROM users WHERE id = ?");
                      PreparedStatement insertStatement = connection.prepareStatement("INSERT INTO users (id, json) VALUES (?, ?)");
@@ -117,7 +121,7 @@ public class SQLiteStorageProvider implements StorageProvider {
                     }
 
                 } catch (SQLException e) {
-                    LOGGER.error("Cant connect to database {} Method save(User user): {}", JDBC_URL, user.getId(), e);
+                    LOGGER.error("Cant connect to database {} Method save(User user): {}", dbPath, user.getId(), e);
                 }
             }
         };
@@ -130,7 +134,7 @@ public class SQLiteStorageProvider implements StorageProvider {
         }
         Runnable taskSave = new Runnable() {
             public void run() {
-                try (Connection connection = DriverManager.getConnection(JDBC_URL)) {
+                try (Connection connection = DriverManager.getConnection(dbPath)) {
 
                     PreparedStatement deleteStatement = connection.prepareStatement("DELETE FROM users WHERE id = ?");
                     deleteStatement.setLong(1, userId);
@@ -138,7 +142,7 @@ public class SQLiteStorageProvider implements StorageProvider {
                     LOGGER.info("User {} deleted from database Thread: {}", userId, Thread.currentThread().getName());
 
                 } catch (SQLException e) {
-                    LOGGER.error("Cant connect to database {} Method delete(Long userId): {}", JDBC_URL, userId, e);
+                    LOGGER.error("Cant connect to database {} Method delete(Long userId): {}", dbPath, userId, e);
                 }
             }
         };

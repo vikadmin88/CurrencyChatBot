@@ -6,6 +6,8 @@ APP_BOT_TOKEN=here your bot token
 # User storage functionality:
 # Enable/disable. save/load to/from json, database, etc.
 APP_USERS_USE_STORAGE=true
+# storage folder
+APP_USERS_STORAGE_FOLDER=./bot-users
 # storage provider. file | sqlite
 APP_USERS_STORAGE_PROVIDER=sqlite
 

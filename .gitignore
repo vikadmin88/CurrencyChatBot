@@ -1,6 +1,6 @@
 .idea
 *.log
-botusers/
+bot-users/
 user-*.json
 app.properties
 release
