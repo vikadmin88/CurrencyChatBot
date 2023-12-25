@@ -20,7 +20,7 @@ import java.util.*;
  * @author AlekseyB belovmladshui@gmail.com
  */
 public class BotDialogHandler {
-
+    private static final String URL_MEDIA = "https://epowhost.com/currency_chat_bot";
     private final Long chatId;
 
 
@@ -29,8 +29,20 @@ public class BotDialogHandler {
     }
     // Стартовое сообщение
     public SendPhoto createWelcomeMessage() {
-        String text = "<b>Ласкаво просимо.</b> \nЦей бот допоможе відслідковувати актуальні курси валют!";
-        SendPhoto photoMessage = createPhotoMessage("https://money24.kr.ua/wp-content/uploads/2021/02/2.jpg");
+        String text = """
+                <b>Ласкаво просимо.</b> \nЦей бот допоможе відслідковувати актуальні курси валют 
+                і присилати їх вам у зручний для вас час, який ви оберете в конфігурації бота.
+                (За замовчуванням ви отримуватимете курс USD з банку Приват Банк кожну добу о 9:00)
+                 
+                Ви можете настроїти наступні чотири парамерти:
+                Банки: Приват Банк, Моно Банк, НБУ
+                Валюти: USD, EUR, GBP, PLN
+                Знаків після коми: 2, 3, 4 
+                (точність для курсів валют)
+                Час отримання повідомлень: 9:00 - 18:00 
+                (приходитимуть раз на добу)
+                """;
+        SendPhoto photoMessage = createPhotoMessage(URL_MEDIA + "/welcome_message.jpg");
         photoMessage.setCaption(new String(text.getBytes(), StandardCharsets.UTF_8));
         photoMessage.setParseMode(ParseMode.HTML);
 
@@ -41,9 +53,12 @@ public class BotDialogHandler {
     }
     public SendPhoto createAboutUsMessage(){
         //нужно написать текст
-        String text = "тестовый";
+        String text = """
+                Розробник: <b>JavaCrafters Team</b>
+                Репозиторій проєкту: https://github.com/vikadmin88/CurrencyChatBot 
+                """;
         //можно заменить фото
-        SendPhoto photoMessage = createPhotoMessage("https://sdvv.ru/upload/iblock/0a3/0a32817fec4db09262e40b3e93a780ea.jpg");
+        SendPhoto photoMessage = createPhotoMessage(URL_MEDIA + "/about_us.jpg");
         photoMessage.setCaption(new String(text.getBytes(), StandardCharsets.UTF_8));
         photoMessage.setParseMode(ParseMode.HTML);
 
@@ -83,7 +98,7 @@ public class BotDialogHandler {
         return createEditMessage(chatId, messageId, text, BT.SETTINGS);
     }
     public EditMessageText onDecimalMessage(Integer messageId) {
-        String text = "<b>Кількість знаків після коми</b>";
+        String text = "<b>Знаків після коми</b>";
         String emoji = "\uD83D\uDD22";
         return createEditMessage(chatId, messageId, emoji, text, BT.DEC_BUT);
     }
@@ -205,7 +220,7 @@ public class BotDialogHandler {
         // Добавление кнопок для настроек
         buttons.add(createButton("\uD83C\uDFE6", "Банки", "bank"));
         buttons.add(createButton("\uD83D\uDCB5", "Валюти", "currency"));
-        buttons.add(createButton("\uD83D\uDD22", "Кількість знаків після коми", "decimal"));
+        buttons.add(createButton("\uD83D\uDD22", "Знаків після коми", "decimal"));
         buttons.add(createButton("⏰ Час сповіщення", "notification"));
         buttons.add(createButton("\uD83D\uDC40", "Про нас", "about"));
 
