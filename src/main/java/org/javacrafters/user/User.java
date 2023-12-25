@@ -9,7 +9,7 @@ public class User {
     private String username;
     private final List<String> banks = new ArrayList<>();
     private final List<String> currency = new ArrayList<>();
-    private int countLastDigits = 2;
+    private int decimalPlaces = 2;
     private int notifyTime = 21;
 
     private boolean isNotifyOn = true;
@@ -80,12 +80,12 @@ public class User {
         this.currency.remove(name);
     }
 
-    public int getCountLastDigits() {
-        return countLastDigits;
+    public int getDecimalPlaces() {
+        return decimalPlaces;
     }
 
-    public void setCountLastDigits(int countLastDigits) {
-        this.countLastDigits = countLastDigits;
+    public void setDecimalPlaces(int decimalPlaces) {
+        this.decimalPlaces = decimalPlaces;
     }
 
     public int getNotifyTime() {
@@ -133,7 +133,7 @@ public class User {
                 ", username='" + username + '\'' +
                 ", banks=" + banks.toString() +
                 ", currencies=" + currency.toString() +
-                ", numOfDigits=" + countLastDigits +
+                ", decimalPlaces=" + decimalPlaces +
                 ", notifyTime=" + notifyTime +
                 ", isNotifyOn=" + isNotifyOn +
                 '}';

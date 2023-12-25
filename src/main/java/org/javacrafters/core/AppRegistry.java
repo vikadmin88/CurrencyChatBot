@@ -41,7 +41,7 @@ public class AppRegistry {
         LOGGER.info("The Currency Query Scheduler runs every {} minutes.", ConfigLoader.get("BANK_FREQUENCY_REQUEST"));
 
         // user-storage provider
-        if (Boolean.parseBoolean(ConfigLoader.get("APP_USE_USERS_STORAGE"))) {
+        if (Boolean.parseBoolean(ConfigLoader.get("APP_USERS_USE_STORAGE"))) {
             if (ConfigLoader.get("APP_USERS_STORAGE_PROVIDER").equals("file")) {
                 UserLoader.setStorageProvider(new JsonStorageProvider()).load();
                 LOGGER.info("User-storage provider ({}) added: JsonStorageProvider()", ConfigLoader.get("APP_USERS_STORAGE_PROVIDER"));
@@ -133,8 +133,8 @@ public class AppRegistry {
     /*
     Config count last digits
     */
-    public static int getConfCountLastDigits() {
-        return Integer.parseInt(ConfigLoader.get("USER_DEF_COUNT_LAST_DIGITS"));
+    public static int getConfDecimalPlaces() {
+        return Integer.parseInt(ConfigLoader.get("USER_DEF_DECIMAL_PLACES"));
     }
 
     /*
@@ -155,7 +155,7 @@ public class AppRegistry {
      Config Save/load users to/from json
     */
     public static boolean getConfIsUsingUsersStorage() {
-        return Boolean.parseBoolean(ConfigLoader.get("APP_USE_USERS_STORAGE"));
+        return Boolean.parseBoolean(ConfigLoader.get("APP_USERS_USE_STORAGE"));
     }
 
 }

@@ -14,7 +14,6 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.api.objects.UserShared;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
@@ -80,7 +79,7 @@ import java.util.Objects;
             User user = new User(chatId, firstName, userName);
             user.addBank(AppRegistry.getConfBank());
             user.addCurrency(AppRegistry.getConfCurrency());
-            user.setCountLastDigits(AppRegistry.getConfCountLastDigits());
+            user.setDecimalPlaces(AppRegistry.getConfDecimalPlaces());
             user.setNotifyTime(AppRegistry.getConfNotifyTime());
             user.setNotifyStatus(AppRegistry.getConfNotifyStatus());
             AppRegistry.addUser(user);
@@ -264,7 +263,7 @@ import java.util.Objects;
         public void doCallBackDecimal(Long chatId, Update update, String[] command) {
             if (command.length > 1) {
                 String num = command[1];
-                AppRegistry.getUser(chatId).setCountLastDigits(Integer.parseInt(num));
+                AppRegistry.getUser(chatId).setDecimalPlaces(Integer.parseInt(num));
                 saveUser(chatId);
             }
             BotDialogHandler dh = new BotDialogHandler(chatId);
@@ -325,7 +324,7 @@ import java.util.Objects;
                     if (curCurrency != null && user.getCurrency().contains(curCurrency.getName())) {
                         sbSub.append(curCurrency.getName()).append("\n");
 
-                        String format = "%." + user.getCountLastDigits() + "f";
+                        String format = "%." + user.getDecimalPlaces() + "f";
                         if (curCurrency.getBuy() != null) {
                             sbSub.append("\tКупівля:   ");
                             sbSub.append(String.format(format, Float.valueOf(curCurrency.getBuy()))).append("\n");

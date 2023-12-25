@@ -179,7 +179,7 @@ public class BotDialogHandler {
         for (int i = 2; i <= 4; i++) {
             decimalOptions.put(String.valueOf(i), String.valueOf(i));
         }
-        List<InlineKeyboardButton> buttons = createButtonsList(decimalOptions, "decimal", List.of(String.valueOf(AppRegistry.getUser(chatId).getCountLastDigits())));
+        List<InlineKeyboardButton> buttons = createButtonsList(decimalOptions, "decimal", List.of(String.valueOf(AppRegistry.getUser(chatId).getDecimalPlaces())));
         return buildInlineKeyboard(buttons);
     }
 

@@ -40,10 +40,11 @@ public class Scheduler {
         }
 
         final Runnable threadUserScheduledTask = () -> {
-            LOGGER.info("Scheduler : user: {} in Thread: {}", user.getId(), Thread.currentThread().getName());
             if (user.isNotifyOn()) {
-                LOGGER.info("Scheduler : Notified user: {}  {} in Thread: {}", user.getId(), user.getName(), Thread.currentThread().getName());
+                LOGGER.info("Scheduler: Notified User: {}  {} Thread: {}", user.getId(), user.getName(), Thread.currentThread().getName());
                 AppRegistry.getChatBot().userNotify(user);
+            } else {
+                LOGGER.info("Scheduler: Disabled for User: {} Thread: {}", user.getId(), Thread.currentThread().getName());
             }
         };
         // production

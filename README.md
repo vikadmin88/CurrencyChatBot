@@ -1,6 +1,6 @@
-**CurrencyChatBot**
+### CurrencyChatBot
 
-**How to run:**
+#### How to run:
 
 Rename the example config file `app.properties-example` to `app.properties` and configure it as follofs:
 
@@ -41,7 +41,7 @@ USER_DEF_NOTIFY_TIME=9
 USER_DEF_NOTIFY_ENABLED=true
 ```
 
-**How to run Jar:**
+#### How to run Jar:
 
 Compile: `gradle jar` FatJar will be saved to `./build/release/`
 
