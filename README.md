@@ -4,7 +4,7 @@
 
 Rename the example config file `app.properties-example` to `app.properties` and configure it as follofs:
 
-```properties
+```
 # Bot credentials:
 APP_NAME=CurrencyChatBot
 APP_BOT_NAME=here your bot name
