@@ -103,6 +103,10 @@ public class ChatBot extends TelegramLongPollingBot {
             saveUser(chatId);
         }
     }
+
+    private BotDialogHandler getDialogHandler(Long chatId) {
+        return new BotDialogHandler(chatId);
+    }
     @Override
     public void onUpdateReceived(Update update) {
         Long chatId = getChatId(update);
@@ -163,8 +167,7 @@ public class ChatBot extends TelegramLongPollingBot {
      * Message Commands
      * */
     public void doCommandStart(Long chatId, Update update) {
-        BotDialogHandler dh = new BotDialogHandler(chatId);
-        SendPhoto ms = dh.createWelcomeMessage();
+        SendPhoto ms = getDialogHandler(chatId).createWelcomeMessage();
         try {
             execute(ms);
         } catch (TelegramApiException e) {
@@ -172,8 +175,7 @@ public class ChatBot extends TelegramLongPollingBot {
         }
     }
     public void doCommandStop(Long chatId, Update update) {
-        BotDialogHandler dh = new BotDialogHandler(chatId);
-        SendMessage ms = dh.createMessage("""
+        SendMessage ms = getDialogHandler(chatId).createMessage("""
                             ❗Вашу підписку на отримання курсів валют деактивовано!❗ 
                             Якщо ви бажаєте активувати її наново, будь ласка введіть або натисніть на команду /start
                             Також в налаштуваннях ви маєте обрати зручний для вас час отримання повідомлень з курсами валют.
@@ -182,13 +184,11 @@ public class ChatBot extends TelegramLongPollingBot {
         removeUser(chatId);
     }
     public void doCommandSettings(Long chatId, Update update) {
-        BotDialogHandler dh = new BotDialogHandler(chatId);
-        SendMessage ms = dh.createSettingsMessage();
+        SendMessage ms = getDialogHandler(chatId).createSettingsMessage();
         sendMessage(ms);
     }
     public void doCommandNotifyOff(Long chatId, Update update) {
-        BotDialogHandler dh = new BotDialogHandler(chatId);
-        SendMessage ms = dh.createCustomMessage("⚠  Сповіщення вимкнено!");
+        SendMessage ms = getDialogHandler(chatId).createCustomMessage("⚠  Сповіщення вимкнено!");
         sendMessage(ms);
 
         Scheduler.getUserScheduler(chatId).cancel(true);
@@ -197,9 +197,8 @@ public class ChatBot extends TelegramLongPollingBot {
         saveUser(chatId);
     }
     public void doCommandNotifySetTime(Long chatId, Update update) {
-        BotDialogHandler dh = new BotDialogHandler(chatId);
         String msgCommand = update.getMessage().getText();
-        SendMessage ms = dh.createCustomMessage("⏰  Час сповіщень змінено на " + msgCommand);
+        SendMessage ms = getDialogHandler(chatId).createCustomMessage("⏰  Час сповіщень змінено на " + msgCommand);
         sendMessage(ms);
 
         int hour = Integer.parseInt(msgCommand.split(":")[0]);
@@ -212,8 +211,7 @@ public class ChatBot extends TelegramLongPollingBot {
         saveUser(chatId);
     }
     public void sendErrorMessage(Long chatId) {
-        BotDialogHandler dh = new BotDialogHandler(chatId);
-        SendMessage ms = dh.createMessage("❗ Command not found! Or you haven't launched the bot. Try run: /start", chatId);
+        SendMessage ms = getDialogHandler(chatId).createMessage("❗ Command not found! Or you haven't launched the bot. Try run: /start", chatId);
         sendMessage(ms);
     }
 
@@ -230,8 +228,7 @@ public class ChatBot extends TelegramLongPollingBot {
             } else {userBanks.add(toggleBank);}
             saveUser(chatId);
         }
-        BotDialogHandler dh = new BotDialogHandler(chatId);
-        EditMessageText ms = dh.onBankMessage(update.getCallbackQuery().getMessage().getMessageId());
+        EditMessageText ms = getDialogHandler(chatId).onBankMessage(update.getCallbackQuery().getMessage().getMessageId());
         sendMessage(ms);
     }
     public void doCallBackCurrency(Long chatId, Update update, String[] command) {
@@ -243,8 +240,7 @@ public class ChatBot extends TelegramLongPollingBot {
             } else {userCurrency.add(toggleCurrency);}
             saveUser(chatId);
         }
-        BotDialogHandler dh = new BotDialogHandler(chatId);
-        EditMessageText ms = dh.onCurrencyMessage(update.getCallbackQuery().getMessage().getMessageId());
+        EditMessageText ms = getDialogHandler(chatId).onCurrencyMessage(update.getCallbackQuery().getMessage().getMessageId());
         sendMessage(ms);
     }
     public void doCallBackNotification(Long chatId, Update update, String[] command) {
@@ -256,8 +252,7 @@ public class ChatBot extends TelegramLongPollingBot {
             throw new RuntimeException(e);
         }
 
-        BotDialogHandler dh = new BotDialogHandler(chatId);
-        SendMessage ms = dh.createSetNotifyMessage();
+        SendMessage ms = getDialogHandler(chatId).createSetNotifyMessage();
         sendMessage(ms);
 
     }
@@ -267,25 +262,20 @@ public class ChatBot extends TelegramLongPollingBot {
             AppRegistry.getUser(chatId).setDecimalPlaces(Integer.parseInt(num));
             saveUser(chatId);
         }
-        BotDialogHandler dh = new BotDialogHandler(chatId);
-        EditMessageText ms = dh.onDecimalMessage(update.getCallbackQuery().getMessage().getMessageId());
+        EditMessageText ms = getDialogHandler(chatId).onDecimalMessage(update.getCallbackQuery().getMessage().getMessageId());
         sendMessage(ms);
     }
 private void doCallBackAboutUs(Long chatId, Update update) {
-    BotDialogHandler dh = new BotDialogHandler(chatId);
-
     // Переходим на раздел
-    EditMessageText aboutUsMessage = dh.onAboutUsMessage(update.getCallbackQuery().getMessage().getMessageId());
+    EditMessageText aboutUsMessage = getDialogHandler(chatId).onAboutUsMessage(update.getCallbackQuery().getMessage().getMessageId());
     sendMessage(aboutUsMessage);
-
     // Отправляем текст+фото
-    SendPhoto photoMessage = dh.createAboutUsMessage();
+    SendPhoto photoMessage = getDialogHandler(chatId).createAboutUsMessage();
     sendPhoto(photoMessage);
 }
 
 public void doCallBackSettings(Long chatId, Update update, String[] command) {
-        BotDialogHandler dh = new BotDialogHandler(chatId);
-        EditMessageText ms = dh.onSettingMessage(update.getCallbackQuery().getMessage().getMessageId());
+        EditMessageText ms = getDialogHandler(chatId).onSettingMessage(update.getCallbackQuery().getMessage().getMessageId());
         sendMessage(ms);
     }
     public void userNotify(User user) {
@@ -294,8 +284,7 @@ public void doCallBackSettings(Long chatId, Update update, String[] command) {
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(String.valueOf(user.getId()));
 
-        BotDialogHandler dh = new BotDialogHandler(user.getId());
-        SendMessage ms = dh.createMessage(Objects.requireNonNull(createNotifyMessage(user)), user.getId());
+        SendMessage ms = getDialogHandler(user.getId()).createMessage(Objects.requireNonNull(createNotifyMessage(user)), user.getId());
         sendMessage(ms);
     }
 
