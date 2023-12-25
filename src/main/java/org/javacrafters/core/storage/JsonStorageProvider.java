@@ -99,7 +99,7 @@ public class JsonStorageProvider implements StorageProvider {
             public void run() {
                 File file = new File(storageFolder + FileSystems.getDefault().getSeparator() + "user-" + userId + "-bot.json");
                 if (file.delete()) {
-                    LOGGER.error("Deleted file {}/{}", storageFolder, file.getName());
+                    LOGGER.info("Deleted file {}/{}", storageFolder, file.getName());
                 } else {
                     LOGGER.error("Can't delete {}/{}", storageFolder, file.getName());
                 }

@@ -36,6 +36,10 @@ public class AppRegistry {
     }
 
     public static void initDefaults() {
+        if (AppRegistry.getConfIsDevMode()) {
+            LOGGER.info("!!! {} working in DEV mode !!!", ConfigLoader.get("APP_NAME"));
+        }
+
         LOGGER.info("Loading config defaults: initDefaults()");
         Arrays.stream(ConfigLoader.get("BANK_CURRENCY").split(",")).forEach(AppRegistry::addCurrency);
 
@@ -170,6 +174,15 @@ public class AppRegistry {
         return ConfigLoader.get("APP_USERS_STORAGE_FOLDER");
     }
 
+    /*
+    Config Dev mode switch
+    */
+    public static boolean getConfIsDevMode() {
+        return Boolean.parseBoolean(ConfigLoader.get("APP_DEV_MODE"));
+    }
+    public static boolean getConfIsProdMode() {
+        return !Boolean.parseBoolean(ConfigLoader.get("APP_DEV_MODE"));
+    }
 
 
 }

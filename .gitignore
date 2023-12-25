@@ -4,6 +4,7 @@ bot-users/
 user-*.json
 app.properties
 release
+META-INF
 .gradle
 build/
 !gradle/wrapper/gradle-wrapper.jar

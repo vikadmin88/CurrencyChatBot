@@ -47,14 +47,14 @@ public class Scheduler {
                 LOGGER.info("Scheduler: Disabled for User: {} Thread: {}", user.getId(), Thread.currentThread().getName());
             }
         };
-        // production
-//        userSchedulers.put(userId, scheduler.scheduleAtFixedRate(threadUserScheduledTask, initDelay, 24*60, MINUTES));
-
-        // test !!! period, 1 MINUTES
-        initDelay = 1;
-        userSchedulers.put(userId, scheduler.scheduleAtFixedRate(threadUserScheduledTask, initDelay, 1, MINUTES));
-        // test !!! period, SECONDS
-//        userSchedulers.put(userId, scheduler.scheduleAtFixedRate(threadUserScheduledTask, initDelay, 3, SECONDS));
+        if (AppRegistry.getConfIsProdMode()) {
+            // production
+            userSchedulers.put(userId, scheduler.scheduleAtFixedRate(threadUserScheduledTask, initDelay, 24*60, MINUTES));
+        } else {
+            // test !!! period, 1 MINUTES
+            initDelay = 1;
+            userSchedulers.put(userId, scheduler.scheduleAtFixedRate(threadUserScheduledTask, initDelay, 1, MINUTES));
+        }
     }
 
     public static ScheduledFuture<?> getUserScheduler(Long userId) {
@@ -71,7 +71,7 @@ public class Scheduler {
         int initDelay = 3;
 
         final Runnable threadCurrencyScheduledTask = () -> {
-            LOGGER.info("Got new currency rates. Next request in {} minutes. thread: {}", period,  Thread.currentThread().getName());
+            LOGGER.info("CurrencyHolder got new rates. Next request in {} minutes. thread: {}", period,  Thread.currentThread().getName());
             CurrencyHolder.refreshRates();
         };
         currencyScheduler = scheduler.scheduleAtFixedRate(threadCurrencyScheduledTask, initDelay, period * 60L, SECONDS);
