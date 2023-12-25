@@ -49,5 +49,7 @@ Compile: `gradle jar` FatJar will be saved to `./build/release/`
 
 Copy `app.properties` to `./build/release/`
 
+Go to `./build/release/`
+
 Run: `java -jar CurrencyChatBot.jar`
 
