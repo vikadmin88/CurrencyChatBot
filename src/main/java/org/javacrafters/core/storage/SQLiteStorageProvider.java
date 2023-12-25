@@ -79,8 +79,9 @@ public class SQLiteStorageProvider implements StorageProvider {
                         User user = GSON.fromJson(userData, User.class);
 
                         AppRegistry.addUser(user);
-                        Scheduler.addUserSchedule(user.getId(), user, user.getNotifyTime());
-
+                        if (user.isNotifyOn()) {
+                            Scheduler.addUserSchedule(user.getId(), user, user.getNotifyTime());
+                        }
                         LOGGER.info("User {} loaded from database Thread: {}", user.getId(), Thread.currentThread().getName());
                     }
 

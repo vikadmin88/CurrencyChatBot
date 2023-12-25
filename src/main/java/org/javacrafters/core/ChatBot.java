@@ -153,9 +153,9 @@ public class ChatBot extends TelegramLongPollingBot {
             switch (btnCommand[0].toUpperCase()) {
                 case "BANK" -> doCallBackBank(chatId, update, btnCommand);
                 case "CURRENCY" -> doCallBackCurrency(chatId, update, btnCommand);
-                case "NOTIFICATION" -> doCallBackNotification(chatId, update, btnCommand);
                 case "DECIMAL" -> doCallBackDecimal(chatId, update, btnCommand);
-                case "SETTINGS" -> doCallBackSettings(chatId, update, btnCommand);
+                case "NOTIFICATION" -> doCallBackNotification(chatId, update, btnCommand);
+                case "USERSETTINGS" -> doCallBackUserSettingsMessage(chatId, update, btnCommand);
                 case "ABOUT"-> doCallBackAboutUs(chatId, update);
             }
 
@@ -191,7 +191,7 @@ public class ChatBot extends TelegramLongPollingBot {
         SendMessage ms = getDialogHandler(chatId).createCustomMessage("⚠  Сповіщення вимкнено!");
         sendMessage(ms);
 
-        Scheduler.getUserScheduler(chatId).cancel(true);
+        Scheduler.removeUserScheduler(chatId);
         AppRegistry.getUser(chatId).setNotifyOff();
 
         saveUser(chatId);
@@ -205,7 +205,9 @@ public class ChatBot extends TelegramLongPollingBot {
         AppRegistry.getUser(chatId).setNotifyTime(hour);
         AppRegistry.getUser(chatId).setNotifyOn();
 
-        Scheduler.getUserScheduler(chatId).cancel(true);
+        if (Scheduler.getUserScheduler(chatId) != null) {
+            Scheduler.getUserScheduler(chatId).cancel(true);
+        }
         Scheduler.addUserSchedule(chatId, AppRegistry.getUser(chatId), AppRegistry.getUser(chatId).getNotifyTime());
 
         saveUser(chatId);
@@ -265,35 +267,60 @@ public class ChatBot extends TelegramLongPollingBot {
         EditMessageText ms = getDialogHandler(chatId).onDecimalMessage(update.getCallbackQuery().getMessage().getMessageId());
         sendMessage(ms);
     }
-private void doCallBackAboutUs(Long chatId, Update update) {
-    // Переходим на раздел
-    EditMessageText aboutUsMessage = getDialogHandler(chatId).onAboutUsMessage(update.getCallbackQuery().getMessage().getMessageId());
-    sendMessage(aboutUsMessage);
-    // Отправляем текст+фото
-    SendPhoto photoMessage = getDialogHandler(chatId).createAboutUsMessage();
-    sendPhoto(photoMessage);
-}
+    private void doCallBackAboutUs(Long chatId, Update update) {
+        // Переходим на раздел
+        EditMessageText aboutUsMessage = getDialogHandler(chatId).onAboutUsMessage(update.getCallbackQuery().getMessage().getMessageId());
+        sendMessage(aboutUsMessage);
+        // Отправляем текст+фото
+        SendPhoto photoMessage = getDialogHandler(chatId).createAboutUsMessage();
+        sendPhoto(photoMessage);
+    }
 
-public void doCallBackSettings(Long chatId, Update update, String[] command) {
-        EditMessageText ms = getDialogHandler(chatId).onSettingMessage(update.getCallbackQuery().getMessage().getMessageId());
+    public void doCallBackUserSettingsMessage(Long chatId, Update update, String[] command) {
+        AnswerCallbackQuery close = AnswerCallbackQuery.builder()
+                .callbackQueryId(update.getCallbackQuery().getId()).build();
+        try {
+            execute(close);
+        } catch (TelegramApiException e) {
+            throw new RuntimeException(e);
+        }
+
+        SendMessage ms = getDialogHandler(chatId).createUserSettingsMessage(Objects.requireNonNull(createUserCurrentSettings(chatId)), chatId);
         sendMessage(ms);
     }
+    private String createUserCurrentSettings (Long chatId) {
+        String userName = AppRegistry.getUser(chatId).getName();
+        StringBuilder sb = new StringBuilder("❓  <b>").append(userName).append(", ваші налаштування такі:</b>\n");
+        sb.append("<b>Банки:</b>\n");
+        for (String bankLocalName : AppRegistry.getUser(chatId).getBanks()) {
+            sb.append("  ").append(AppRegistry.getBank(bankLocalName).getName()).append("\n");
+        }
+        sb.append("<b>Валюти:</b>\n");
+        for (String currencyName : AppRegistry.getUser(chatId).getCurrency()) {
+            sb.append("  ").append(currencyName).append("\n");
+        }
+        sb.append("<b>Знаків після коми:</b> ").append(AppRegistry.getUser(chatId).getDecimalPlaces()).append("\n");
+        String bulToStr = AppRegistry.getUser(chatId).isNotifyOn() ? "Активовані" : "Деактивовані";
+        sb.append("<b>Сповіщення:</b> ").append(bulToStr).append("\n");
+        sb.append("<b>Час сповіщення:</b> ").append(AppRegistry.getUser(chatId).getNotifyTime()).append(":00").append("\n");
+        return sb.toString();
+    }
+
     public void userNotify(User user) {
         LOGGER.info("userNotify() = {} {}", user.getId(), user.getName());
-
-        SendMessage sendMessage = new SendMessage();
-        sendMessage.setChatId(String.valueOf(user.getId()));
-
         SendMessage ms = getDialogHandler(user.getId()).createMessage(Objects.requireNonNull(createNotifyMessage(user)), user.getId());
         sendMessage(ms);
     }
 
     private String createNotifyMessage(User user) {
+
+        String userName = user.getName();
+
         // {"PB" => {"USD" => {"USD", "36.95000", "37.45000"}}}
         Map<String, Map<String, NormalizeCurrencyPair>> currencyRates = CurrencyHolder.getRates();
 
         if (currencyRates.isEmpty()) {
-            return "Нажаль системі не вдалося отримати курси валют від банків.";
+            return userName + ", нажаль системі не вдалося отримати курси валют від банків.";
         }
         StringBuilder sb = new StringBuilder("⚡  <b>Поточні курси валют:</b>\n");
         boolean noCurrency = true;
@@ -312,7 +339,7 @@ public void doCallBackSettings(Long chatId, Update update, String[] command) {
                 NormalizeCurrencyPair curCurrency = currencySet.get(currency);
 
                 if (curCurrency != null && user.getCurrency().contains(curCurrency.getName())) {
-                    sbSub.append(curCurrency.getName()).append("\n");
+                    sbSub.append("<b>").append(curCurrency.getName()).append("</b>").append("\n");
 
                     String format = "%." + user.getDecimalPlaces() + "f";
                     if (curCurrency.getBuy() != null) {
@@ -331,41 +358,42 @@ public void doCallBackSettings(Long chatId, Update update, String[] command) {
             }
             if (!sbSub.toString().isEmpty()) {
                 noCurrency = false;
-                sb.append("\n").append("✔  ").append("<b>").append(bankName).append("</b>").append("\n").append(sbSub);
+//                sb.append("\n").append("✔  ").append("<b>").append(bankName).append("</b>").append("\n").append(sbSub);
+                sb.append("\n").append("\u27A1  ").append("<b>").append(bankName).append("</b>").append("\n").append(sbSub);
             }
         }
         if (noCurrency) {
-            sb.append("\n").append("Обрані вами банки не надають обмінні курси по обраним вами валютам.");
+            sb.append("\n").append(userName).append(", обрані вами банки не надають обмінні курси по обраним вами валютам.");
         }
         return sb.toString();
     }
-public void sendPhoto(SendPhoto photo) {
-    if (photo != null) {
-        try {
-            execute(photo);
-        } catch (TelegramApiException e) {
-            LOGGER.error("Can't send photo", e);
+    public void sendPhoto(SendPhoto photo) {
+        if (photo != null) {
+            try {
+                execute(photo);
+            } catch (TelegramApiException e) {
+                LOGGER.error("Can't send photo", e);
+            }
         }
     }
-}
 
-public void sendMessage(SendMessage message) {
-    if (message != null) {
-        try {
-            execute(message);
-        } catch (TelegramApiException e) {
-            LOGGER.error("Can't sendMessage()", e);
+    public void sendMessage(SendMessage message) {
+        if (message != null) {
+            try {
+                execute(message);
+            } catch (TelegramApiException e) {
+                LOGGER.error("Can't sendMessage()", e);
+            }
         }
     }
-}
 
-public void sendMessage(EditMessageText message) {
-    if (message != null) {
-        try {
-            execute(message);
-        } catch (TelegramApiException e) {
-            LOGGER.error("Can't sendMessage", e);
+    public void sendMessage(EditMessageText message) {
+        if (message != null) {
+            try {
+                execute(message);
+            } catch (TelegramApiException e) {
+                LOGGER.error("Can't sendMessage", e);
+            }
         }
     }
-}
 }

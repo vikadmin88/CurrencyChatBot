@@ -61,8 +61,10 @@ public class Scheduler {
         return userSchedulers.get(userId);
     }
     public static void removeUserScheduler(Long userId) {
-        getUserScheduler(userId).cancel(true);
-        userSchedulers.remove(userId);
+        if (getUserScheduler(userId) != null) {
+            getUserScheduler(userId).cancel(true);
+            userSchedulers.remove(userId);
+        }
     }
 
 

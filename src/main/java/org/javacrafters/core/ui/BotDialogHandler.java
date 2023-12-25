@@ -34,12 +34,12 @@ public class BotDialogHandler {
                 і присилати їх вам у зручний для вас час, який ви оберете в конфігурації бота.
                 (За замовчуванням ви отримуватимете курс USD з банку Приват Банк кожну добу о 9:00)
                  
-                Ви можете настроїти наступні чотири парамерти:
-                Банки: Приват Банк, Моно Банк, НБУ
-                Валюти: USD, EUR, GBP, PLN
-                Знаків після коми: 2, 3, 4 
+                Ви можете налаштувати наступні чотири парамерти:
+                <b>Банки:</b> Приват Банк, Моно Банк, НБУ
+                <b>Валюти:</b> USD, EUR, GBP, PLN
+                <b>Кількість знаків після коми:</b> 2, 3, 4 
                 (точність для курсів валют)
-                Час отримання повідомлень: 9:00 - 18:00 
+                <b>Час отримання повідомлень:</b> 9:00 - 18:00 
                 (приходитимуть раз на добу)
                 """;
         SendPhoto photoMessage = createPhotoMessage(URL_MEDIA + "/welcome_message.jpg");
@@ -50,6 +50,17 @@ public class BotDialogHandler {
         photoMessage.setReplyMarkup(keyboardMarkup);
 
         return photoMessage;
+    }
+    public SendMessage createUserSettingsMessage(String text, Long chatId) {
+        SendMessage message = createMessage(text, chatId);
+        message.setText(new String(text.getBytes(), StandardCharsets.UTF_8));
+        message.setParseMode(ParseMode.HTML);
+        message.setChatId(chatId);
+
+        ReplyKeyboardMarkup keyboardMarkup = getPermanentKeyboard();
+        message.setReplyMarkup(keyboardMarkup);
+
+        return message;
     }
     public SendPhoto createAboutUsMessage(){
         //нужно написать текст
@@ -222,6 +233,7 @@ public class BotDialogHandler {
         buttons.add(createButton("\uD83D\uDCB5", "Валюти", "currency"));
         buttons.add(createButton("\uD83D\uDD22", "Знаків після коми", "decimal"));
         buttons.add(createButton("⏰ Час сповіщення", "notification"));
+        buttons.add(createButton("❓ Мої налаштування", "USERSETTINGS"));
         buttons.add(createButton("\uD83D\uDC40", "Про нас", "about"));
 
         return buildInlineKeyboard(buttons);

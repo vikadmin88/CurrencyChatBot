@@ -52,7 +52,9 @@ public class JsonStorageProvider implements StorageProvider {
                             LOGGER.info("Loading user {}", file);
                             User user = GSON.fromJson(reader, User.class);
                             AppRegistry.addUser(user);
-                            Scheduler.addUserSchedule(user.getId(), user, user.getNotifyTime());
+                            if (user.isNotifyOn()) {
+                                Scheduler.addUserSchedule(user.getId(), user, user.getNotifyTime());
+                            }
                             LOGGER.info("User {} loaded from file: {}/user-{}-bot.json (thread: {})", user.getId(), storageFolder, user.getId(), Thread.currentThread().getName());
                         } catch (IOException e) {
                             LOGGER.error("Not Loading users", e);
