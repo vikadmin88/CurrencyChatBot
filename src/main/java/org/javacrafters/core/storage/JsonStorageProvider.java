@@ -46,16 +46,18 @@ public class JsonStorageProvider implements StorageProvider {
             public void run() {
                 try (Stream<Path> paths = Files.walk(Paths.get(storageFolder))) {
 
-                    paths.filter((file) -> file.toString().endsWith("-bot.json")).forEach(file -> {
+                    paths.filter((file) -> file.getFileName().toString().matches("user-([0-9]+)+-bot.json")).forEach(file -> {
 
                         try (Reader reader = new FileReader(file.toString())) {
                             LOGGER.info("Loading user {}", file);
                             User user = GSON.fromJson(reader, User.class);
-                            AppRegistry.addUser(user);
-                            if (user.isNotifyOn()) {
-                                Scheduler.addUserSchedule(user.getId(), user, user.getNotifyTime());
+                            if (user.getId() > 0) {
+                                AppRegistry.addUser(user);
+                                LOGGER.info("User {} loaded from file: {}/user-{}-bot.json (thread: {})", user.getId(), storageFolder, user.getId(), Thread.currentThread().getName());
+                                if (user.isNotifyOn()) {
+                                    Scheduler.addUserSchedule(user.getId(), user, user.getNotifyTime());
+                                }
                             }
-                            LOGGER.info("User {} loaded from file: {}/user-{}-bot.json (thread: {})", user.getId(), storageFolder, user.getId(), Thread.currentThread().getName());
                         } catch (IOException e) {
                             LOGGER.error("Not Loading users", e);
                         }
@@ -73,7 +75,7 @@ public class JsonStorageProvider implements StorageProvider {
     @Override
     public void save(User user) {
 
-        if (!AppRegistry.getConfIsUsingUsersStorage()) {
+        if (!AppRegistry.getConfIsUsingUsersStorage() || user == null) {
             return;
         }
         Runnable taskSave = new Runnable() {

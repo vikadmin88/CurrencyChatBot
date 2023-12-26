@@ -7,9 +7,9 @@ import org.javacrafters.user.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.Map;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -22,15 +22,24 @@ public class Scheduler {
     private static final Map<Long, ScheduledFuture<?>> userSchedulers = new HashMap<>();
     private static ScheduledFuture<?> currencyScheduler;
     private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(4);
+    private static int userPeriodRun = 24*60;
+    private static final DateFormat dateFormat = new SimpleDateFormat("HH");
 
+    static {
+        dateFormat.setTimeZone(TimeZone.getTimeZone(AppRegistry.getConfTimeZone()));
+    }
     private Scheduler() {
     }
 
     public static void addUserSchedule(Long userId, User user, int toHour) {
 
-        int curHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
+        if (user == null) {
+            return;
+        }
+        int curHour = Integer.parseInt(dateFormat.format(new Date()));
         int curMinutes = Calendar.getInstance().get(Calendar.MINUTE);
         int initDelay = 1;
+
         if (curHour > toHour) {
             initDelay = (24 - curHour + toHour) * 60 + curMinutes;
         } else if (curHour < toHour) {
@@ -39,22 +48,21 @@ public class Scheduler {
             initDelay = (24 - curHour + toHour) * 60 - curMinutes;
         }
 
-        final Runnable threadUserScheduledTask = () -> {
+        Runnable threadUserScheduledTask = () -> {
             if (user.isNotifyOn()) {
-                LOGGER.info("Scheduler: Notified User: {}  {} Thread: {}", user.getId(), user.getName(), Thread.currentThread().getName());
+                LOGGER.info("Notified User: {}  {} Thread: {}", user.getId(), user.getName(), Thread.currentThread().getName());
                 AppRegistry.getChatBot().userNotify(user);
             } else {
-                LOGGER.info("Scheduler: Disabled for User: {} Thread: {}", user.getId(), Thread.currentThread().getName());
+                LOGGER.info("Disabled for User: {} Thread: {}", user.getId(), Thread.currentThread().getName());
             }
         };
-        if (AppRegistry.getConfIsProdMode()) {
-            // production
-            userSchedulers.put(userId, scheduler.scheduleAtFixedRate(threadUserScheduledTask, initDelay, 24*60, MINUTES));
-        } else {
-            // test !!! period, 1 MINUTES
+
+        if (AppRegistry.getConfIsDevMode()) {
             initDelay = 1;
-            userSchedulers.put(userId, scheduler.scheduleAtFixedRate(threadUserScheduledTask, initDelay, 1, MINUTES));
+            userPeriodRun = 1;
         }
+        userSchedulers.put(userId, scheduler.scheduleAtFixedRate(threadUserScheduledTask, initDelay, userPeriodRun, MINUTES));
+        LOGGER.info("User: {} set to {}:00 Run in {} minutes.", user.getId(), user.getNotifyTime(), userPeriodRun);
     }
 
     public static ScheduledFuture<?> getUserScheduler(Long userId) {

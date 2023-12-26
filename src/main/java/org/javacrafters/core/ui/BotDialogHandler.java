@@ -260,6 +260,7 @@ public class BotDialogHandler {
             String buttonText = userSelection.contains(item.getKey()) ? "✅  " + item.getValue() : item.getValue();
             buttons.add(createButton(buttonText, prefix + "_" + item.getKey()));
         }
+        buttons.add(createButton("⬅ Назад", "settings"));
         return buttons;
     }
 
@@ -292,7 +293,7 @@ public class BotDialogHandler {
         // Создаем один ряд кнопок
         KeyboardRow row = new KeyboardRow();
         row.add("\uD83C\uDFA2" + new String(" Курси валют".getBytes(), StandardCharsets.UTF_8));
-        row.add(new String("❌ Стоп".getBytes(), StandardCharsets.UTF_8));
+        row.add(new String("❌ Вийти".getBytes(), StandardCharsets.UTF_8));
         row.add(new String("⚙ Налаштування".getBytes(), StandardCharsets.UTF_8));
 
         keyboard.add(row);

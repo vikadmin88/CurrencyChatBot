@@ -16,12 +16,8 @@ import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageTe
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
-
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
 * Bot Controller (MVC)
@@ -66,6 +62,9 @@ public class ChatBot extends TelegramLongPollingBot {
     }
 
     private User addUser(Long chatId, Update update) {
+        if (chatId == null) {
+            return null;
+        }
         String firstName = "";
         String userName = "";
         if (update.hasMessage()) {
@@ -124,7 +123,7 @@ public class ChatBot extends TelegramLongPollingBot {
                 doCommandStart(chatId, update);
             }
             // Stop / Disable notify
-            if (msgCommand.equals("/stop") || msgCommand.endsWith(new String("Стоп".getBytes(), StandardCharsets.UTF_8))) {
+            if (msgCommand.equals("/stop") || msgCommand.endsWith(new String("Вийти".getBytes(), StandardCharsets.UTF_8))) {
                 doCommandStop(chatId, update);
             }
             if (msgCommand.equals(new String("Вимкнути сповіщення".getBytes(), StandardCharsets.UTF_8))) {
@@ -135,11 +134,15 @@ public class ChatBot extends TelegramLongPollingBot {
                 doCommandNotifySetTime(chatId, update);
             }
             // Settings
-            if (msgCommand.endsWith(new String("Налаштування".getBytes(), StandardCharsets.UTF_8))) {
+            if (msgCommand.equals("/settings") || msgCommand.endsWith(new String("Налаштування".getBytes(), StandardCharsets.UTF_8))) {
                 doCommandSettings(chatId, update);
             }
+            // Settings
+            if (msgCommand.equals("/mysettings")) {
+                doCommandUserSettingsMessage(chatId);
+            }
             //
-            if (msgCommand.endsWith(new String("Курси валют".getBytes(), StandardCharsets.UTF_8))) {
+            if (msgCommand.equals("/cnow") || msgCommand.endsWith(new String("Курси валют".getBytes(), StandardCharsets.UTF_8))) {
                 userNotify(AppRegistry.getUser(chatId));
             }
         }
@@ -156,6 +159,7 @@ public class ChatBot extends TelegramLongPollingBot {
                 case "DECIMAL" -> doCallBackDecimal(chatId, update, btnCommand);
                 case "NOTIFICATION" -> doCallBackNotification(chatId, update, btnCommand);
                 case "USERSETTINGS" -> doCallBackUserSettingsMessage(chatId, update, btnCommand);
+                case "SETTINGS" -> doCallBackSettings(chatId, update);
                 case "ABOUT"-> doCallBackAboutUs(chatId, update);
             }
 
@@ -185,6 +189,10 @@ public class ChatBot extends TelegramLongPollingBot {
     }
     public void doCommandSettings(Long chatId, Update update) {
         SendMessage ms = getDialogHandler(chatId).createSettingsMessage();
+        sendMessage(ms);
+    }
+    public void doCommandUserSettingsMessage(Long chatId) {
+        SendMessage ms = getDialogHandler(chatId).createUserSettingsMessage(Objects.requireNonNull(createUserCurrentSettings(chatId)), chatId);
         sendMessage(ms);
     }
     public void doCommandNotifyOff(Long chatId, Update update) {
@@ -275,7 +283,17 @@ public class ChatBot extends TelegramLongPollingBot {
         SendPhoto photoMessage = getDialogHandler(chatId).createAboutUsMessage();
         sendPhoto(photoMessage);
     }
-
+    public void doCallBackSettings(Long chatId, Update update) {
+        AnswerCallbackQuery close = AnswerCallbackQuery.builder()
+                .callbackQueryId(update.getCallbackQuery().getId()).build();
+        try {
+            execute(close);
+        } catch (TelegramApiException e) {
+            throw new RuntimeException(e);
+        }
+        SendMessage ms = getDialogHandler(chatId).createSettingsMessage();
+        sendMessage(ms);
+    }
     public void doCallBackUserSettingsMessage(Long chatId, Update update, String[] command) {
         AnswerCallbackQuery close = AnswerCallbackQuery.builder()
                 .callbackQueryId(update.getCallbackQuery().getId()).build();
@@ -285,12 +303,13 @@ public class ChatBot extends TelegramLongPollingBot {
             throw new RuntimeException(e);
         }
 
-        SendMessage ms = getDialogHandler(chatId).createUserSettingsMessage(Objects.requireNonNull(createUserCurrentSettings(chatId)), chatId);
-        sendMessage(ms);
+        doCommandUserSettingsMessage(chatId);
+//        SendMessage ms = getDialogHandler(chatId).createUserSettingsMessage(Objects.requireNonNull(createUserCurrentSettings(chatId)), chatId);
+//        sendMessage(ms);
     }
     private String createUserCurrentSettings (Long chatId) {
         String userName = AppRegistry.getUser(chatId).getName();
-        StringBuilder sb = new StringBuilder("❓  <b>").append(userName).append(", ваші налаштування такі:</b>\n");
+        StringBuilder sb = new StringBuilder("❓ <b>").append(userName).append(", ваші налаштування:</b>\n");
         sb.append("<b>Банки:</b>\n");
         for (String bankLocalName : AppRegistry.getUser(chatId).getBanks()) {
             sb.append("  ").append(AppRegistry.getBank(bankLocalName).getName()).append("\n");
@@ -382,7 +401,13 @@ public class ChatBot extends TelegramLongPollingBot {
             try {
                 execute(message);
             } catch (TelegramApiException e) {
-                LOGGER.error("Can't sendMessage()", e);
+                if (e.getMessage().contains("[403] Forbidden")) {
+                    LOGGER.error("Can't sent sendMessage() Error message: {}", e.getMessage());
+                    LOGGER.info("User {} left chat, removing...", message.getChatId());
+                    removeUser(Long.parseLong(message.getChatId()));
+                } else {
+                    LOGGER.error("Can't sendMessage() sendMessage", e);
+                }
             }
         }
     }
@@ -392,7 +417,7 @@ public class ChatBot extends TelegramLongPollingBot {
             try {
                 execute(message);
             } catch (TelegramApiException e) {
-                LOGGER.error("Can't sendMessage", e);
+                LOGGER.error("Can't sendMessage() EditMessageText", e);
             }
         }
     }

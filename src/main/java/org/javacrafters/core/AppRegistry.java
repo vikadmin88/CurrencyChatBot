@@ -184,5 +184,11 @@ public class AppRegistry {
         return !Boolean.parseBoolean(ConfigLoader.get("APP_DEV_MODE"));
     }
 
+    /*
+    Config Time Zone
+    */
+    public static String getConfTimeZone() {
+        return ConfigLoader.get("APP_TIME_ZONE");
+    }
 
 }

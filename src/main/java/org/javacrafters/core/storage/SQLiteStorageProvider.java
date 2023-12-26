@@ -75,14 +75,16 @@ public class SQLiteStorageProvider implements StorageProvider {
 
                     while (resultSet.next()) {
                         long userId = resultSet.getLong("id");
-                        String userData = resultSet.getString("json");
-                        User user = GSON.fromJson(userData, User.class);
+                        if (userId > 0) {
+                            String userData = resultSet.getString("json");
+                            User user = GSON.fromJson(userData, User.class);
 
-                        AppRegistry.addUser(user);
-                        if (user.isNotifyOn()) {
-                            Scheduler.addUserSchedule(user.getId(), user, user.getNotifyTime());
+                            LOGGER.info("User {} loaded from database Thread: {}", user.getId(), Thread.currentThread().getName());
+                            AppRegistry.addUser(user);
+                            if (user.isNotifyOn()) {
+                                Scheduler.addUserSchedule(user.getId(), user, user.getNotifyTime());
+                            }
                         }
-                        LOGGER.info("User {} loaded from database Thread: {}", user.getId(), Thread.currentThread().getName());
                     }
 
                 } catch (SQLException e) {
@@ -95,7 +97,7 @@ public class SQLiteStorageProvider implements StorageProvider {
 
     @Override
     public void save(User user) {
-        if (!AppRegistry.getConfIsUsingUsersStorage()) {
+        if (!AppRegistry.getConfIsUsingUsersStorage() || user == null) {
             return;
         }
         Runnable taskSave = new Runnable() {
