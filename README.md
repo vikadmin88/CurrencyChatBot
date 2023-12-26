@@ -9,6 +9,10 @@ Rename the example config file `app.properties-example` to `app.properties` and 
 APP_NAME=CurrencyChatBot
 APP_BOT_NAME=here your bot name
 APP_BOT_TOKEN=here your bot token
+# Time zone: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+APP_TIME_ZONE=Europe/Kyiv
+# dev mode
+APP_DEV_MODE=false
 
 # User storage functionality:
 # Enable/disable. save/load to/from json, database, etc.
@@ -16,20 +20,20 @@ APP_USERS_USE_STORAGE=true
 # storage folder
 APP_USERS_STORAGE_FOLDER=./bot-users
 # storage provider. file | sqlite
-APP_USERS_STORAGE_PROVIDER=sqlite
+APP_USERS_STORAGE_PROVIDER=file
 
 # Default parameters for banks:
 # Currency to get from each bank. separate by comma: USD,EUR,...
 BANK_CURRENCY=USD,EUR,GBP,PLN
 # Frequency of requests to banks for latest exchange rates (minutes)
-BANK_FREQUENCY_REQUEST=1
+BANK_FREQUENCY_REQUEST=15
 # URLs of API bank pages
 BANK_PB_API_URL=https://api.privatbank.ua/p24api/pubinfo?json&exchange&coursid=5
 BANK_MB_API_URL=https://api.monobank.ua/bank/currency
 BANK_NBU_API_URL=https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange?json
 
 # Default parameters for each new user
-# only one (example: PB - Privat Bank, MB - Mono Bank, NBU - National Bank of Ukraine)
+# only one (example: PB - PrivatBank, MB - Mono Bank, NBU - National Bank of Ukraine)
 USER_DEF_BANK=PB
 # only one of (USD | EUR | GBP | PLN)
 USER_DEF_CURRENCY=USD
