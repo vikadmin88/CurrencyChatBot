@@ -40,12 +40,10 @@ public class Scheduler {
         int curMinutes = Calendar.getInstance().get(Calendar.MINUTE);
         int initDelay = 1;
 
-        if (curHour > toHour) {
-            initDelay = (24 - curHour + toHour) * 60 + curMinutes;
-        } else if (curHour < toHour) {
-            initDelay = (toHour - curHour) * 60 - curMinutes;
-        } else {
+        if (curHour >= toHour) {
             initDelay = (24 - curHour + toHour) * 60 - curMinutes;
+        } else {
+            initDelay = (toHour - curHour) * 60 - curMinutes;
         }
 
         Runnable threadUserScheduledTask = () -> {
