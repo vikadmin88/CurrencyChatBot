@@ -229,6 +229,7 @@ public class BotDialogHandler {
         List<InlineKeyboardButton> buttons = new ArrayList<>();
 
         // Добавление кнопок для настроек
+        buttons.add(createButton("\uD83D\uDCCC", "Welcome", "welcome"));
         buttons.add(createButton("\uD83C\uDFE6", "Банки", "bank"));
         buttons.add(createButton("\uD83D\uDCB5", "Валюти", "currency"));
         buttons.add(createButton("\uD83D\uDD22", "Знаків після коми", "decimal"));
@@ -293,7 +294,7 @@ public class BotDialogHandler {
         // Создаем один ряд кнопок
         KeyboardRow row = new KeyboardRow();
         row.add("\uD83C\uDFA2" + new String(" Курси валют".getBytes(), StandardCharsets.UTF_8));
-        row.add(new String("❌ Вийти".getBytes(), StandardCharsets.UTF_8));
+//        row.add(new String("❌ Відписатись".getBytes(), StandardCharsets.UTF_8));
         row.add(new String("⚙ Налаштування".getBytes(), StandardCharsets.UTF_8));
 
         keyboard.add(row);

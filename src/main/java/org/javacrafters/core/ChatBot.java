@@ -81,9 +81,8 @@ public class ChatBot extends TelegramLongPollingBot {
         user.setDecimalPlaces(AppRegistry.getConfDecimalPlaces());
         user.setNotifyTime(AppRegistry.getConfNotifyTime());
         user.setNotifyStatus(AppRegistry.getConfNotifyStatus());
-        AppRegistry.addUser(user);
-        Scheduler.addUserSchedule(chatId, user, AppRegistry.getConfNotifyTime());
         LOGGER.info("addUser: {} {}", chatId, firstName);
+        AppRegistry.addUserCompletely(user);
         return user;
     }
 
@@ -92,9 +91,7 @@ public class ChatBot extends TelegramLongPollingBot {
     }
     private void removeUser(Long userId) {
         LOGGER.info("removeUser: {}", userId);
-        Scheduler.removeUserScheduler(userId);
-        AppRegistry.removeUser(userId);
-        UserLoader.delete(userId);
+        AppRegistry.removeUserCompletely(userId);
     }
     private void checkOrAddUser(Long chatId, Update update) {
         if (!AppRegistry.hasUser(chatId)) {
@@ -103,12 +100,13 @@ public class ChatBot extends TelegramLongPollingBot {
         }
     }
 
-    private BotDialogHandler getDialogHandler(Long chatId) {
+    private BotDialogHandler getDH(Long chatId) {
         return new BotDialogHandler(chatId);
     }
     @Override
     public void onUpdateReceived(Update update) {
         Long chatId = getChatId(update);
+        boolean isCommandPerformed = false;
         // check or add user
         checkOrAddUser(chatId, update);
 
@@ -120,30 +118,41 @@ public class ChatBot extends TelegramLongPollingBot {
 
             // Start
             if (msgCommand.equals("/start")) {
+                isCommandPerformed = true;
                 doCommandStart(chatId, update);
             }
             // Stop / Disable notify
             if (msgCommand.equals("/stop") || msgCommand.endsWith(new String("Вийти".getBytes(), StandardCharsets.UTF_8))) {
+                isCommandPerformed = true;
                 doCommandStop(chatId, update);
             }
             if (msgCommand.equals(new String("Вимкнути сповіщення".getBytes(), StandardCharsets.UTF_8))) {
+                isCommandPerformed = true;
                 doCommandNotifyOff(chatId, update);
             }
             // Set Notify Time
             if (msgCommand.endsWith(new String(":00".getBytes(), StandardCharsets.UTF_8))) {
+                isCommandPerformed = true;
                 doCommandNotifySetTime(chatId, update);
             }
             // Settings
             if (msgCommand.equals("/settings") || msgCommand.endsWith(new String("Налаштування".getBytes(), StandardCharsets.UTF_8))) {
+                isCommandPerformed = true;
                 doCommandSettings(chatId, update);
             }
             // Settings
             if (msgCommand.equals("/mysettings")) {
+                isCommandPerformed = true;
                 doCommandUserSettingsMessage(chatId);
             }
             //
             if (msgCommand.equals("/cnow") || msgCommand.endsWith(new String("Курси валют".getBytes(), StandardCharsets.UTF_8))) {
+                isCommandPerformed = true;
                 userNotify(AppRegistry.getUser(chatId));
+            }
+            // if no command
+            if (!isCommandPerformed) {
+                sendErrorMessage(chatId);
             }
         }
 
@@ -154,6 +163,7 @@ public class ChatBot extends TelegramLongPollingBot {
                     Arrays.toString(btnCommand), chatId, AppRegistry.getUser(chatId).getName());
 
             switch (btnCommand[0].toUpperCase()) {
+                case "WELCOME" -> doCommandStart(chatId, update);
                 case "BANK" -> doCallBackBank(chatId, update, btnCommand);
                 case "CURRENCY" -> doCallBackCurrency(chatId, update, btnCommand);
                 case "DECIMAL" -> doCallBackDecimal(chatId, update, btnCommand);
@@ -171,7 +181,7 @@ public class ChatBot extends TelegramLongPollingBot {
      * Message Commands
      * */
     public void doCommandStart(Long chatId, Update update) {
-        SendPhoto ms = getDialogHandler(chatId).createWelcomeMessage();
+        SendPhoto ms = getDH(chatId).createWelcomeMessage();
         try {
             execute(ms);
         } catch (TelegramApiException e) {
@@ -179,7 +189,7 @@ public class ChatBot extends TelegramLongPollingBot {
         }
     }
     public void doCommandStop(Long chatId, Update update) {
-        SendMessage ms = getDialogHandler(chatId).createMessage("""
+        SendMessage ms = getDH(chatId).createMessage("""
                             ❗Вашу підписку на отримання курсів валют деактивовано!❗ 
                             Якщо ви бажаєте активувати її наново, будь ласка введіть або натисніть на команду /start
                             Також в налаштуваннях ви маєте обрати зручний для вас час отримання повідомлень з курсами валют.
@@ -188,15 +198,15 @@ public class ChatBot extends TelegramLongPollingBot {
         removeUser(chatId);
     }
     public void doCommandSettings(Long chatId, Update update) {
-        SendMessage ms = getDialogHandler(chatId).createSettingsMessage();
+        SendMessage ms = getDH(chatId).createSettingsMessage();
         sendMessage(ms);
     }
     public void doCommandUserSettingsMessage(Long chatId) {
-        SendMessage ms = getDialogHandler(chatId).createUserSettingsMessage(Objects.requireNonNull(createUserCurrentSettings(chatId)), chatId);
+        SendMessage ms = getDH(chatId).createUserSettingsMessage(Objects.requireNonNull(createUserCurrentSettings(chatId)), chatId);
         sendMessage(ms);
     }
     public void doCommandNotifyOff(Long chatId, Update update) {
-        SendMessage ms = getDialogHandler(chatId).createCustomMessage("⚠  Сповіщення вимкнено!");
+        SendMessage ms = getDH(chatId).createCustomMessage("⚠  Сповіщення вимкнено!");
         sendMessage(ms);
 
         Scheduler.removeUserScheduler(chatId);
@@ -206,7 +216,7 @@ public class ChatBot extends TelegramLongPollingBot {
     }
     public void doCommandNotifySetTime(Long chatId, Update update) {
         String msgCommand = update.getMessage().getText();
-        SendMessage ms = getDialogHandler(chatId).createCustomMessage("⏰  Час сповіщень змінено на " + msgCommand);
+        SendMessage ms = getDH(chatId).createCustomMessage("⏰  Час сповіщень змінено на " + msgCommand);
         sendMessage(ms);
 
         int hour = Integer.parseInt(msgCommand.split(":")[0]);
@@ -221,7 +231,7 @@ public class ChatBot extends TelegramLongPollingBot {
         saveUser(chatId);
     }
     public void sendErrorMessage(Long chatId) {
-        SendMessage ms = getDialogHandler(chatId).createMessage("❗ Command not found! Or you haven't launched the bot. Try run: /start", chatId);
+        SendMessage ms = getDH(chatId).createMessage("❗ Command not found!", chatId);
         sendMessage(ms);
     }
 
@@ -238,7 +248,7 @@ public class ChatBot extends TelegramLongPollingBot {
             } else {userBanks.add(toggleBank);}
             saveUser(chatId);
         }
-        EditMessageText ms = getDialogHandler(chatId).onBankMessage(update.getCallbackQuery().getMessage().getMessageId());
+        EditMessageText ms = getDH(chatId).onBankMessage(update.getCallbackQuery().getMessage().getMessageId());
         sendMessage(ms);
     }
     public void doCallBackCurrency(Long chatId, Update update, String[] command) {
@@ -250,7 +260,7 @@ public class ChatBot extends TelegramLongPollingBot {
             } else {userCurrency.add(toggleCurrency);}
             saveUser(chatId);
         }
-        EditMessageText ms = getDialogHandler(chatId).onCurrencyMessage(update.getCallbackQuery().getMessage().getMessageId());
+        EditMessageText ms = getDH(chatId).onCurrencyMessage(update.getCallbackQuery().getMessage().getMessageId());
         sendMessage(ms);
     }
     public void doCallBackNotification(Long chatId, Update update, String[] command) {
@@ -262,7 +272,7 @@ public class ChatBot extends TelegramLongPollingBot {
             throw new RuntimeException(e);
         }
 
-        SendMessage ms = getDialogHandler(chatId).createSetNotifyMessage();
+        SendMessage ms = getDH(chatId).createSetNotifyMessage();
         sendMessage(ms);
 
     }
@@ -272,15 +282,15 @@ public class ChatBot extends TelegramLongPollingBot {
             AppRegistry.getUser(chatId).setDecimalPlaces(Integer.parseInt(num));
             saveUser(chatId);
         }
-        EditMessageText ms = getDialogHandler(chatId).onDecimalMessage(update.getCallbackQuery().getMessage().getMessageId());
+        EditMessageText ms = getDH(chatId).onDecimalMessage(update.getCallbackQuery().getMessage().getMessageId());
         sendMessage(ms);
     }
     private void doCallBackAboutUs(Long chatId, Update update) {
         // Переходим на раздел
-        EditMessageText aboutUsMessage = getDialogHandler(chatId).onAboutUsMessage(update.getCallbackQuery().getMessage().getMessageId());
+        EditMessageText aboutUsMessage = getDH(chatId).onAboutUsMessage(update.getCallbackQuery().getMessage().getMessageId());
         sendMessage(aboutUsMessage);
         // Отправляем текст+фото
-        SendPhoto photoMessage = getDialogHandler(chatId).createAboutUsMessage();
+        SendPhoto photoMessage = getDH(chatId).createAboutUsMessage();
         sendPhoto(photoMessage);
     }
     public void doCallBackSettings(Long chatId, Update update) {
@@ -291,7 +301,7 @@ public class ChatBot extends TelegramLongPollingBot {
         } catch (TelegramApiException e) {
             throw new RuntimeException(e);
         }
-        SendMessage ms = getDialogHandler(chatId).createSettingsMessage();
+        SendMessage ms = getDH(chatId).createSettingsMessage();
         sendMessage(ms);
     }
     public void doCallBackUserSettingsMessage(Long chatId, Update update, String[] command) {
@@ -327,7 +337,7 @@ public class ChatBot extends TelegramLongPollingBot {
 
     public void userNotify(User user) {
         LOGGER.info("userNotify() = {} {}", user.getId(), user.getName());
-        SendMessage ms = getDialogHandler(user.getId()).createMessage(Objects.requireNonNull(createNotifyMessage(user)), user.getId());
+        SendMessage ms = getDH(user.getId()).createMessage(Objects.requireNonNull(createNotifyMessage(user)), user.getId());
         sendMessage(ms);
     }
 

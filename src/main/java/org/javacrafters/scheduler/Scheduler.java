@@ -23,10 +23,10 @@ public class Scheduler {
     private static ScheduledFuture<?> currencyScheduler;
     private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(4);
     private static int userPeriodRun = 24*60;
-    private static final DateFormat dateFormat = new SimpleDateFormat("HH");
+    private static final DateFormat DATEFORMAT = new SimpleDateFormat("HH");
 
     static {
-        dateFormat.setTimeZone(TimeZone.getTimeZone(AppRegistry.getConfTimeZone()));
+        DATEFORMAT.setTimeZone(TimeZone.getTimeZone(AppRegistry.getConfTimeZone()));
     }
     private Scheduler() {
     }
@@ -36,7 +36,7 @@ public class Scheduler {
         if (user == null) {
             return;
         }
-        int curHour = Integer.parseInt(dateFormat.format(new Date()));
+        int curHour = Integer.parseInt(DATEFORMAT.format(new Date()));
         int curMinutes = Calendar.getInstance().get(Calendar.MINUTE);
         int initDelay = 1;
 
@@ -62,7 +62,7 @@ public class Scheduler {
             userPeriodRun = 1;
         }
         userSchedulers.put(userId, scheduler.scheduleAtFixedRate(threadUserScheduledTask, initDelay, userPeriodRun, MINUTES));
-        LOGGER.info("User: {} set to {}:00 Run in {} minutes.", user.getId(), user.getNotifyTime(), userPeriodRun);
+        LOGGER.info("User: {} set to {}:00 Run in {} minutes. Task active: {}", user.getId(), user.getNotifyTime(), initDelay, !getUserScheduler(userId).isCancelled());
     }
 
     public static ScheduledFuture<?> getUserScheduler(Long userId) {

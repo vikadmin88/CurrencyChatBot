@@ -15,7 +15,8 @@ public class AppLauncher {
     private static final Logger LOGGER = LoggerFactory.getLogger(AppLauncher.class);
 
     public static void main(String[] args) {
-        LOGGER.info("Program starting in Thread: {}", Thread.currentThread().getName());
+        LOGGER.info("{}", "*".repeat(40));
+        LOGGER.info("App starting in Thread: {}", Thread.currentThread().getName());
 
         AppRegistry.initDefaults();
         AppRegistry.addBank("PB", new PrivatBank(ConfigLoader.get("BANK_PB_API_URL"), new NetworkStreamReader()));
