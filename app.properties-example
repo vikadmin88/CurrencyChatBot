@@ -1,7 +1,9 @@
-# Bot credentials:
 APP_NAME=CurrencyChatBot
+# Bot credentials:
 APP_BOT_NAME=here your bot name
 APP_BOT_TOKEN=here your bot token
+# Time zone: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+APP_TIME_ZONE=Europe/Kyiv
 
 # User storage functionality:
 # Enable/disable. save/load to/from json, database, etc.
@@ -9,7 +11,7 @@ APP_USERS_USE_STORAGE=true
 # storage folder
 APP_USERS_STORAGE_FOLDER=./bot-users
 # storage provider. file | sqlite
-APP_USERS_STORAGE_PROVIDER=sqlite
+APP_USERS_STORAGE_PROVIDER=file
 
 # Default parameters for banks:
 # Currency to get from each bank. separate by comma: USD,EUR,...

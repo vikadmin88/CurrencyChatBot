@@ -3,6 +3,8 @@ package org.javacrafters.core;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 import org.javacrafters.banking.Bank;
@@ -37,16 +39,25 @@ public class AppRegistry {
 
     public static void initDefaults() {
         LOGGER.info("Loading config defaults: initDefaults()");
+
+        Date dateTime = new Date();
+        DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
+        String platformTime = dateFormat.format(dateTime);
+        dateFormat.setTimeZone(TimeZone.getTimeZone(getConfTimeZone()));
+
+        LOGGER.info("Runtime mode: >>>>> {} <<<<<", getConfIsDevMode() ? "DEV" : "PROD");
+        LOGGER.info("App time zone: {}, App time {}, Platform time {}", getConfTimeZone(), dateFormat.format(dateTime), platformTime);
+
         Arrays.stream(ConfigLoader.get("BANK_CURRENCY").split(",")).forEach(AppRegistry::addCurrency);
 
         // Request currency period in minutes
         Scheduler.addCurrencySchedule(Integer.parseInt(ConfigLoader.get("BANK_FREQUENCY_REQUEST")));
-        LOGGER.info("The Currency Query Scheduler runs every {} minutes.", ConfigLoader.get("BANK_FREQUENCY_REQUEST"));
+        LOGGER.info("Currency Query Scheduler runs every {} minutes.", ConfigLoader.get("BANK_FREQUENCY_REQUEST"));
 
         // user-storage folder, provider
         if (Boolean.parseBoolean(ConfigLoader.get("APP_USERS_USE_STORAGE"))) {
             try {
-                String storageFolder = AppRegistry.getConfUsersStorageFolder();
+                String storageFolder = getConfUsersStorageFolder();
                 Files.createDirectories(Paths.get(storageFolder));
                 if (ConfigLoader.get("APP_USERS_STORAGE_PROVIDER").equals("file")) {
                     UserLoader.setStorageProvider(new JsonStorageProvider(storageFolder)).load();
@@ -78,6 +89,13 @@ public class AppRegistry {
     public static void addUser(User user){
         users.put(user.getId(), user);
     }
+    public static void addUserCompletely(User user){
+        LOGGER.info("addUserCompletely: {} {}", user.getId(), user.getName());
+        addUser(user);
+        if (user.isNotifyOn()) {
+            Scheduler.addUserSchedule(user.getId(), user, user.getNotifyTime());
+        }
+    }
     public static Map<Long, User>getUsers(){
         return new HashMap<Long, User>(users);
     }
@@ -89,6 +107,12 @@ public class AppRegistry {
     }
     public static void removeUser(Long userId){
         users.remove(userId);
+    }
+    public static void removeUserCompletely(Long userId){
+        LOGGER.info("removeUserCompletely: {}", userId);
+        removeUser(userId);
+        Scheduler.removeUserScheduler(userId);
+        UserLoader.delete(userId);
     }
 
     /*
@@ -170,6 +194,21 @@ public class AppRegistry {
         return ConfigLoader.get("APP_USERS_STORAGE_FOLDER");
     }
 
+    /*
+    Config Dev mode switch
+    */
+    public static boolean getConfIsDevMode() {
+        return Boolean.parseBoolean(ConfigLoader.get("APP_DEV_MODE"));
+    }
+    public static boolean getConfIsProdMode() {
+        return !Boolean.parseBoolean(ConfigLoader.get("APP_DEV_MODE"));
+    }
 
+    /*
+    Config Time Zone
+    */
+    public static String getConfTimeZone() {
+        return ConfigLoader.get("APP_TIME_ZONE");
+    }
 
 }

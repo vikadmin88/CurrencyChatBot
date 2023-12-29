@@ -2,7 +2,6 @@ package org.javacrafters.core.storage;
 
 import com.google.gson.Gson;
 import org.javacrafters.core.AppRegistry;
-import org.javacrafters.scheduler.Scheduler;
 import org.javacrafters.user.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,7 +27,7 @@ public class JsonStorageProvider implements StorageProvider {
     public User load(Long userId) {
         String filePath = String.format(storageFolder + FileSystems.getDefault().getSeparator() + "user-%d-bot.json", userId);
         try (Reader reader = new FileReader(filePath)) {
-            LOGGER.info("Loading user {}", userId);
+            LOGGER.info("<<< Loading user {}", userId);
             return GSON.fromJson(reader, User.class);
         } catch (IOException e) {
             LOGGER.error("File {} not found.", filePath);
@@ -46,16 +45,16 @@ public class JsonStorageProvider implements StorageProvider {
             public void run() {
                 try (Stream<Path> paths = Files.walk(Paths.get(storageFolder))) {
 
-                    paths.filter((file) -> file.toString().endsWith("-bot.json")).forEach(file -> {
+                    paths.filter((file) -> file.getFileName().toString().matches("user-([0-9]+)+-bot.json")).forEach(file -> {
 
                         try (Reader reader = new FileReader(file.toString())) {
-                            LOGGER.info("Loading user {}", file);
                             User user = GSON.fromJson(reader, User.class);
-                            AppRegistry.addUser(user);
-                            Scheduler.addUserSchedule(user.getId(), user, user.getNotifyTime());
-                            LOGGER.info("User {} loaded from file: {}/user-{}-bot.json (thread: {})", user.getId(), storageFolder, user.getId(), Thread.currentThread().getName());
+                            if (user.getId() > 0) {
+                                LOGGER.info("<<< User {} loaded from file: {}/user-{}-bot.json (thread: {})", user.getId(), storageFolder, user.getId(), Thread.currentThread().getName());
+                                AppRegistry.addUserCompletely(user);
+                            }
                         } catch (IOException e) {
-                            LOGGER.error("Not Loading users", e);
+                            LOGGER.error("Can't load user", e);
                         }
 
                     });
@@ -71,7 +70,7 @@ public class JsonStorageProvider implements StorageProvider {
     @Override
     public void save(User user) {
 
-        if (!AppRegistry.getConfIsUsingUsersStorage()) {
+        if (!AppRegistry.getConfIsUsingUsersStorage() || user == null) {
             return;
         }
         Runnable taskSave = new Runnable() {
@@ -80,7 +79,7 @@ public class JsonStorageProvider implements StorageProvider {
                     Files.createDirectories(Paths.get(storageFolder));
                     try (FileWriter writer = new FileWriter(storageFolder + FileSystems.getDefault().getSeparator() + "user-" + user.getId() + "-bot.json")) {
                         GSON.toJson(user, writer);
-                        LOGGER.info("User {} saved to file: {}/user-{}-bot.json (thread: {})", user.getId(), storageFolder, user.getId(), Thread.currentThread().getName());
+                        LOGGER.info(">>> User {} saved to file: {}/user-{}-bot.json (thread: {})", user.getId(), storageFolder, user.getId(), Thread.currentThread().getName());
                     }
                 } catch (IOException e) {
                     LOGGER.error("Can't create {}", storageFolder, e);
@@ -99,9 +98,9 @@ public class JsonStorageProvider implements StorageProvider {
             public void run() {
                 File file = new File(storageFolder + FileSystems.getDefault().getSeparator() + "user-" + userId + "-bot.json");
                 if (file.delete()) {
-                    LOGGER.error("Deleted file {}/{}", storageFolder, file.getName());
+                    LOGGER.info("XXX Deleted user file {}/{}", storageFolder, file.getName());
                 } else {
-                    LOGGER.error("Can't delete {}/{}", storageFolder, file.getName());
+                    LOGGER.error("Can't delete user file {}/{}", storageFolder, file.getName());
                 }
             }
         };

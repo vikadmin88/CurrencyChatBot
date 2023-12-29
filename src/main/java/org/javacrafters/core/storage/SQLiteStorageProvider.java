@@ -2,7 +2,6 @@ package org.javacrafters.core.storage;
 
 import com.google.gson.Gson;
 import org.javacrafters.core.AppRegistry;
-import org.javacrafters.scheduler.Scheduler;
 import org.javacrafters.user.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,10 +27,10 @@ public class SQLiteStorageProvider implements StorageProvider {
 
     private void initializeDatabase() {
         try (Connection connection = DriverManager.getConnection(dbPath);
-             Statement statement = connection.createStatement()) {
+             Statement stm = connection.createStatement()) {
 
             String createTableQuery = "CREATE TABLE IF NOT EXISTS users (id BIGINT PRIMARY KEY, json TEXT)";
-            statement.executeUpdate(createTableQuery);
+            stm.executeUpdate(createTableQuery);
             LOGGER.info("Initialize database {}", dbPath);
 
         } catch (SQLException e) {
@@ -41,16 +40,16 @@ public class SQLiteStorageProvider implements StorageProvider {
 
     @Override
     public User load(Long userId) {
-        String selectJsonQuery = "SELECT json FROM users WHERE id = ?";
+        String selectQuery = "SELECT json FROM users WHERE id = ?";
         try (Connection connection = DriverManager.getConnection(dbPath);
-             PreparedStatement preparedStatement = connection.prepareStatement(selectJsonQuery)) {
+             PreparedStatement preparedStm = connection.prepareStatement(selectQuery)) {
 
-            preparedStatement.setLong(1, userId);
-            ResultSet resultSet = preparedStatement.executeQuery();
+            preparedStm.setLong(1, userId);
+            ResultSet resultSet = preparedStm.executeQuery();
 
             if (resultSet.next()) {
                 String json = resultSet.getString("json");
-                LOGGER.info("User {} loaded from database.", userId);
+                LOGGER.info("<<< User {} loaded from database.", userId);
                 return GSON.fromJson(json, User.class);
             }
 
@@ -70,18 +69,18 @@ public class SQLiteStorageProvider implements StorageProvider {
                 String selectAllQuery = "SELECT id, json FROM users";
                 try (Connection connection = DriverManager.getConnection(dbPath)) {
 
-                    Statement statement = connection.createStatement();
-                    ResultSet resultSet = statement.executeQuery(selectAllQuery);
+                    Statement stm = connection.createStatement();
+                    ResultSet resultSet = stm.executeQuery(selectAllQuery);
 
                     while (resultSet.next()) {
                         long userId = resultSet.getLong("id");
-                        String userData = resultSet.getString("json");
-                        User user = GSON.fromJson(userData, User.class);
+                        if (userId > 0) {
+                            String userData = resultSet.getString("json");
+                            User user = GSON.fromJson(userData, User.class);
 
-                        AppRegistry.addUser(user);
-                        Scheduler.addUserSchedule(user.getId(), user, user.getNotifyTime());
-
-                        LOGGER.info("User {} loaded from database Thread: {}", user.getId(), Thread.currentThread().getName());
+                            LOGGER.info("<<< User {} loaded from database Thread: {}", user.getId(), Thread.currentThread().getName());
+                            AppRegistry.addUserCompletely(user);
+                        }
                     }
 
                 } catch (SQLException e) {
@@ -94,30 +93,25 @@ public class SQLiteStorageProvider implements StorageProvider {
 
     @Override
     public void save(User user) {
-        if (!AppRegistry.getConfIsUsingUsersStorage()) {
+        if (!AppRegistry.getConfIsUsingUsersStorage() || user == null) {
             return;
         }
         Runnable taskSave = new Runnable() {
             public void run() {
                 try (Connection connection = DriverManager.getConnection(dbPath)) {
 
-                     PreparedStatement selectStatement = connection.prepareStatement("SELECT * FROM users WHERE id = ?");
-                     PreparedStatement insertStatement = connection.prepareStatement("INSERT INTO users (id, json) VALUES (?, ?)");
-                     PreparedStatement updateStatement = connection.prepareStatement("UPDATE users SET json = ? WHERE id = ?");
+                    PreparedStatement insertStm = connection.prepareStatement("INSERT INTO users (id, json) VALUES (?, ?)");
+                    PreparedStatement updateStm = connection.prepareStatement("UPDATE users SET json = ? WHERE id = ?");
 
-                    selectStatement.setLong(1, user.getId());
-                    ResultSet resultSet = selectStatement.executeQuery();
-
-                    if (resultSet.next()) {
-                        updateStatement.setString(1, GSON.toJson(user));
-                        updateStatement.setLong(2, user.getId());
-                        updateStatement.executeUpdate();
-                        LOGGER.info("User {} updated in database. Thread: {}", user.getId(), Thread.currentThread().getName());
+                    updateStm.setString(1, GSON.toJson(user));
+                    updateStm.setLong(2, user.getId());
+                    if (updateStm.executeUpdate() == 1) {
+                        LOGGER.info(">>> User {} updated in database. Thread: {}", user.getId(), Thread.currentThread().getName());
                     } else {
-                        insertStatement.setLong(1, user.getId());
-                        insertStatement.setString(2, GSON.toJson(user));
-                        insertStatement.executeUpdate();
-                        LOGGER.info("User {} saved to database Thread: {}", user.getId(), Thread.currentThread().getName());
+                        insertStm.setLong(1, user.getId());
+                        insertStm.setString(2, GSON.toJson(user));
+                        insertStm.executeUpdate();
+                        LOGGER.info(">>> User {} saved to database Thread: {}", user.getId(), Thread.currentThread().getName());
                     }
 
                 } catch (SQLException e) {
@@ -136,10 +130,10 @@ public class SQLiteStorageProvider implements StorageProvider {
             public void run() {
                 try (Connection connection = DriverManager.getConnection(dbPath)) {
 
-                    PreparedStatement deleteStatement = connection.prepareStatement("DELETE FROM users WHERE id = ?");
-                    deleteStatement.setLong(1, userId);
-                    deleteStatement.executeUpdate();
-                    LOGGER.info("User {} deleted from database Thread: {}", userId, Thread.currentThread().getName());
+                    PreparedStatement deleteStm = connection.prepareStatement("DELETE FROM users WHERE id = ?");
+                    deleteStm.setLong(1, userId);
+                    deleteStm.executeUpdate();
+                    LOGGER.info("XXX User {} deleted from database Thread: {}", userId, Thread.currentThread().getName());
 
                 } catch (SQLException e) {
                     LOGGER.error("Cant connect to database {} Method delete(Long userId): {}", dbPath, userId, e);
