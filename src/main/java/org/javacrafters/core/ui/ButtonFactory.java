@@ -85,10 +85,12 @@ public class ButtonFactory {
         List<InlineKeyboardButton> buttons = new ArrayList<>();
 
         // Добавление кнопок для настроек
+        buttons.add(createButton("\uD83D\uDCCC", "Welcome", "welcome"));
         buttons.add(createButton("\uD83C\uDFE6", "Банки", "bank"));
         buttons.add(createButton("\uD83D\uDCB5", "Валюти", "currency"));
         buttons.add(createButton("\uD83D\uDD22", "Знаків після коми", "decimal"));
         buttons.add(createButton("⏰ Час сповіщення", "notification"));
+        buttons.add(createButton("❓ Мої налаштування", "USERSETTINGS"));
         buttons.add(createButton("\uD83D\uDC40", "Про нас", "about"));
 
         return buildInlineKeyboard(buttons);

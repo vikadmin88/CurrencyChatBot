@@ -193,7 +193,7 @@ public class ChatBot extends TelegramLongPollingBot {
                             ❗Вашу підписку на отримання курсів валют деактивовано!❗ 
                             Якщо ви бажаєте активувати її наново, будь ласка введіть або натисніть на команду /start
                             Також в налаштуваннях ви маєте обрати зручний для вас час отримання повідомлень з курсами валют.
-                            """, chatId);
+                            """);
         sendMessage(ms);
         removeUser(chatId);
     }
@@ -202,7 +202,7 @@ public class ChatBot extends TelegramLongPollingBot {
         sendMessage(ms);
     }
     public void doCommandUserSettingsMessage(Long chatId) {
-        SendMessage ms = getDH(chatId).createUserSettingsMessage(Objects.requireNonNull(createUserCurrentSettings(chatId)), chatId);
+        SendMessage ms = getDH(chatId).createUserSettingsMessage(Objects.requireNonNull(createUserCurrentSettings(chatId)));
         sendMessage(ms);
     }
     public void doCommandNotifyOff(Long chatId, Update update) {
@@ -231,7 +231,7 @@ public class ChatBot extends TelegramLongPollingBot {
         saveUser(chatId);
     }
     public void sendErrorMessage(Long chatId) {
-        SendMessage ms = getDH(chatId).createMessage("❗ Command not found!", chatId);
+        SendMessage ms = getDH(chatId).createMessage("❗ Command not found!");
         sendMessage(ms);
     }
 
@@ -337,7 +337,7 @@ public class ChatBot extends TelegramLongPollingBot {
 
     public void userNotify(User user) {
         LOGGER.info("userNotify() = {} {}", user.getId(), user.getName());
-        SendMessage ms = getDH(user.getId()).createMessage(Objects.requireNonNull(createNotifyMessage(user)), user.getId());
+        SendMessage ms = getDH(user.getId()).createMessage(Objects.requireNonNull(createNotifyMessage(user)));
         sendMessage(ms);
     }
 
